@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<Title>IVSoftware.Portable.Xml.Linq.XBoundObject</Title>
+		<Description>A lightweight extension for System.Xml.Linq that provides a Tag property for XAttribute, enabling runtime object storage and action binding.</Description>
+		<PackageTags>portable;net;android;ios;xml</PackageTags>
+		<RepositoryUrl>https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject.git</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject.git</PackageProjectUrl>
+		<RootNamespace>IVSoftware.Portable.Xml.Linq</RootNamespace>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Author>Thomas C. Gregor</Author>
+		<Owner>IVSoftware LLC</Owner>
+		<Copyright>Copyright © 2023 IVSoftware LLC</Copyright>
+		<FileVersion>$(AssemblyVersion)</FileVersion>
+		<Version>$(AssemblyVersion)</Version>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<SignAssembly>True</SignAssembly>
+		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
+		<DebugType>embedded</DebugType>
+		<BaseVersion>1.1.0-prerelease</BaseVersion>
+		<VersionPrefix>$(BaseVersion)</VersionPrefix>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Remove="Screenshots\**" />
+	  <EmbeddedResource Remove="Screenshots\**" />
+	  <None Remove="Screenshots\**" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\README\BuildNestedEnum.md">
+			<Pack>True</Pack>
+			<PackagePath>\README\</PackagePath>
+		</None>
+		<None Include="..\README\DualKeyLookup.md">
+			<Pack>True</Pack>
+			<PackagePath>\README\</PackagePath>
+		</None>
+		<None Include="..\README\XBoundClickableObjects.md">
+			<Pack>True</Pack>
+			<PackagePath>\README\</PackagePath>
+		</None>
+	</ItemGroup>
+</Project>
