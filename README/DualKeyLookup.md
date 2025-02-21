@@ -18,7 +18,8 @@ This functionality is essential for **XML structures requiring hierarchical data
 ✅ **Direct Indexer Access** – Supports lookups via **`this[Enum]`** and **`this[XElement]`** for intuitive retrieval.  
 ✅ **Automatic Synchronization** – Ensures that **both mappings remain in sync**, preventing inconsistencies.  
 ✅ **Exception Handling Option** – Supports optional **strict retrieval** with an exception-throwing mode.  
-✅ **Dynamic Modification** – Easily **add, remove, and clear** mappings at runtime.  
+✅ **Dynamic Modification** – Easily **add, remove, and clear** mappings at runtime.
+✅ **Cross-Platform Backing Store for Hierarchical Views** – Seamlessly models TreeView-like structures across WinForms, WPF, MAUI, Xamarin, and Web UIs.
 
 ---
 
