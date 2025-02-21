@@ -178,6 +178,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             }
             var xroot = new XElement(root);
             var x2id2x = new DualKeyLookup();
+            xroot.SetBoundAttributeValue(type, name: "type", text: $"[{type.Name}]");
             xroot.SetBoundAttributeValue(x2id2x);
 
             foreach ((Enum value, XElement xel) in localDescendants(type, xroot))

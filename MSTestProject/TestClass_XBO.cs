@@ -83,7 +83,7 @@ Settings.Cancel";
             actual.ToClipboardAssert("Expecting Nested Enum Structure");
             { }
             expected = @" 
-<root dualkeylookup=""[DualKeyLookup]"">
+<root type=""[DiscoveryDemo]"" dualkeylookup=""[DualKeyLookup]"">
   <node id=""[DiscoveryDemo.Home]"" />
   <node id=""[DiscoveryDemo.Scan]"">
     <node id=""[Scan.QRCode]"" />
@@ -112,9 +112,8 @@ Settings.Cancel";
             actual.ToClipboard();
             actual.ToClipboardAssert("Expecting Attached Clickable");
             { }
-
             expected = @" 
-<root dualkeylookup=""[DualKeyLookup]"">
+<root type=""[DiscoveryDemo]"" dualkeylookup=""[DualKeyLookup]"">
   <node id=""[DiscoveryDemo.Home]"" button=""[Button]"" />
   <node id=""[DiscoveryDemo.Scan]"" button=""[Button]"">
     <node id=""[Scan.QRCode]"" button=""[Button]"" />

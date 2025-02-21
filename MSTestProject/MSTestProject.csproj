@@ -1,26 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-	  <UseWindowsForms>true</UseWindowsForms>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="TestClass_DualKeyLookup.cs" />
-  </ItemGroup>
+    <PropertyGroup>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <UseWindowsForms>true</UseWindowsForms>
+    </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="*-*" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-        <PackageReference Include="MSTest" Version="3.6.4" />
-        <PackageReference Include="IVSoftware.WinOS.MSTest.Extensions" Version="1.0.2-prerelease" />
+        <None Include="TestClass_DualKeyLookup.cs" />
     </ItemGroup>
 
-  <ItemGroup>
-    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+        <PackageReference Include="MSTest" Version="3.6.4" />
+        <PackageReference Include="IVSoftware.WinOS.MSTest.Extensions" Version="*-*" />
+    </ItemGroup>
 
+	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
+	    <ProjectReference Include="..\IVSoftware.Portable.Xml.Linq.XBoundObject\IVSoftware.Portable.Xml.Linq.XBoundObject.csproj" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(Configuration)' == 'Release'">
+        <PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="*-*" />
+	</ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+    </ItemGroup>
 </Project>
