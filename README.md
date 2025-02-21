@@ -3,14 +3,12 @@
 A lightweight extension for `System.Xml.Linq` that provides a `Tag` property for `XAttribute`, enabling runtime object storage and action binding.
 
 ##### Overview
-**XBoundAttribute** enhances `XAttribute` by introducing a **runtime-only** `Tag` property, allowing attributes to store and retrieve objects in a type-safe manner using `xel.To<T>()`. This makes XML more dynamic and interactive without altering its structure. 
-
-While the `Tag` property can be visualized in-memory (e.g., when printed), it is not intended to be serializable. That is, objects attached at runtime are not reconstructed when the file is read back.
+**XBoundAttribute** enhances `XAttribute` by introducing a **runtime-only** `Tag` property, allowing attributes to store and retrieve objects in a type-safe manner using `xel.To<T>()`. Note that while the `Tag` property can be visualized in-memory (e.g., when printed), it is not intended to be serializable. That is, objects attached at runtime are not reconstructed when the file is read back.
 
 ##### Features
 
-- **Extended XAttribute Functionality** – Introduces a `Tag` property for `XAttribute`, enabling metadata enrichment.
-- **Runtime Object Storage** – Attach arbitrary objects to XML attributes at runtime for flexible data management.
+- **Extended XAttribute Functionality** – Introduces a `Tag` property for `XAttribute`, enabling metadata enrichment
+- **Runtime Object Storage** – Attach arbitrary objects or actions to XML attributes at runtime.
 - **Action Binding** – Store and invoke actions associated with XML attributes, facilitating event-driven XML processing.
 - **Enhanced XML Processing** – Ideal for scenarios requiring richer, context-aware attributes, such as serialization, templating, and dynamic transformations.
 
@@ -108,13 +106,13 @@ ___
 
 ## Examples
 
-### [Build Nested Enum Example](./README/BuildNestedEnum.md)
+### [Build Nested Enum Example](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/BuildNestedEnum.md)
 
 Convert a set of flat enumerations and turn it into a runtime hierarchy.
 
 ___
 
-### [XBound Clickable Objects](./README/XBoundClickableObjects.md)
+### [XBound Clickable Objects](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/XBoundClickableObjects.md)
 
 
 Using `xroot` from the prior example, iterate the XML, attach a clickable object to each node then use the ID to fire its click event. 
@@ -123,7 +121,7 @@ Using `xroot` from the prior example, iterate the XML, attach a clickable object
 ___
 
 
-### [Dual Key Lookup](./README/DualKeyLookup.md)
+### [Dual Key Lookup](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/DualKeyLookup.md)
 
 When an Enum type is expanded to an XML hierarchy, a two way lookup is xbound to the root node. A typical flow might be:
 

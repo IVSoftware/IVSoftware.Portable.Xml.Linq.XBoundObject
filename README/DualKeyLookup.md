@@ -1,8 +1,5 @@
 ﻿[◀](../README.md)
 
-
-[◀](../README.md)
-
 ### **DualKeyLookup: Bidirectional Enum-to-XML Mapping**
 
 #### **Overview**
