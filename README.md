@@ -16,6 +16,7 @@ A lightweight extension for `System.Xml.Linq` that provides a `Tag` property for
 - **Dynamic XML Metadata** – Store additional information within attributes without modifying XML structures.
 - **Templating & Transformation** – Bind runtime behaviors to XML attributes for dynamic rendering.
 - **Workflow & Event Binding** – Attach callbacks to attributes, enabling event-driven XML interactions.
+- **Cross-Platform Backing Store for Hierarchical Views** – Seamlessly models TreeView-like structures across WinForms, WPF, MAUI, Xamarin, and Web UIs.
 
 XBoundAttribute bridges the gap between XML structures and runtime logic, making XML more powerful and adaptive in modern applications.
 
