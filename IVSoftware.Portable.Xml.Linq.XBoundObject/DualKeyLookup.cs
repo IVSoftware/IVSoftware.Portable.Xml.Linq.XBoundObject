@@ -49,6 +49,18 @@ namespace IVSoftware.Portable.Xml.Linq
                 }
                 else
                 {
+                    if (this[key] is XElement prevXEL)
+                    {
+                        if(Equals(value, prevXEL))
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            // Eradicate the previous pair.
+                            this[key] = null;
+                        }
+                    }
                     _id2x[key] = value;
                     _x2id[value] = key;
                 }
@@ -79,6 +91,18 @@ namespace IVSoftware.Portable.Xml.Linq
                 }
                 else
                 {
+                    if (this[key] is Enum prevID)
+                    {
+                        if (Equals(value, prevID))
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            // Eradicate the previous pair.
+                            this[key] = null;
+                        }
+                    }
                     _x2id[key] = value;
                     _id2x[value] = key;
                 }

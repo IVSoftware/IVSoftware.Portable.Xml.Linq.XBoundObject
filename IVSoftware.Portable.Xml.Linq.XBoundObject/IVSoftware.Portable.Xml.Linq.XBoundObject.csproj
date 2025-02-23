@@ -19,7 +19,7 @@
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
-		<BaseVersion>1.2.1-beta</BaseVersion>
+		<BaseVersion>1.2.2-beta</BaseVersion>
 		<VersionPrefix>$(BaseVersion)</VersionPrefix>
 	</PropertyGroup>
 	<ItemGroup>
