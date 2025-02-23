@@ -69,13 +69,14 @@ Settings.Cancel";
                 "Expecting msg"
             );
         }
+
         [TestMethod]
         public void Test_NestedEnum()
         {
             string actual, expected;
             var builder = new List<string>();
 
-            var xroot = 
+            var xroot =
                 typeof(DiscoveryDemo).BuildNestedEnum();
 
             actual = xroot.ToString();
@@ -101,7 +102,7 @@ Settings.Cancel";
                 "Expecting Nested Enum Structure"
             );
 
-            foreach (var node in xroot.Descendants().Where(_=>_.Has<Enum>()))
+            foreach (var node in xroot.Descendants().Where(_ => _.Has<Enum>()))
             {
                 var button = new Button(node.To<Enum>());
                 button.Click += localClickHandler;
@@ -165,8 +166,35 @@ Clicked: QRCode";
                 "Expecting button clicks"
             );
         }
-    }
 
+        [TestMethod]
+        public void Test_AncestorOfType()
+        {
+            string actual, expected;
+
+            var xroot =
+                typeof(DiscoveryDemo).BuildNestedEnum();
+            var dkl = 
+                xroot.To<DualKeyLookup>(@throw: true);
+            var node =
+                dkl[Settings.Apply];
+            var dklFromAnc = 
+                node.AncestorOfType<DualKeyLookup>(@throw: true);
+            var notExist =
+                node.AncestorOfType<bool>(@throw: false);
+            bool caught = false;
+            try
+            {
+                notExist =
+                    node.AncestorOfType<bool>(@throw: true);
+            }
+            catch (InvalidOperationException)
+            {
+                caught = true;
+            }
+            Assert.IsTrue(caught, "Expecting exception was thrown.");
+        }
+    }
     interface IClickable
     {
         Enum Id { get; }

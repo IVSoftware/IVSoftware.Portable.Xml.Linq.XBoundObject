@@ -17,7 +17,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             string text = null,
             SetOption options = SetOption.NameToLower)
         {
-            if(string.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(name))
             {
                 name = tag.GetType().Name.Split('`')[0];
             }
@@ -32,7 +32,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         public static void SetBoundAttributeValue(
             this XElement xel,
             object tag,
-            Enum stdName,    
+            Enum stdName,
             string text = null,
             SetOption options = SetOption.NameToLower) =>
                 xel.SetBoundAttributeValue(
@@ -107,6 +107,28 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             {
                 o = (T)xba.Tag;
                 return true;
+            }
+        }
+        public static T AncestorOfType<T>(this XElement @this, bool includeSelf = false, bool @throw = false)
+        {
+
+            if(@throw)
+            {
+                return 
+                    includeSelf
+                    ? @this.AncestorsAndSelf().First(_ => _.Has<T>()).To<T>()
+                    : @this.Ancestors().First(_ => _.Has<T>()).To<T>();
+            }
+            else
+            {
+                XElement anc = 
+                    includeSelf
+                    ? @this.AncestorsAndSelf().FirstOrDefault(_ => _.Has<T>())
+                    : @this.Ancestors().FirstOrDefault(_ => _.Has<T>());
+                return
+                    anc is null
+                    ? default
+                    : anc.To<T>();
             }
         }
     }
