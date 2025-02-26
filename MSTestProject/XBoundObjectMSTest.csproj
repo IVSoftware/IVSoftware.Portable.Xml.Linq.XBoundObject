@@ -22,7 +22,7 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(Configuration)' == 'Release'">
-        <PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="*-*" />
+		<PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="*-*" />
 	</ItemGroup>
 
     <ItemGroup>
