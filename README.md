@@ -68,6 +68,14 @@ public static bool Has<T>(this XElement xel){...}
 ```
 ___
 
+```
+/// <summary>
+/// Returns the first ancestor that Has XBoundAttribute of type T.
+/// </summary>
+public static T AncestorOfType<T>(this XElement @this, bool includeSelf = false, bool @throw = false)
+```
+___
+
 **Nested Enum Extensions**
 
 ```
@@ -78,10 +86,8 @@ ___
 /// </summary>
 public static IEnumerable<Enum> Descendants(
         this Type type,
-        DiscoveryScope options = DiscoveryScope.ConstrainToAssembly | DiscoveryScope.ConstrainToNamespace){... }
-
+        DiscoveryScope options = DiscoveryScope.ConstrainToAssembly | DiscoveryScope.ConstrainToNamespace){...}
 ```
-
 ___
 
 ```
@@ -97,11 +103,32 @@ public static XElement BuildNestedEnum(
 ___
 
 ```
+
 /// <summary>
 /// Generates a fully qualified string representation of an enum value,
 /// including its type name and value.
 /// </summary>
 public static string ToFullKey(this Enum @this){...}
+
+```
+___
+
+```
+/// <summary>
+/// Retrieve the concatenated ID member names from root to leaf.
+/// From any ID, the XElement can be retrieved from the DKL.
+/// </summary>
+public static string ToFullIdPath(this XElement @this, char delim = '.') 
+
+```
+___
+
+```
+/// <summary>
+/// Retrieve the concatenated ID member names from root to leaf.
+/// From any ID, the XElement can be retrieved from the DKL.
+/// </summary>
+public static string ToFullIdPath(this Enum @this, DualKeyLookup dkl, char delim = '.')){...}
 ```
 ___
 

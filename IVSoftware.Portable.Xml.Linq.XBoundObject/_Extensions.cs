@@ -109,6 +109,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                 return true;
             }
         }
+
+        /// <summary>
+        /// Returns the first ancestor that Has XBoundAttribute of type T.
+        /// </summary>
         public static T AncestorOfType<T>(this XElement @this, bool includeSelf = false, bool @throw = false)
         {
             if(@throw)
