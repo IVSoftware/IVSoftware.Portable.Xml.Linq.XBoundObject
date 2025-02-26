@@ -111,7 +111,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         }
         public static T AncestorOfType<T>(this XElement @this, bool includeSelf = false, bool @throw = false)
         {
-
             if(@throw)
             {
                 return 
@@ -131,5 +130,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                     : anc.To<T>();
             }
         }
+
     }
 }

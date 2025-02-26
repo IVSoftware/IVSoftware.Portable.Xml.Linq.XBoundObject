@@ -174,11 +174,11 @@ Clicked: QRCode";
 
             var xroot =
                 typeof(DiscoveryDemo).BuildNestedEnum();
-            var dkl = 
+            var dkl =
                 xroot.To<DualKeyLookup>(@throw: true);
             var node =
                 dkl[Settings.Apply];
-            var dklFromAnc = 
+            var dklFromAnc =
                 node.AncestorOfType<DualKeyLookup>(@throw: true);
             var notExist =
                 node.AncestorOfType<bool>(@throw: false);
@@ -193,6 +193,43 @@ Clicked: QRCode";
                 caught = true;
             }
             Assert.IsTrue(caught, "Expecting exception was thrown.");
+        }
+
+        [TestMethod]
+        public void Test_ToFullIdPath()
+        {
+            string actual, expected;
+
+            var xroot =
+                typeof(DiscoveryDemo).BuildNestedEnum(DiscoveryScope.ConstrainToAssembly);
+            var dkl = 
+                xroot.To<DualKeyLookup>(@throw: true);
+
+            var node = dkl[Deep.Apply.Selected];
+            var path = node.ToFullIdPath();
+
+            actual = path;
+            actual.ToClipboard();
+            actual.ToClipboardAssert("Expecting ID path from root to leaf.");
+            { }
+            expected = @" 
+Settings.Apply.Selected";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting ID path from root to leaf."
+            );
+
+            actual = Deep.Apply.Selected.ToFullIdPath(dkl);
+            expected = @" 
+Settings.Apply.Selected";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting identical result."
+            );
         }
     }
     interface IClickable

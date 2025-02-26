@@ -34,8 +34,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         ConstrainToNamespace = 0x2
     }
 
-
-
     public static class NestedEnumExtensions
     {
         /// <summary>
@@ -230,5 +228,32 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         /// </returns>
         public static string ToFullKey(this Enum @this) =>
             $"{@this.GetType().Name}.{@this}";
+
+        /// <summary>
+        /// Retrieve the concatenated ID member names from root to leaf.
+        /// From any ID, the XElement can be retrieved from the DKL.
+        /// </summary>
+        public static string ToFullIdPath(this XElement @this, char delim = '.') =>
+            string.Join(
+                $"{delim}",
+                @this
+                .AncestorsAndSelf()
+                .Where(_ => _.Has<Enum>())
+                .Reverse()
+                .Select(_ => $"{_.To<Enum>()}"));
+
+
+        /// <summary>
+        /// Retrieve the concatenated ID member names from root to leaf.
+        /// From any ID, the XElement can be retrieved from the DKL.
+        /// </summary>
+        public static string ToFullIdPath(this Enum @this, DualKeyLookup dkl, char delim = '.') =>
+            string.Join(
+                $"{delim}",
+                dkl[@this] ?
+                .AncestorsAndSelf()
+                .Where(_ => _.Has<Enum>())
+                .Reverse()
+                .Select(_ => $"{_.To<Enum>()}"));
     }
 }
