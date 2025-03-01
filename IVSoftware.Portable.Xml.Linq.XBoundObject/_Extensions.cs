@@ -41,10 +41,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                     text,
                     options);
 
-
-
-
-
         /// <summary>
         /// Return Single or Default where type is T. Null testing will be done by client.
         /// </summary>
@@ -135,5 +131,55 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             }
         }
 
+        /// <summary>
+        /// Sets an attribute on the given XElement using the name of the Enum type as the attribute name 
+        /// and the Enum value as the attribute value.
+        /// </summary>
+        /// <param name="this">The XElement to set the attribute on.</param>
+        /// <param name="value">The Enum value to store as an attribute.</param>
+        /// <param name="useLowerCaseName">If true, the attribute name will be the Enum type name in lowercase; otherwise, it will use the exact type name.</param>
+        public static void SetAttributeValue(this XElement @this, Enum value, bool useLowerCaseName = true)
+            => @this
+            .SetAttributeValue(
+                useLowerCaseName
+                ? value.GetType().Name.ToLower()
+                : value.GetType().Name,
+                $"{value}");
+
+        /// <summary>
+        /// Attempts to retrieve an enum value from an attribute in the given XElement.
+        /// </summary>
+        /// <typeparam name="T">The enum type to parse.</typeparam>
+        /// <param name="this">The XElement to retrieve the attribute from.</param>
+        /// <param name="value">
+        /// When this method returns, contains the parsed enum value if the attribute exists and is valid; 
+        /// otherwise, the default value of T.
+        /// </param>
+        /// <param name="stringComparison">
+        /// The string comparison method used for matching attribute names. Defaults to <see cref="StringComparison.OrdinalIgnoreCase"/>.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if the attribute exists and was successfully parsed as an enum of type T; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool TryGetAttributeValue<T>(
+        this XElement @this,
+        out T value,
+        StringComparison stringComparison = StringComparison.OrdinalIgnoreCase)
+        where T : struct, Enum
+        {
+            var type = typeof(T);
+            value = default;
+
+            var attribute = @this
+                .Attributes()
+                .FirstOrDefault(attr => string.Equals(attr.Name.LocalName, type.Name, stringComparison));
+
+            if (attribute != null && Enum.TryParse(attribute.Value, out T parsedValue))
+            {
+                value = parsedValue;
+                return true;
+            }
+            return false;
+        }
     }
 }

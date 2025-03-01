@@ -14,11 +14,11 @@ This functionality is essential for **XML structures requiring hierarchical data
 
 #### **Features**
 
-✅ **Efficient Two-Way Lookup** – Retrieve an `XElement` using an `Enum`, or get the `Enum` that corresponds to an `XElement`.  
-✅ **Direct Indexer Access** – Supports lookups via **`this[Enum]`** and **`this[XElement]`** for intuitive retrieval.  
-✅ **Automatic Synchronization** – Ensures that **both mappings remain in sync**, preventing inconsistencies.  
-✅ **Exception Handling Option** – Supports optional **strict retrieval** with an exception-throwing mode.  
-✅ **Dynamic Modification** – Easily **add, remove, and clear** mappings at runtime.
+• **Efficient Two-Way Lookup** – Retrieve an `XElement` using an `Enum`, or get the `Enum` that corresponds to an `XElement`.  
+• **Direct Indexer Access** – Supports lookups via **`this[Enum]`** and **`this[XElement]`** for intuitive retrieval.  
+• **Automatic Synchronization** – Ensures that **both mappings remain in sync**, preventing inconsistencies.  
+• **Exception Handling Option** – Supports optional **strict retrieval** with an exception-throwing mode.  
+• **Dynamic Modification** – Easily **add, remove, and clear** mappings at runtime.
 
 ---
 

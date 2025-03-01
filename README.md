@@ -76,6 +76,45 @@ public static T AncestorOfType<T>(this XElement @this, bool includeSelf = false,
 ```
 ___
 
+**XElement Extensions**
+
+This package also includes extended functionality for System.Xml.Linq that is not directly tied to XBoundObject.
+
+```
+/// <summary>
+/// Sets an attribute on the given XElement using the name of the Enum type as the attribute name 
+/// and the Enum value as the attribute value.
+/// </summary>
+/// <param name="this">The XElement to set the attribute on.</param>
+/// <param name="value">The Enum value to store as an attribute.</param>
+/// <param name="useLowerCaseName">If true, the attribute name will be the Enum type name in lowercase; otherwise, it will use the exact type name.</param>
+public static void SetAttributeValue(this XElement @this, Enum value, bool useLowerCaseName = true){...}
+
+/// <summary>
+/// Retrieves an Enum value from an attribute on the given XElement. If the attribute is missing, 
+/// it either throws an exception or returns a fallback value (-1 cast to T or a provided default).
+/// </summary>
+/// <typeparam name="T">The Enum type to retrieve.</typeparam>
+/// <param name="this">The XElement to retrieve the attribute from.</param>
+/// <param name="stringComparison">The string comparison method for matching attribute names.</param>
+/// <param name="defaultValue">
+/// Optional default value to return if the attribute is not found. 
+/// This is not the same as default(T)! If null, -1 is used unless T already defines -1, 
+/// in which case an exception is thrown.
+/// </param>
+/// <param name="throw">If true, throws an exception if the attribute is missing instead of returning a fallback value.</param>
+/// <returns>The parsed Enum value of type T.</returns>
+/// <exception cref="InvalidOperationException">Thrown if -1 is already a defined value in the Enum type T.</exception>
+/// <exception cref="FormatException">Thrown if parsing the attribute value fails.</exception>
+public static T GetAttributeValue<T>(
+    this XElement @this,
+    StringComparison stringComparison = StringComparison.OrdinalIgnoreCase,
+    T? defaultValue = null, // [Careful] This is not the same as default T !!
+    bool @throw = false)
+    where T : struct, Enum {...}
+```
+___
+
 **Nested Enum Extensions**
 
 ```

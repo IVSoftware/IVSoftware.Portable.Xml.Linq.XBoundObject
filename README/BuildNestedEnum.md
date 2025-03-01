@@ -54,10 +54,10 @@ XElement xroot = typeof(DiscoveryDemo).BuildNestedEnum();
 
 ## Why Use Nested Enums?  
 
-✅ **Transforms static enums into structured, navigable XML**  
-✅ **Eliminates ambiguity with namespace-based constraints**  
-✅ **Enables dynamic object binding & dual-key lookup**  
-✅ **Ideal for UI structures, workflow logic, and metadata definitions**  
+• **Transforms static enums into structured, navigable XML**  
+• **Eliminates ambiguity with namespace-based constraints**  
+• **Enables dynamic object binding & dual-key lookup**  
+• **Ideal for UI structures, workflow logic, and metadata definitions**  
 
 Nested Enums **bridge the gap between enums and structured data**, unlocking new possibilities for **data-driven applications** and **runtime interactions**.  
 
