@@ -89,7 +89,11 @@ This package also includes extended functionality for System.Xml.Linq that is no
 /// <param name="value">The Enum value to store as an attribute.</param>
 /// <param name="useLowerCaseName">If true, the attribute name will be the Enum type name in lowercase; otherwise, it will use the exact type name.</param>
 public static void SetAttributeValue(this XElement @this, Enum value, bool useLowerCaseName = true){...}
+```
 
+___
+
+```
 /// <summary>
 /// Retrieves an Enum value from an attribute on the given XElement. If the attribute is missing, 
 /// it either throws an exception or returns a fallback value (-1 cast to T or a provided default).
@@ -113,6 +117,69 @@ public static T GetAttributeValue<T>(
     bool @throw = false)
     where T : struct, Enum {...}
 ```
+---
+
+```
+/// <summary>
+/// Creates a shallow copy of the given XElement, preserving only its name and attributes,
+/// but excluding its child elements.
+/// </summary>
+/// <param name="this">The XElement to copy.</param>
+/// <returns>A new XElement with the same name and attributes, but without child elements.</returns>
+public static XElement ToShallow(this XElement @this) {...}
+```
+---
+
+```
+
+
+/// <summary>
+/// Creates a new XElement that includes only the specified attributes, removing all others.
+/// </summary>
+/// <param name="this">The XElement to filter.</param>
+/// <param name="names">The attribute names to keep.</param>
+/// <returns>A new XElement with only the specified attributes.</returns>
+public static XElement WithOnlyAttributes(this XElement @this, params string[] names {...}
+```
+---
+
+```
+
+
+/// <summary>
+/// Creates a new XElement that removes the specified attributes, keeping all others.
+/// </summary>
+/// <param name="this">The XElement to modify.</param>
+/// <param name="names">The attribute names to remove.</param>
+/// <returns>A new XElement without the specified attributes.</returns>
+public static XElement WithoutAttributes(this XElement @this, params string[] names) {...}
+```
+---
+
+```
+/// <summary>
+/// Sorts the attributes of the given <see cref="XElement"/> using the names of an enum type.
+/// The attribute order will be based on the order of values in the enum.
+/// </summary>
+/// <typeparam name="T">An enum type whose names define the attribute order.</typeparam>
+/// <param name="this">The <see cref="XElement"/> whose attributes will be sorted.</param>
+/// <returns>The <see cref="XElement"/> with sorted attributes.</returns>
+public static XElement SortAttributes<T>(this XElement @this) where T : Enum {...}
+```
+---
+
+```
+
+/// <summary>
+/// Sorts the attributes of each <see cref="XElement"/> in the collection based on the provided order.
+/// Attributes not listed in <paramref name="sortOrder"/> will be added at the end in their original order.
+/// </summary>
+/// <param name="this">The collection of <see cref="XElement"/> objects.</param>
+/// <param name="sortOrder">An array of attribute names specifying the desired order.</param>
+/// <returns>A collection of <see cref="XElement"/> with sorted attributes.</returns>
+public static IEnumerable<XElement> SortAttributes(this IEnumerable<XElement> @this, params string[] sortOrder) {...}
+```
+
 ___
 
 **Nested Enum Extensions**
