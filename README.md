@@ -157,26 +157,6 @@ public static XElement WithoutAttributes(this XElement @this, params string[] na
 ---
 
 ```
-
-/// <summary>
-/// Sorts the attributes of the given <see cref="XElement"/> based on the specified order.
-/// Attributes listed in <paramref name="sortOrder"/> will appear first in the specified order,
-/// while any attributes not included in <paramref name="sortOrder"/> will be appended at the end in their original order.
-/// This method is applied recursively to all descendant elements.
-/// If <paramref name="sortOrder"/> is empty, the method attempts to retrieve a default
-/// sort order using <see cref="DefaultSortOrderRequestEventArgs"/> before throwing an exception.
-/// </summary>
-/// <param name="this">The <see cref="XElement"/> whose attributes will be sorted.</param>
-/// <param name="sortOrder">An array of attribute names defining the desired sort order.</param>
-/// <returns>The <see cref="XElement"/> with sorted attributes.</returns>
-/// <exception cref="ArgumentException">
-/// Thrown if <paramref name="sortOrder"/> is empty and no default sort order is available.
-/// </exception>
-public static XElement SortAttributes<T>(this XElement @this) where T : Enum {...}
-```
----
-
-```
 /// <summary>
 /// Sorts the attributes of the given <see cref="XElement"/> and its descendants based on the names of an enum type.
 /// The attribute order follows the sequence of names in the specified enum.

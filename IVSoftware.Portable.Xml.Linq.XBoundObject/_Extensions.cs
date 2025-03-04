@@ -217,60 +217,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             );
 
         /// <summary>
-        /// Sorts the attributes of the given <see cref="XElement"/> based on the specified order.
-        /// Attributes listed in <paramref name="sortOrder"/> will appear first in the specified order,
-        /// while any attributes not included in <paramref name="sortOrder"/> will be appended at the end in their original order.
-        /// This method is applied recursively to all descendant elements.
-        /// If <paramref name="sortOrder"/> is empty, the method attempts to retrieve a default
-        /// sort order using <see cref="DefaultSortOrderRequestEventArgs"/> before throwing an exception.
-        /// </summary>
-        /// <param name="this">The <see cref="XElement"/> whose attributes will be sorted.</param>
-        /// <param name="sortOrder">An array of attribute names defining the desired sort order.</param>
-        /// <returns>The <see cref="XElement"/> with sorted attributes.</returns>
-        /// <exception cref="ArgumentException">
-        /// Thrown if <paramref name="sortOrder"/> is empty and no default sort order is available.
-        /// </exception>
-        public static XElement SortAttributes(this XElement @this, params string[] sortOrder)
-        {
-            if (!sortOrder.Any())
-            {
-                if (DefaultSortOrderRequestEventArgs.RaiseEvent() is string[] defaultSortOrder &&
-                    defaultSortOrder.Any())
-                {
-                    sortOrder = defaultSortOrder;
-                }
-                else
-                {
-                    throw new ArgumentException(message: "The sortOrder array is empty");
-                }
-            }
-            var dict = @this
-                .Attributes()
-                .ToDictionary(
-                attr => attr.Name.LocalName,
-                comparer: StringComparer.OrdinalIgnoreCase);
-
-            @this.RemoveAttributes();
-
-            foreach (var key in sortOrder)
-            {
-                if (dict.TryGetValue(key, out var xattr))
-                {
-                    Debug.WriteLine($"250303.A {key} FOUND");
-                    @this.Add(xattr);
-                    dict.Remove(key);
-                }
-                else Debug.WriteLine($"250303.A {key} NOT FOUND");
-            }
-            @this.Add(dict.Values);
-            foreach (var xel in @this.Elements())
-            {
-                xel.SortAttributes(sortOrder);
-            }
-            return @this;
-        }
-
-        /// <summary>
         /// Sorts the attributes of the given <see cref="XElement"/> and its descendants based on the names of an enum type.
         /// The attribute order follows the sequence of names in the specified enum.
         /// The sort order is determined using <see cref="Enum.GetNames(Type)"/> for the specified enum type.
@@ -278,7 +224,28 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         /// <typeparam name="T">An enum type whose names define the attribute order.</typeparam>
         /// <param name="this">The <see cref="XElement"/> whose attributes will be sorted.</param>
         /// <returns>The <see cref="XElement"/> with sorted attributes.</returns>
-        public static XElement SortAttributes<T>(this XElement @this) where T : Enum =>
-            @this.SortAttributes(Enum.GetNames(typeof(T)));
+        public static XElement SortAttributes<T>(this XElement @this) where T : Enum
+        {
+            var dict = @this
+                .Attributes()
+                .ToDictionary(
+                attr => attr.Name.LocalName,
+                comparer: StringComparer.OrdinalIgnoreCase);
+            @this.RemoveAttributes();
+            foreach (var key in Enum.GetNames(typeof(T)))
+            {
+                if (dict.TryGetValue(key, out var xattr))
+                {
+                    @this.Add(xattr);
+                    dict.Remove(key);
+                }
+            }
+            @this.Add(dict.Values);
+            foreach (var xel in @this.Elements())
+            {
+                xel.SortAttributes<T>();
+            }
+            return @this;
+        }
     }
 }
