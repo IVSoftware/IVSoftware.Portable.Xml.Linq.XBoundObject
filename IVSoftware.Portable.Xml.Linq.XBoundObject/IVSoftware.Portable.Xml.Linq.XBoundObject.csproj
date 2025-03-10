@@ -20,7 +20,7 @@
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
 		<BaseVersion>1.2.10</BaseVersion>
-		<VersionPrefix>$(BaseVersion)-beta</VersionPrefix>
+		<VersionPrefix>$(BaseVersion)</VersionPrefix>
 	</PropertyGroup>
 	<ItemGroup>
 	  <Compile Remove="Screenshots\**" />
