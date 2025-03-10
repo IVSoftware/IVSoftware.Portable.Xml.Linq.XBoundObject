@@ -15,7 +15,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
     [Flags]
     public enum ModelingOption
     {
-        IncludeValueTypeInstances = 0x01,
+        CachePropertyInfo = 0x1,
+        IncludeValueTypeInstances = 0x2,
     }
 
     public delegate void PropertyChangedDelegate(object sender, PropertyChangedEventArgs e);
@@ -53,22 +54,37 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
     {
         public static XElement CreateModel(this object @this, ModelingContext context = null)
         {
-            context = context ?? new ModelingContext(@this);
+            if (@this is null) throw new ArgumentNullException(nameof(@this));
+            if (context is null) context = new ModelingContext(@this);
+            else
+            {
+                if (context.This is null) context.This = @this;
+                if (!ReferenceEquals(@this, context.This))
+                    throw new ArgumentException($"References for @this and {nameof(ModelingContext)}.This must be the same.");
+            }
+            return context.CreateModel();
+        }
+        public static XElement CreateModel(this ModelingContext context)
+        {
             foreach (var xel in context.ModelDescendantsAndSelf())
             {
-                context?.RaiseElementAvailable(sender: @this, element: xel);
+                context?.RaiseElementAvailable(sender: context.This, element: xel);
             }
             return context.OriginModel;
         }
         public static IEnumerable<XElement> ModelDescendantsAndSelf(this object @this, ModelingContext context = null)
         {
             if (@this is null) throw new ArgumentNullException(nameof(@this));
-            if (context is null) return new ModelingContext(@this).ModelDescendantsAndSelf();
+            if (context is null) context = new ModelingContext(@this);
             else
             {
                 if (context.This is null) context.This = @this;
-                if (ReferenceEquals(@this, context.This)) return context.ModelDescendantsAndSelf();
-                else throw new ArgumentException($"References for @this and {nameof(ModelingContext)}.This must be the same.");
+                if (!ReferenceEquals(@this, context.This)) 
+                    throw new ArgumentException($"References for @this and {nameof(ModelingContext)}.This must be the same.");
+            }
+            foreach (var xel in context.ModelDescendantsAndSelf())
+            {
+                yield return xel;
             }
         }
         public static IEnumerable<XElement> ModelDescendantsAndSelf(this ModelingContext context) 
@@ -104,6 +120,14 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                         {
                             XElement member = new XElement(nameof(member));
                             member.SetAttributeValue(nameof(pi.Name).ToLower(), pi.Name);
+                            if(context.Options.HasFlag(ModelingOption.CachePropertyInfo))
+                            {
+                                member.SetBoundAttributeValue(
+                                    name: SortOrderNOD.pi.ToString(),
+                                    tag: pi,
+                                    text: pi.PropertyType.ToTypeNameText().InSquareBrackets()
+                                );
+                            }
                             currentElement.Add(member);
                             if (pi.GetValue(localInstance) is object childInstance)
                             {
@@ -153,8 +177,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             this T @this,
             PropertyChangedDelegate onPC,
             NotifyCollectionChangedDelegate onCC = null,
-            XObjectChangeDelegate onXO = null)
-            => @this.WithNotifyOnDescendants(out XElement _, onPC, onCC, onXO);
+            XObjectChangeDelegate onXO = null,
+            bool includeValueTypeInstances = false)
+            => @this.WithNotifyOnDescendants(out XElement _, onPC, onCC, onXO, includeValueTypeInstances);
 
         /// <summary>
         /// Attaches notification delegates to the descendants of the given object,
@@ -172,26 +197,116 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             out XElement model,
             PropertyChangedDelegate onPC,
             NotifyCollectionChangedDelegate onCC = null,
-            XObjectChangeDelegate onXO = null)
+            XObjectChangeDelegate onXO = null,
+            bool includeValueTypeInstances = false)
         {
             var context = new ModelingContext(@this)
             {
                 PropertyChangedDelegate = onPC,
                 NotifyCollectionChangedDelegate = onCC,
                 XObjectChangeDelegate = onXO,               
+                Options = ModelingOption.CachePropertyInfo,
             };
+            if (includeValueTypeInstances) context.Options |= ModelingOption.IncludeValueTypeInstances;
             context.ElementAvailable += (sender, e) =>
             {
                 var xel = e.Element;
-                { }
+#if DEBUG
+                var shallow = xel.ToShallow();
+#endif
+                if (xel.Name != $"{StdFrameworkName.model}" &&
+                    xel.GetInstance() is object o)
+                {
+                    if(onPC != null && o is INotifyPropertyChanged inpc)
+                    {
+                        PropertyChangedEventHandler handlerPC = (senderPC, ePC) =>
+                        {
+                            if(xel.GetMember(ePC.PropertyName) is XElement member)
+                            {
+                                PropertyInfo pi = member.To<PropertyInfo>();
+                                if (pi is null) pi = sender.GetType().GetProperty(ePC.PropertyName);
+                                if(pi != null)
+                                {
+                                    if (pi.IsEnumOrValueTypeOrString())
+                                    {   /* G T K */
+                                        // [Careful]
+                                        // We can only do this on PropertyType not on Instance Type.
+                                        // That is, a property of type 'object' can go in and out
+                                        // of being any other status. But if the property type is
+                                        // fixed that way, then it is safe to ignore.
+                                    }
+                                    else
+                                    {
+                                        member.RefreshModel(newValue: pi.GetValue(sender));
+                                    }
+                                }
+                                onPC?.Invoke(member, ePC);
+                            }
+                        };
+                        xel.SetBoundAttributeValue(
+                            tag: handlerPC,
+                            SortOrderNOD.onpc,
+                            text: StdFrameworkName.OnPC.InSquareBrackets());
+                        inpc.PropertyChanged += handlerPC;
+                    }
+                    if (onCC != null && o is INotifyCollectionChanged incc)
+                    { }
+                }
             };
-            model = @this.CreateModel(context);
-
-
-
-            throw new NotImplementedException();
+            context.OriginModel.Changing += (sender, e)
+                => onXObjectCommon(sender, new XObjectChangedOrChangingEventArgs(e, true));
+            context.OriginModel.Changed += (sender, e) 
+                => onXObjectCommon(sender, new XObjectChangedOrChangingEventArgs(e, false));
+            model = context.CreateModel();
             return @this;
+
+            void onXObjectCommon(object sender, XObjectChangedOrChangingEventArgs e)
+            {
+                onXO?.Invoke(sender, e);
+            }
         }
+        public static void RefreshModel(this XElement model, object newValue)
+        {
+            var attrsB4 = model.Attributes().ToArray();
+            // Perform an unconditional complete reset.
+            foreach (var element in model.Elements().ToArray())
+            {
+                foreach (var desc in element.DescendantsAndSelf().ToArray())
+                {
+                    desc.Remove();
+                }
+            }
+            foreach (var attr in model.Attributes().ToArray())
+            {
+                switch (attr.Name.LocalName)
+                {
+                    case nameof(SortOrderNOD.name):
+                    case nameof(SortOrderNOD.pi):
+                        break;
+                    case nameof(SortOrderNOD.statusnod):
+                    case nameof(SortOrderNOD.instance):
+                    case nameof(SortOrderNOD.runtimetype):
+                    case nameof(SortOrderNOD.onpc):
+                    case nameof(SortOrderNOD.oncc):
+                    case nameof(SortOrderNOD.notifyinfo):
+                        attr.Remove();
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+            if (newValue is null)
+            {
+                throw new NotImplementedException();
+                // model.SetAttributeValue(StatusNOD.WaitingForValue);
+            }
+            else
+            {
+                throw new NotImplementedException();
+                // RunDiscoveryOnCurrentLevel(newValue, model).SortAttributes<SortOrderNOD>();
+            }
+        }
+
 
         public static string ToTypeNameText(this Type @this)
         {
@@ -210,5 +325,56 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
 
         public static string InSquareBrackets(this string @this) => $"[{@this}]";
         public static string InSquareBrackets(this Enum @this) => $"[{@this.ToString()}]";
+
+        public static T GetInstance<T>(this XElement @this, bool @throw = false)
+        {
+            if (@this.Attribute(nameof(SortOrderNOD.instance)) is XBoundAttribute xba)
+            {
+                if (xba.Tag is T instance)
+                {
+                    return instance;
+                }
+                else
+                {
+                    if (@throw) throw new NullReferenceException($"Expecting {nameof(XBoundAttribute)}.Tag is not null.");
+                    else return default;
+                }
+            }
+            else
+            {
+                if (@throw) throw new NullReferenceException($"Expecting {nameof(SortOrderNOD.instance)} is {nameof(XBoundAttribute)}");
+                return default;
+            }
+        }
+        public static object GetInstance(this XElement @this, bool @throw = false)
+        {
+            if (@this.Attribute(nameof(SortOrderNOD.instance)) is XBoundAttribute xba)
+            {
+                if (xba.Tag is object instance)
+                {
+                    return instance;
+                }
+                else
+                {
+                    if (@throw) throw new NullReferenceException($"Expecting {nameof(XBoundAttribute)}.Tag is not null.");
+                    else return null;
+                }
+            }
+            else
+            {
+                if (@throw) throw new NullReferenceException($"Expecting {nameof(SortOrderNOD.instance)} is {nameof(XBoundAttribute)}");
+                return default;
+            }
+        }
+        public static object GetMember(this XElement @this, string propertyName)
+        => @this.Elements().FirstOrDefault(_ =>
+            _
+            .Attribute(nameof(SortOrderNOD.name))?
+            .Value == propertyName);
+
+        internal static bool IsEnumOrValueTypeOrString(this object @this)
+            => @this is Enum || @this is ValueType || @this is string;
+        internal static bool IsEnumOrValueTypeOrString(this Type @this)
+            => @this.IsEnum || @this.IsValueType || Equals(@this, typeof(string));
     }
 }
