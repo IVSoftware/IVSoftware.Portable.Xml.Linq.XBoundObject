@@ -84,6 +84,10 @@ public class TestClass_Modeling
         // - BCollection is also shown to have a `Count` property that is `Int32`.
         subtestInspectInitialModelForClassA();
         // EXPECT
+        // - AdHoc ClassA is at the root.
+        // Output is as before, but with full names for types.
+        subtestInspectInitialModelForClassAWithFullTypeNames();
+        // EXPECT
         // - An instance of ClassB is added to BCollection.
         // - A NotifyCollectionChanged event is triggered with action `Add`.
         // - A PropertyChanged event is triggered for the `Count` property of BCollection.
@@ -139,11 +143,14 @@ public class TestClass_Modeling
         {
             actual = A.OriginModel.SortAttributes<SortOrderNOD>().ToString();
 
+            actual.ToClipboard();
+            actual.ToClipboardAssert("Expecting model of ClassA with TotalCost property and the BCollection which is empty");
+            { }
             expected = @" 
-<model name=""(Origin)ClassA"" statusnod=""NoAvailableChangedEvents"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassA]"" notifyinfo=""[NotifyInfo]"">
-  <member name=""TotalCost"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
-  <member name=""BCollection"" statusnod=""INPCSource, INCCSource"" pi=""[System.Collections.ObjectModel.ObservableCollection]"" instance=""[System.Collections.ObjectModel.ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"">
-    <member name=""Count"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
+<model name=""(Origin)ClassA"" instance=""[ClassA]"" >
+  <member name=""TotalCost""  pi=""[Int32]"" />
+  <member name=""BCollection"" pi=""[ObservableCollection]"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"">
+    <member name=""Count"" pi=""[Int32]"" />
   </member>
 </model>";
             Assert.AreEqual(
@@ -151,6 +158,25 @@ public class TestClass_Modeling
                 actual.NormalizeResult(),
                 "Expecting model of ClassA with TotalCost property and the BCollection which is empty"
             );
+        }
+
+        // EXPECT
+        // - AdHoc ClassA is at the root.
+        // Output is as before, but with full names for types.
+        void subtestInspectInitialModelForClassAWithFullTypeNames()
+        {
+            ClassA classAwithFullNames = new(false);
+            _ = classAwithFullNames.WithNotifyOnDescendants(
+                out XElement adHoc,
+                onPC: (sender, e) => { },
+                onCC: (sender, e) => { },
+                options: ModelingOption.CachePropertyInfo | ModelingOption.ShowFullNameForTypes
+            );
+
+            actual = adHoc.SortAttributes<SortOrderNOD>().ToString();
+            actual.ToClipboard();
+            actual.ToClipboardAssert("Expecting expecting full names for types");
+            { }
         }
 
         // EXPECT
@@ -503,8 +529,12 @@ Remove <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants
                 .First();
 
             actual = originModel.ToString();
+
+            actual.ToClipboard();
+            actual.ToClipboardAssert();
+            { }
             expected = @" 
-<model instance=""[ClassA]"">
+<model name=""(Origin)XBoundObjectMSTest.TestClassesForModeling.SO_79467031_5438626.ClassA"" instance=""[ClassA]"">
   <member name=""TotalCost"" />
   <member name=""BCollection"" instance=""[ObservableCollection]"">
     <model instance=""[ClassB]"">
