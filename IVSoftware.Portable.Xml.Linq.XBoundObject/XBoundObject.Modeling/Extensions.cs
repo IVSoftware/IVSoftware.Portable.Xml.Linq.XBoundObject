@@ -250,7 +250,69 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                         inpc.PropertyChanged += handlerPC;
                     }
                     if (onCC != null && o is INotifyCollectionChanged incc)
-                    { }
+                    {
+                        NotifyCollectionChangedEventHandler handlerCC = (senderCC, eCC) =>
+                        {
+
+                            void localOnCollectionChanged()
+                            {
+                                if (senderCC is XElement modelCC)
+                                {
+                                    switch (eCC.Action)
+                                    {
+                                        case NotifyCollectionChangedAction.Add: onAdd(); break;
+                                        case NotifyCollectionChangedAction.Remove: onRemove(); break;
+                                        case NotifyCollectionChangedAction.Replace: onReplace(); break;
+                                        case NotifyCollectionChangedAction.Reset: onReset(); break;
+                                    }
+
+                                    void onAdd()
+                                    {
+                                        eCC.NewItems?.OfType<object>().ToList().ForEach(newItem =>
+                                        {
+                                            _ = newItem
+                                                .WithNotifyOnDescendants(
+                                                out XElement addedModel,
+                                                onPC,
+                                                onCC,
+                                                onXO);
+                                                modelCC.Add(addedModel);
+                                        });
+                                    }
+
+                                    void onRemove()
+                                    {
+                                        eCC.OldItems?.OfType<object>().ToList().ForEach(_ =>
+                                        {
+                                            var removeModel =
+                                                modelCC
+                                                .Elements()
+                                                .First(desc => ReferenceEquals(_, desc.GetInstance()));
+                                            removeModel.Remove();
+                                        });
+                                    }
+
+                                    void onReplace()
+                                    {
+                                        onRemove();
+                                        onAdd();
+                                    }
+                                    void onReset()
+                                    {
+                                        foreach (var removeModel in modelCC.Elements().ToArray())
+                                        {
+                                            removeModel.Remove();
+                                        }
+                                    }
+                                }
+                            }
+                        };
+                        xel.SetBoundAttributeValue(
+                            tag: handlerCC,
+                            SortOrderNOD.oncc,
+                            text: StdFrameworkName.OnCC.InSquareBrackets());
+                        incc.CollectionChanged += handlerCC;
+                    }
                 }
             };
             context.OriginModel.Changing += (sender, e)
