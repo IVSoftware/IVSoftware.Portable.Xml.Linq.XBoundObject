@@ -13,7 +13,7 @@ namespace XBoundObjectMSTest.TestClassesForModeling.SO_79467031_5438626
     public class ClassA
     {
         public ClassA() => OriginModel = new XElement($"{nameof(StdFrameworkName.model)}");
-        public ClassA(bool withNotifyOnDescendants)
+        public ClassA(bool withNotifyOnDescendants, ModelingOption options = ModelingOption.CachePropertyInfo)
         {
             if (withNotifyOnDescendants)
             {
@@ -25,7 +25,8 @@ namespace XBoundObjectMSTest.TestClassesForModeling.SO_79467031_5438626
                     .WithNotifyOnDescendants(   // The "Extension"
                     out XElement originModel,   // The root node of the generated model
                     OnPropertyChanged,          // Who to call when PropertyChanged events are raised.
-                    OnCollectionChanged         // Who to call when NotifyClooectionChanged events are raised.
+                    OnCollectionChanged,        // Who to call when NotifyCollectionChanged events are raised.
+                    options: options
                 );
                 // We 'could' just apply the extension to BCollection (making it a 'FullyObservableCollection')
                 // but it's even more powerful to go one level up from that.

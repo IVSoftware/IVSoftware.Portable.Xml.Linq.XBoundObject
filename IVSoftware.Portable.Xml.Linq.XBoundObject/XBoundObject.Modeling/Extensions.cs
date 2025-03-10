@@ -16,7 +16,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
     public enum ModelingOption
     {
         CachePropertyInfo = 0x1,
-        IncludeValueTypeInstances = 0x2,
+        ShowFullNameForTypes = 0x2,
+        IncludeValueTypeInstances = 0x4,
     }
 
     public delegate void PropertyChangedDelegate(object sender, PropertyChangedEventArgs e);
@@ -92,7 +93,18 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             context = context ?? new ModelingContext(context.This);
             if (!context.OriginModel.Ancestors().Any())
             {
-                context.OriginModel.SetAttributeValue(nameof(SortOrderNOD.name), $"(Origin){context.Type.ToShortTypeNameText()}");
+                if(context.Options.HasFlag(ModelingOption.ShowFullNameForTypes))
+                {
+                    context.OriginModel.SetAttributeValue(
+                        nameof(SortOrderNOD.name),
+                        $"(Origin){context.Type.ToTypeNameText()}");
+                }
+                else
+                {
+                    context.OriginModel.SetAttributeValue(
+                        nameof(SortOrderNOD.name),
+                        $"(Origin){context.Type.ToShortTypeNameText()}");
+                }
             }
             localDiscoverModel(context.This, context.OriginModel);
             foreach (var xel in context.OriginModel.DescendantsAndSelf())
@@ -103,7 +115,20 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             void localDiscoverModel(object instance, XElement localModel, HashSet<object> visited = null)
             {
                 visited = visited ?? new HashSet<object>();
-                localModel.SetBoundAttributeValue(instance, name: nameof(instance));
+                if (context.Options.HasFlag(ModelingOption.ShowFullNameForTypes))
+                {
+                    localModel.SetBoundAttributeValue(
+                        instance,
+                        name: nameof(instance),
+                        instance.GetType().ToTypeNameText().InSquareBrackets());
+                }
+                else
+                {
+                    localModel.SetBoundAttributeValue(
+                        instance, 
+                        name: nameof(instance),
+                        instance.GetType().ToShortTypeNameText().InSquareBrackets());
+                }
                 localRunRecursiveDiscovery(localModel);
 
                 void localRunRecursiveDiscovery(XElement currentElement)
@@ -122,28 +147,66 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                             member.SetAttributeValue(nameof(pi.Name).ToLower(), pi.Name);
                             if(context.Options.HasFlag(ModelingOption.CachePropertyInfo))
                             {
-                                member.SetBoundAttributeValue(
-                                    name: SortOrderNOD.pi.ToString(),
-                                    tag: pi,
-                                    text: pi.PropertyType.ToTypeNameText().InSquareBrackets()
-                                );
+                                if (context.Options.HasFlag(ModelingOption.ShowFullNameForTypes))
+                                {
+                                    member.SetBoundAttributeValue(
+                                        name: SortOrderNOD.pi.ToString(),
+                                        tag: pi,
+                                        text: pi.PropertyType.ToTypeNameText().InSquareBrackets()
+                                    );
+                                }
+                                else
+                                {
+                                    member.SetBoundAttributeValue(
+                                        name: SortOrderNOD.pi.ToString(),
+                                        tag: pi,
+                                        text: pi.PropertyType.ToShortTypeNameText().InSquareBrackets()
+                                    );
+                                }
                             }
                             currentElement.Add(member);
                             if (pi.GetValue(localInstance) is object childInstance)
                             {
+                                var childType = childInstance.GetType();
                                 if (childInstance is string ||
                                     childInstance is Enum ||
                                     childInstance is ValueType)
                                 {
                                     if (context?.Options.HasFlag(ModelingOption.IncludeValueTypeInstances) == true)
                                     {
-                                        member.SetBoundAttributeValue(childInstance, nameof(instance));
+                                        if (context.Options.HasFlag(ModelingOption.ShowFullNameForTypes))
+                                        {
+                                            member.SetBoundAttributeValue(
+                                                childInstance, 
+                                                nameof(instance),
+                                                childType.ToTypeNameText().InSquareBrackets());
+                                        }
+                                        else
+                                        {
+                                            member.SetBoundAttributeValue(
+                                                childInstance,
+                                                nameof(instance),
+                                                childType.ToShortTypeNameText().InSquareBrackets());
+                                        }
                                     }
                                     continue;
                                 }
                                 else
                                 {
-                                    member.SetBoundAttributeValue(childInstance, nameof(instance));
+                                    if (context.Options.HasFlag(ModelingOption.ShowFullNameForTypes))
+                                    {
+                                        member.SetBoundAttributeValue(
+                                            childInstance, 
+                                            nameof(instance), 
+                                            childType.ToTypeNameText().InSquareBrackets());
+                                    }
+                                    else
+                                    {
+                                        member.SetBoundAttributeValue(
+                                            childInstance,
+                                            nameof(instance),
+                                            childType.ToShortTypeNameText().InSquareBrackets());
+                                    }
                                     if (childInstance is IEnumerable collection)
                                     {
                                         foreach (var item in collection)
@@ -178,8 +241,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             PropertyChangedDelegate onPC,
             NotifyCollectionChangedDelegate onCC = null,
             XObjectChangeDelegate onXO = null,
-            bool includeValueTypeInstances = false)
-            => @this.WithNotifyOnDescendants(out XElement _, onPC, onCC, onXO, includeValueTypeInstances);
+            ModelingOption options = 0)
+            => @this.WithNotifyOnDescendants(out XElement _, onPC, onCC, onXO, options);
 
         /// <summary>
         /// Attaches notification delegates to the descendants of the given object,
@@ -198,16 +261,15 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             PropertyChangedDelegate onPC,
             NotifyCollectionChangedDelegate onCC = null,
             XObjectChangeDelegate onXO = null,
-            bool includeValueTypeInstances = false)
+            ModelingOption options = 0)
         {
             var context = new ModelingContext(@this)
             {
                 PropertyChangedDelegate = onPC,
                 NotifyCollectionChangedDelegate = onCC,
                 XObjectChangeDelegate = onXO,               
-                Options = ModelingOption.CachePropertyInfo,
+                Options = options,
             };
-            if (includeValueTypeInstances) context.Options |= ModelingOption.IncludeValueTypeInstances;
             context.ElementAvailable += (sender, e) =>
             {
                 var xel = e.Element;
@@ -217,43 +279,48 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                 if (xel.Name != $"{StdFrameworkName.model}" &&
                     xel.GetInstance() is object o)
                 {
-                    if(onPC != null && o is INotifyPropertyChanged inpc)
+                    if (xel.Attribute(SortOrderNOD.onpc.ToString()) is null)   // Check for refresh
                     {
-                        PropertyChangedEventHandler handlerPC = (senderPC, ePC) =>
+                        if (onPC != null && o is INotifyPropertyChanged inpc)
                         {
-                            if(xel.GetMember(ePC.PropertyName) is XElement member)
+                            PropertyChangedEventHandler handlerPC = (senderPC, ePC) =>
                             {
-                                PropertyInfo pi = member.To<PropertyInfo>();
-                                if (pi is null) pi = sender.GetType().GetProperty(ePC.PropertyName);
-                                if(pi != null)
+                                if (xel.GetMember(ePC.PropertyName) is XElement member)
                                 {
-                                    if (pi.IsEnumOrValueTypeOrString())
-                                    {   /* G T K */
-                                        // [Careful]
-                                        // We can only do this on PropertyType not on Instance Type.
-                                        // That is, a property of type 'object' can go in and out
-                                        // of being any other status. But if the property type is
-                                        // fixed that way, then it is safe to ignore.
-                                    }
-                                    else
+                                    PropertyInfo pi = member.To<PropertyInfo>();
+                                    if (pi is null) pi = sender.GetType().GetProperty(ePC.PropertyName);
+                                    if (pi != null)
                                     {
-                                        member.RefreshModel(newValue: pi.GetValue(sender));
+                                        if (pi.IsEnumOrValueTypeOrString())
+                                        {   /* G T K */
+                                            // [Careful]
+                                            // We can only do this on PropertyType not on Instance Type.
+                                            // That is, a property of type 'object' can go in and out
+                                            // of being any other status. But if the property type is
+                                            // fixed that way, then it is safe to ignore.
+                                        }
+                                        else
+                                        {
+                                            member.RefreshModel(newValue: pi.GetValue(sender));
+                                        }
                                     }
+                                    onPC?.Invoke(member, ePC);
                                 }
-                                onPC?.Invoke(member, ePC);
-                            }
-                        };
-                        xel.SetBoundAttributeValue(
-                            tag: handlerPC,
-                            SortOrderNOD.onpc,
-                            text: StdFrameworkName.OnPC.InSquareBrackets());
-                        inpc.PropertyChanged += handlerPC;
+                            };
+                            xel.SetBoundAttributeValue(
+                                tag: handlerPC,
+                                SortOrderNOD.onpc,
+                                text: StdFrameworkName.OnPC.InSquareBrackets());
+                            inpc.PropertyChanged += handlerPC;
+                        }
                     }
                     if (onCC != null && o is INotifyCollectionChanged incc)
                     {
-                        NotifyCollectionChangedEventHandler handlerCC = (senderCC, eCC) =>
+                        if (xel.Attribute(SortOrderNOD.oncc.ToString()) is null)   // Check for refresh
                         {
-
+                            NotifyCollectionChangedEventHandler handlerCC = (senderCC, eCC) =>
+                        {
+                            localOnCollectionChanged();
                             void localOnCollectionChanged()
                             {
                                 if (senderCC is XElement modelCC)
@@ -276,7 +343,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                                                 onPC,
                                                 onCC,
                                                 onXO);
-                                                modelCC.Add(addedModel);
+                                            modelCC.Add(addedModel);
                                         });
                                     }
 
@@ -307,11 +374,12 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                                 }
                             }
                         };
-                        xel.SetBoundAttributeValue(
-                            tag: handlerCC,
-                            SortOrderNOD.oncc,
-                            text: StdFrameworkName.OnCC.InSquareBrackets());
-                        incc.CollectionChanged += handlerCC;
+                            xel.SetBoundAttributeValue(
+                                tag: handlerCC,
+                                SortOrderNOD.oncc,
+                                text: StdFrameworkName.OnCC.InSquareBrackets());
+                            incc.CollectionChanged += handlerCC;
+                        }
                     }
                 }
             };
