@@ -538,7 +538,7 @@ Remove <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants
         }
         void subtestDiscoveryEnumerator()
         {
-            DiscoveryContext context = new();
+            ModelingContext context = new(classA);
             var builder = new List<string>();
             foreach (var xel in classA.ModelDescendantsAndSelf(context))
             {
@@ -581,13 +581,12 @@ Remove <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants
         }
         void subtestIncludeValueTypeInstances()
         {
-            var context = new DiscoveryContext
+            var originModel = new ModelingContext(classA)
             {
-                Options = DiscoveryOption.IncludeValueTypeInstances,
-            };
-            classA.CreateModel(context);
+                Options = ModelingOption.IncludeValueTypeInstances,
+            }.CreateModel();
 
-            actual = context.OriginModel.ToString();
+            actual = originModel.ToString();
             actual.ToClipboard();
             actual.ToClipboardAssert("Expecting msg");
             expected = @" 

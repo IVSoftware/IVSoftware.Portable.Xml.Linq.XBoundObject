@@ -6,13 +6,14 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
 {
     [Flags]
-    public enum DiscoveryOption
+    public enum ModelingOption
     {
         IncludeValueTypeInstances = 0x01,
     }
@@ -20,14 +21,21 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
     public delegate void PropertyChangedDelegate(object sender, PropertyChangedEventArgs e);
     public delegate void NotifyCollectionChangedDelegate(object sender, NotifyCollectionChangedEventArgs e);
     public delegate void XObjectChangeDelegate(object sender, XObjectChangeEventArgs e);
-    public class DiscoveryContext
+    public class ModelingContext
     {
+        public ModelingContext(object o)
+        {
+            This = o;
+            Type = o.GetType();
+        }
+        internal object This { get; set; }
+        internal Type Type { get; }
         public XElement OriginModel { get; set; } = new XElement("model");
         public PropertyChangedDelegate PropertyChangedDelegate { get; set; } = null;
         public NotifyCollectionChangedDelegate NotifyCollectionChangedDelegate { get; set; } = null;
         public XObjectChangeDelegate XObjectChangeDelegate { get; set; } = null;
 
-        public DiscoveryOption Options { get; set; } = 0;
+        public ModelingOption Options { get; set; } = 0;
 
         internal void RaiseElementAvailable(object sender, XElement element)
         {
@@ -43,20 +51,35 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
     }
     public static class ModelingExtensions
     {
-        public static XElement CreateModel(this object @this, DiscoveryContext context = null)
+        public static XElement CreateModel(this object @this, ModelingContext context = null)
         {
-            context = context ?? new DiscoveryContext();
-            foreach (var xel in @this.ModelDescendantsAndSelf(context))
+            context = context ?? new ModelingContext(@this);
+            foreach (var xel in context.ModelDescendantsAndSelf())
             {
                 context?.RaiseElementAvailable(sender: @this, element: xel);
             }
             return context.OriginModel;
         }
-        public static IEnumerable<XElement> ModelDescendantsAndSelf(this object @this, DiscoveryContext context = null)
+        public static IEnumerable<XElement> ModelDescendantsAndSelf(this object @this, ModelingContext context = null)
         {
-            XElement model = context?.OriginModel ?? new XElement(nameof(model));
-            localDiscoverModel(@this, model);
-            foreach (var xel in model.DescendantsAndSelf())
+            if (@this is null) throw new ArgumentNullException(nameof(@this));
+            if (context is null) return new ModelingContext(@this).ModelDescendantsAndSelf();
+            else
+            {
+                if (context.This is null) context.This = @this;
+                if (ReferenceEquals(@this, context.This)) return context.ModelDescendantsAndSelf();
+                else throw new ArgumentException($"References for @this and {nameof(ModelingContext)}.This must be the same.");
+            }
+        }
+        public static IEnumerable<XElement> ModelDescendantsAndSelf(this ModelingContext context) 
+        { 
+            context = context ?? new ModelingContext(context.This);
+            if (!context.OriginModel.Ancestors().Any())
+            {
+                context.OriginModel.SetAttributeValue(nameof(SortOrderNOD.name), $"(Origin){context.Type.ToShortTypeNameText()}");
+            }
+            localDiscoverModel(context.This, context.OriginModel);
+            foreach (var xel in context.OriginModel.DescendantsAndSelf())
             {
                 yield return xel;
             }
@@ -88,7 +111,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                                     childInstance is Enum ||
                                     childInstance is ValueType)
                                 {
-                                    if (context?.Options.HasFlag(DiscoveryOption.IncludeValueTypeInstances) == true)
+                                    if (context?.Options.HasFlag(ModelingOption.IncludeValueTypeInstances) == true)
                                     {
                                         member.SetBoundAttributeValue(childInstance, nameof(instance));
                                     }
@@ -151,8 +174,41 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             NotifyCollectionChangedDelegate onCC = null,
             XObjectChangeDelegate onXO = null)
         {
+            var context = new ModelingContext(@this)
+            {
+                PropertyChangedDelegate = onPC,
+                NotifyCollectionChangedDelegate = onCC,
+                XObjectChangeDelegate = onXO,               
+            };
+            context.ElementAvailable += (sender, e) =>
+            {
+                var xel = e.Element;
+                { }
+            };
+            model = @this.CreateModel(context);
+
+
+
             throw new NotImplementedException();
             return @this;
         }
+
+        public static string ToTypeNameText(this Type @this)
+        {
+            if (@this?.FullName == null) return "Unknown";
+
+            var fullName = @this.FullName.Split('`').First(); // Remove generic type info
+            int lastPlusIndex = fullName.LastIndexOf('+');
+
+            if (lastPlusIndex < 0) return fullName; // No nested class, return as is
+
+            int lastDotIndex = fullName.LastIndexOf('.', lastPlusIndex);
+            return fullName.Remove(lastDotIndex + 1, lastPlusIndex - lastDotIndex);
+        }
+        public static string ToShortTypeNameText(this Type @this)
+            => @this.ToTypeNameText().Split('.').Last();
+
+        public static string InSquareBrackets(this string @this) => $"[{@this}]";
+        public static string InSquareBrackets(this Enum @this) => $"[{@this.ToString()}]";
     }
 }
