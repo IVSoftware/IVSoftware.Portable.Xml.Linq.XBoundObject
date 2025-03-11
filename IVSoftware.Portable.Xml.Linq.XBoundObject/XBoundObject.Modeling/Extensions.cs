@@ -54,11 +54,11 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
     }
     public static class ModelingExtensions
     {
-        public static XElement CreateModel(this object @this, ModelingContext context)
+        public static XElement CreateModel(this object @this, ModelingContext context = null)
         {
             if (@this is ModelingContext)
                 throw new InvalidOperationException($"Can't create a model of a {nameof(ModelingContext)}.");
-            foreach (var xel in @this.ModelDescendantsAndSelf())
+            foreach (var xel in @this.ModelDescendantsAndSelf(context))
             {
                 context?.RaiseModelAdded(sender: @this, element: xel);
             }
@@ -249,7 +249,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                 XObjectChangeDelegate = onXO,               
                 Options = options,
             };
-            model = context.OriginModel;
             context.ModelAdded += (sender, e) =>
             {
                 var modelAdd = e.Element;

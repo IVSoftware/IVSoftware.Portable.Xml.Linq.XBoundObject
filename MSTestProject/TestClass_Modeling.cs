@@ -579,7 +579,7 @@ Remove <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants
         {
             XElement originModel =
                 classA
-                .ModelDescendantsAndSelf()
+                .ModelDescendantsAndSelf(null)
                 .ToArray()
                 .First();
 
