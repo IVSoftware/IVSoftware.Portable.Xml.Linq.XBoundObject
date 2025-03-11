@@ -74,7 +74,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
 
         public ModelingOption Options { get; set; } = 0;
 
-        internal void RaiseElementAvailable(object sender, XElement element)
+        internal void RaiseModelAdded(object sender, XElement element)
         {
             ModelAdded?.Invoke(sender, new ElementAvailableEventArgs(element));
         }
@@ -90,14 +90,18 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
     {
         public static XElement CreateModel(this object @this, ModelingContext context)
         {
-            foreach (var xel in context.ModelDescendantsAndSelf())
+            if (@this is ModelingContext)
+                throw new InvalidOperationException($"Can't create a model of a {nameof(ModelingContext)}.");
+            foreach (var xel in @this.ModelDescendantsAndSelf())
             {
-                context?.RaiseElementAvailable(sender: @this, element: xel);
+                context?.RaiseModelAdded(sender: @this, element: xel);
             }
             return context.OriginModel;
         }
         public static IEnumerable<XElement> ModelDescendantsAndSelf(this object @this, ModelingContext context = null)
         {
+            if (@this is ModelingContext)
+                throw new InvalidOperationException($"Can't create a model of a {nameof(ModelingContext)}.");
             var type = @this.GetType();
             context = context ?? new ModelingContext();
             if (!context.OriginModel.Ancestors().Any())
@@ -397,6 +401,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                 => onXObjectCommon(sender, new XObjectChangedOrChangingEventArgs(e, true));
             context.OriginModel.Changed += (sender, e) 
                 => onXObjectCommon(sender, new XObjectChangedOrChangingEventArgs(e, false));
+            // Show time
             model = @this.CreateModel(context);
             return @this;
 
