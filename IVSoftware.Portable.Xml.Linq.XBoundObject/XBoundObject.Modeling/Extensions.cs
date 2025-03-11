@@ -29,45 +29,11 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
     {
         public ModelingContext(XElement model = null)
         {
-            if(model != null)
-            {
-                OriginModel = model;
-            }
+            OriginModel = model ?? new XElement(nameof(StdFrameworkName.model));
+            OriginModel.SetBoundAttributeValue(this, StdFrameworkName.context);
         }
 
-        public XElement OriginModel
-        {
-            get
-            {
-                if(_originModel is null)
-                {
-                    _originModel = new XElement($"{StdFrameworkName.model}");
-                    OnOriginModelChanged();
-                }
-                return _originModel;
-            }
-            private set
-            {
-                if (!Equals(_originModel, value))
-                {
-                    _originModel = value;
-                    OnOriginModelChanged();
-                }
-            }
-        }
-        XElement _originModel = null;
-        protected virtual void OnOriginModelChanged()
-        {
-            // [Careful] Use backing store here to avoid activating the singleton.
-            if(_originModel != null)
-            {
-                var trueOrigin = _originModel.AncestorsAndSelf().Last();
-                if(trueOrigin.To<ModelingContext>() is null)
-                {
-                    _originModel.SetBoundAttributeValue(this, StdFrameworkName.context);
-                }
-            }
-        }
+        public XElement OriginModel { get; }
         public PropertyChangedDelegate PropertyChangedDelegate { get; set; } = null;
         public NotifyCollectionChangedDelegate NotifyCollectionChangedDelegate { get; set; } = null;
         public XObjectChangeDelegate XObjectChangeDelegate { get; set; } = null;
