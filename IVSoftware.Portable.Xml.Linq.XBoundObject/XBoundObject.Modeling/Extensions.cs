@@ -283,6 +283,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                 XObjectChangeDelegate = onXO,               
                 Options = options,
             };
+            model = context.OriginModel;
             context.ModelAdded += (sender, e) =>
             {
                 var modelAdd = e.Element;
