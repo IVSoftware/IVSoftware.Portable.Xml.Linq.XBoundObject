@@ -78,10 +78,10 @@ namespace XBoundObjectMSTest.TestClassesForModeling.SO_79467031_5438626
         [IgnoreNOD]
         public XElement OriginModel { get; }
 
-        // Forward this for testing purposes
         private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             RefreshTotalCost(new SenderEventPair(sender,e));
+            // Forward this for testing purposes
             CollectionChanged?.Invoke(sender, e);
         }
         protected virtual void OnPropertyChanged(object sender, PropertyChangedEventArgs e)

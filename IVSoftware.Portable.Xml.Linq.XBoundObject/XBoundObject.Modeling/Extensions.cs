@@ -389,7 +389,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                                                 out XElement addedModel,
                                                 onPC,
                                                 onCC,
-                                                onXO);
+                                                onXO,
+                                                options);
                                         modelAdd.Add(addedModel);
                                     });
                                 }

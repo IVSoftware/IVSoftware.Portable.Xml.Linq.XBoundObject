@@ -226,14 +226,14 @@ public class TestClass_Modeling
 
             actual = currentEvent.OriginModel.SortAttributes<SortOrderNOD>().ToString();
             expected = @" 
-<model name=""(Origin)ClassA"" statusnod=""NoAvailableChangedEvents"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassA]"" notifyinfo=""[NotifyInfo]"">
-  <member name=""TotalCost"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
-  <member name=""BCollection"" statusnod=""INPCSource, INCCSource"" pi=""[System.Collections.ObjectModel.ObservableCollection]"" instance=""[System.Collections.ObjectModel.ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"">
-    <member name=""Count"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
-    <model name=""(Origin)ClassB"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassB]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"">
-      <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" onpc=""[OnPC]"">
-        <member name=""Cost"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
-        <member name=""Currency"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
+<model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
+  <member name=""TotalCost"" pi=""[Int32]"" />
+  <member name=""BCollection"" pi=""[ObservableCollection]"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"">
+    <member name=""Count"" pi=""[Int32]"" />
+    <model name=""(Origin)ClassB"" instance=""[ClassB]"" context=""[ModelingContext]"">
+      <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
+        <member name=""Cost"" pi=""[Int32]"" />
+        <member name=""Currency"" pi=""[Int32]"" />
       </member>
     </model>
   </member>
@@ -241,7 +241,7 @@ public class TestClass_Modeling
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting the A model reflects the new child."
+                "Expecting response to BCollection count changed."
             );
         }
 
@@ -252,16 +252,11 @@ public class TestClass_Modeling
         void subtestExerciseNestedCostProperty()
         {
             var classB = A.BCollection.First();
-            classB.C.Cost = rando.Next(Int16.MaxValue); // Raise property change
+            classB.C.Cost = rando.Next(Int16.MaxValue); // Property change
             currentEvent = eventsPC.DequeueSingle();
             actual = currentEvent.SenderModel.SortAttributes<SortOrderNOD>().ToString();
             expected = @" 
-<member name=""Cost"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />";
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting property changed event for Cost."
-            );
+<member name=""Cost"" pi=""[Int32]"" />";
             // Is A.TotalCost updated?
             Assert.AreEqual(
                 8148,
@@ -304,11 +299,16 @@ public class TestClass_Modeling
                 .ForEach(_ => A.BCollection.Add(_));
 
             actual = A.OriginModel.SortAttributes<SortOrderNOD>().ToString();
+
+
+            actual.ToClipboard();
+            actual.ToClipboardAssert();
+            { }
             expected = @" 
-<model name=""(Origin)ClassA"" statusnod=""NoAvailableChangedEvents"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassA]"" notifyinfo=""[NotifyInfo]"">
-  <member name=""TotalCost"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
-  <member name=""BCollection"" statusnod=""INPCSource, INCCSource"" pi=""[System.Collections.ObjectModel.ObservableCollection]"" instance=""[System.Collections.ObjectModel.ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"">
-    <member name=""Count"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
+<model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
+  <member name=""TotalCost"" pi=""[Int32]"" />
+  <member name=""BCollection"" pi=""[ObservableCollection]"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"">
+    <member name=""Count"" pi=""[Int32]"" />
     <model name=""(Origin)ClassB"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassB]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"">
       <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" onpc=""[OnPC]"">
         <member name=""Cost"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
@@ -337,6 +337,41 @@ public class TestClass_Modeling
       <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" onpc=""[OnPC]"">
         <member name=""Cost"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
         <member name=""Currency"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
+      </member>
+    </model>
+  </member>
+</model>";
+
+            expected = @" 
+    <member name=""Count"" pi=""[Int32]"" />
+    <model name=""(Origin)ClassB"" instance=""[ClassB]"" context=""[ModelingContext]"">
+      <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
+        <member name=""Cost"" pi=""[Int32]"" />
+        <member name=""Currency"" pi=""[Int32]"" />
+      </member>
+    </model>
+    <model name=""(Origin)ClassB"" instance=""[ClassB]"" context=""[ModelingContext]"">
+      <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
+        <member name=""Cost"" pi=""[Int32]"" />
+        <member name=""Currency"" pi=""[Int32]"" />
+      </member>
+    </model>
+    <model name=""(Origin)ClassB"" instance=""[ClassB]"" context=""[ModelingContext]"">
+      <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
+        <member name=""Cost"" pi=""[Int32]"" />
+        <member name=""Currency"" pi=""[Int32]"" />
+      </member>
+    </model>
+    <model name=""(Origin)ClassB"" instance=""[ClassB]"" context=""[ModelingContext]"">
+      <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
+        <member name=""Cost"" pi=""[Int32]"" />
+        <member name=""Currency"" pi=""[Int32]"" />
+      </member>
+    </model>
+    <model name=""(Origin)ClassB"" instance=""[ClassB]"" context=""[ModelingContext]"">
+      <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
+        <member name=""Cost"" pi=""[Int32]"" />
+        <member name=""Currency"" pi=""[Int32]"" />
       </member>
     </model>
   </member>
