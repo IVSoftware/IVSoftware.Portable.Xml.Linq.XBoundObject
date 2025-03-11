@@ -27,17 +27,13 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
     public delegate void XObjectChangeDelegate(object sender, XObjectChangeEventArgs e);
     public class ModelingContext
     {
-        public ModelingContext(object o, XElement model = null)
+        public ModelingContext(XElement model = null)
         {
-            This = o;
-            Type = o.GetType();
             if(model != null)
             {
                 OriginModel = model;
             }
         }
-        internal object This { get; set; }
-        internal Type Type { get; }
 
         public XElement OriginModel
         {
@@ -45,8 +41,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             {
                 if(_originModel is null)
                 {
-                    _originModel = new XElement("model");
-                    _originModel.SetBoundAttributeValue(this, StdFrameworkName.context);
+                    _originModel = new XElement($"{StdFrameworkName.model}");
+                    OnOriginModelChanged();
                 }
                 return _originModel;
             }
@@ -55,12 +51,23 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                 if (!Equals(_originModel, value))
                 {
                     _originModel = value;
-                    _originModel.SetBoundAttributeValue(this, StdFrameworkName.context);
+                    OnOriginModelChanged();
                 }
             }
         }
         XElement _originModel = null;
-
+        protected virtual void OnOriginModelChanged()
+        {
+            // [Careful] Use backing store here to avoid activating the singleton.
+            if(_originModel != null)
+            {
+                var trueOrigin = _originModel.AncestorsAndSelf().Last();
+                if(trueOrigin.To<ModelingContext>() is null)
+                {
+                    _originModel.SetBoundAttributeValue(this, StdFrameworkName.context);
+                }
+            }
+        }
         public PropertyChangedDelegate PropertyChangedDelegate { get; set; } = null;
         public NotifyCollectionChangedDelegate NotifyCollectionChangedDelegate { get; set; } = null;
         public XObjectChangeDelegate XObjectChangeDelegate { get; set; } = null;
@@ -72,19 +79,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             ModelAdded?.Invoke(sender, new ElementAvailableEventArgs(element));
         }
         public event EventHandler<ElementAvailableEventArgs> ModelAdded;
-
-        internal ModelingContext Clone(XElement model)
-        {
-            if (model.AncestorsAndSelf().Last().To<ModelingContext>() is ModelingContext originContext)
-            {
-
-            }
-            else model.SetBoundAttributeValue(
-                new ModelingContext(
-                    model.GetInstance(@throw: true))
-                );
-            throw new NotImplementedException();
-        }
     }
     public class ElementAvailableEventArgs : EventArgs
     {
@@ -94,68 +88,34 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
     }
     public static class ModelingExtensions
     {
-        public static XElement CreateModel(this object @this, ModelingContext context = null)
-        {
-            if (@this is null) throw new ArgumentNullException(nameof(@this));
-            if (context is null) context = new ModelingContext(@this);
-            else
-            {
-                if (context.This is null) context.This = @this;
-#if DEBUG
-                if (ReferenceEquals(@this, context.This))
-                {   /* G T K */
-                    // Usually the case with the origin model.
-                }
-                else
-                {   /* G T K */
-                    // Usually the case with a refresh.
-                }
-#endif
-            }
-            return context.CreateModel();
-        }
-        public static XElement CreateModel(this ModelingContext context)
+        public static XElement CreateModel(this object @this, ModelingContext context)
         {
             foreach (var xel in context.ModelDescendantsAndSelf())
             {
-                context?.RaiseElementAvailable(sender: context.This, element: xel);
+                context?.RaiseElementAvailable(sender: @this, element: xel);
             }
             return context.OriginModel;
         }
         public static IEnumerable<XElement> ModelDescendantsAndSelf(this object @this, ModelingContext context = null)
         {
-            if (@this is null) throw new ArgumentNullException(nameof(@this));
-            if (context is null) context = new ModelingContext(@this);
-            else
-            {
-                if (context.This is null) context.This = @this;
-                if (!ReferenceEquals(@this, context.This)) 
-                    throw new ArgumentException($"References for @this and {nameof(ModelingContext)}.This must be the same.");
-            }
-            foreach (var xel in context.ModelDescendantsAndSelf())
-            {
-                yield return xel;
-            }
-        }
-        public static IEnumerable<XElement> ModelDescendantsAndSelf(this ModelingContext context) 
-        { 
-            context = context ?? new ModelingContext(context.This);
+            var type = @this.GetType();
+            context = context ?? new ModelingContext();
             if (!context.OriginModel.Ancestors().Any())
             {
                 if(context.Options.HasFlag(ModelingOption.ShowFullNameForTypes))
                 {
                     context.OriginModel.SetAttributeValue(
                         nameof(SortOrderNOD.name),
-                        $"(Origin){context.Type.ToTypeNameText()}");
+                        $"(Origin){type.ToTypeNameText()}");
                 }
                 else
                 {
                     context.OriginModel.SetAttributeValue(
                         nameof(SortOrderNOD.name),
-                        $"(Origin){context.Type.ToShortTypeNameText()}");
+                        $"(Origin){type.ToShortTypeNameText()}");
                 }
             }
-            localDiscoverModel(context.This, context.OriginModel);
+            localDiscoverModel(@this, context.OriginModel);
             foreach (var xel in context.OriginModel.DescendantsAndSelf())
             {
                 yield return xel;
@@ -312,7 +272,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             XObjectChangeDelegate onXO = null,
             ModelingOption options = 0)
         {
-            var context = new ModelingContext(@this)
+            var context = new ModelingContext()
             {
                 PropertyChangedDelegate = onPC,
                 NotifyCollectionChangedDelegate = onCC,
@@ -437,7 +397,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                 => onXObjectCommon(sender, new XObjectChangedOrChangingEventArgs(e, true));
             context.OriginModel.Changed += (sender, e) 
                 => onXObjectCommon(sender, new XObjectChangedOrChangingEventArgs(e, false));
-            model = context.CreateModel();
+            model = @this.CreateModel(context);
             return @this;
 
             void onXObjectCommon(object sender, XObjectChangedOrChangingEventArgs e)
