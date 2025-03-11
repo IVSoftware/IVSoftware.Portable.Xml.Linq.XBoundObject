@@ -147,12 +147,13 @@ public class TestClass_Modeling
             actual.ToClipboardAssert("Expecting model of ClassA with TotalCost property and the BCollection which is empty");
             { }
             expected = @" 
-<model name=""(Origin)ClassA"" instance=""[ClassA]"" >
-  <member name=""TotalCost""  pi=""[Int32]"" />
+<model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
+  <member name=""TotalCost"" pi=""[Int32]"" />
   <member name=""BCollection"" pi=""[ObservableCollection]"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"">
     <member name=""Count"" pi=""[Int32]"" />
   </member>
 </model>";
+
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
@@ -177,6 +178,25 @@ public class TestClass_Modeling
             actual.ToClipboard();
             actual.ToClipboardAssert("Expecting expecting full names for types");
             { }
+            expected = @" 
+<model name=""(Origin)XBoundObjectMSTest.TestClassesForModeling.SO_79467031_5438626.ClassA"" instance=""[XBoundObjectMSTest.TestClassesForModeling.SO_79467031_5438626.ClassA]"" context=""[ModelingContext]"">
+  <member name=""TotalCost"" pi=""[System.Int32]"" />
+  <member name=""BCollection"" pi=""[System.Collections.ObjectModel.ObservableCollection]"" instance=""[System.Collections.ObjectModel.ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"">
+    <member name=""Count"" pi=""[System.Int32]"" />
+  </member>
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting expecting full names for types"
+            );
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting expecting full names for types"
+            );
         }
 
         // EXPECT

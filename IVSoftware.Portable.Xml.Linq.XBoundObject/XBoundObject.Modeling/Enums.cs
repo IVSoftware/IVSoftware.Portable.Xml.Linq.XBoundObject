@@ -54,8 +54,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
     {
         xel,
         model,
+        member,
+        context,
         OnPC,
         OnCC,
-        member,
     }
 }

@@ -4,8 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml.Linq;
@@ -25,14 +27,40 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
     public delegate void XObjectChangeDelegate(object sender, XObjectChangeEventArgs e);
     public class ModelingContext
     {
-        public ModelingContext(object o)
+        public ModelingContext(object o, XElement model = null)
         {
             This = o;
             Type = o.GetType();
+            if(model != null)
+            {
+                OriginModel = model;
+            }
         }
         internal object This { get; set; }
         internal Type Type { get; }
-        public XElement OriginModel { get; set; } = new XElement("model");
+
+        public XElement OriginModel
+        {
+            get
+            {
+                if(_originModel is null)
+                {
+                    _originModel = new XElement("model");
+                    _originModel.SetBoundAttributeValue(this, StdFrameworkName.context);
+                }
+                return _originModel;
+            }
+            private set
+            {
+                if (!Equals(_originModel, value))
+                {
+                    _originModel = value;
+                    _originModel.SetBoundAttributeValue(this, StdFrameworkName.context);
+                }
+            }
+        }
+        XElement _originModel = null;
+
         public PropertyChangedDelegate PropertyChangedDelegate { get; set; } = null;
         public NotifyCollectionChangedDelegate NotifyCollectionChangedDelegate { get; set; } = null;
         public XObjectChangeDelegate XObjectChangeDelegate { get; set; } = null;
@@ -41,9 +69,22 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
 
         internal void RaiseElementAvailable(object sender, XElement element)
         {
-            ElementAvailable?.Invoke(sender, new ElementAvailableEventArgs(element));
+            ModelAdded?.Invoke(sender, new ElementAvailableEventArgs(element));
         }
-        public event EventHandler<ElementAvailableEventArgs> ElementAvailable;
+        public event EventHandler<ElementAvailableEventArgs> ModelAdded;
+
+        internal ModelingContext Clone(XElement model)
+        {
+            if (model.AncestorsAndSelf().Last().To<ModelingContext>() is ModelingContext originContext)
+            {
+
+            }
+            else model.SetBoundAttributeValue(
+                new ModelingContext(
+                    model.GetInstance(@throw: true))
+                );
+            throw new NotImplementedException();
+        }
     }
     public class ElementAvailableEventArgs : EventArgs
     {
@@ -60,8 +101,16 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             else
             {
                 if (context.This is null) context.This = @this;
-                if (!ReferenceEquals(@this, context.This))
-                    throw new ArgumentException($"References for @this and {nameof(ModelingContext)}.This must be the same.");
+#if DEBUG
+                if (ReferenceEquals(@this, context.This))
+                {   /* G T K */
+                    // Usually the case with the origin model.
+                }
+                else
+                {   /* G T K */
+                    // Usually the case with a refresh.
+                }
+#endif
             }
             return context.CreateModel();
         }
@@ -270,22 +319,22 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                 XObjectChangeDelegate = onXO,               
                 Options = options,
             };
-            context.ElementAvailable += (sender, e) =>
+            context.ModelAdded += (sender, e) =>
             {
-                var xel = e.Element;
+                var modelAdd = e.Element;
 #if DEBUG
-                var shallow = xel.ToShallow();
+                var shallow = modelAdd.ToShallow();
 #endif
-                if (xel.Name != $"{StdFrameworkName.model}" &&
-                    xel.GetInstance() is object o)
+                if (modelAdd.Name != $"{StdFrameworkName.model}" &&
+                    modelAdd.GetInstance() is object o)
                 {
-                    if (xel.Attribute(SortOrderNOD.onpc.ToString()) is null)   // Check for refresh
+                    if (modelAdd.Attribute(SortOrderNOD.onpc.ToString()) is null)   // Check for refresh
                     {
                         if (onPC != null && o is INotifyPropertyChanged inpc)
                         {
                             PropertyChangedEventHandler handlerPC = (senderPC, ePC) =>
                             {
-                                if (xel.GetMember(ePC.PropertyName) is XElement member)
+                                if (modelAdd.GetMember(ePC.PropertyName) is XElement member)
                                 {
                                     PropertyInfo pi = member.To<PropertyInfo>();
                                     if (pi is null) pi = sender.GetType().GetProperty(ePC.PropertyName);
@@ -301,13 +350,13 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                                         }
                                         else
                                         {
-                                            member.RefreshModel(newValue: pi.GetValue(sender));
+                                            member.RefreshModel(newValue: pi.GetValue(o));
                                         }
                                     }
                                     onPC?.Invoke(member, ePC);
                                 }
                             };
-                            xel.SetBoundAttributeValue(
+                            modelAdd.SetBoundAttributeValue(
                                 tag: handlerPC,
                                 SortOrderNOD.onpc,
                                 text: StdFrameworkName.OnPC.InSquareBrackets());
@@ -316,65 +365,65 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                     }
                     if (onCC != null && o is INotifyCollectionChanged incc)
                     {
-                        if (xel.Attribute(SortOrderNOD.oncc.ToString()) is null)   // Check for refresh
+                        if (modelAdd.Attribute(SortOrderNOD.oncc.ToString()) is null)   // Check for refresh
                         {
                             NotifyCollectionChangedEventHandler handlerCC = (senderCC, eCC) =>
-                        {
-                            localOnCollectionChanged();
-                            void localOnCollectionChanged()
                             {
-                                if (senderCC is XElement modelCC)
+                                switch (eCC.Action)
                                 {
-                                    switch (eCC.Action)
-                                    {
-                                        case NotifyCollectionChangedAction.Add: onAdd(); break;
-                                        case NotifyCollectionChangedAction.Remove: onRemove(); break;
-                                        case NotifyCollectionChangedAction.Replace: onReplace(); break;
-                                        case NotifyCollectionChangedAction.Reset: onReset(); break;
-                                    }
+                                    case NotifyCollectionChangedAction.Add: onAdd(); break;
+                                    case NotifyCollectionChangedAction.Remove: onRemove(); break;
+                                    case NotifyCollectionChangedAction.Replace: onReplace(); break;
+                                    case NotifyCollectionChangedAction.Reset: onReset(); break;
+                                }
 
-                                    void onAdd()
+                                void onAdd()
+                                {
+                                    eCC.NewItems?
+                                    .OfType<object>()
+                                    .ToList()
+                                    .ForEach(newItem =>
                                     {
-                                        eCC.NewItems?.OfType<object>().ToList().ForEach(newItem =>
-                                        {
-                                            _ = newItem
-                                                .WithNotifyOnDescendants(
+                                        _ = newItem
+                                            .WithNotifyOnDescendants(
                                                 out XElement addedModel,
                                                 onPC,
                                                 onCC,
                                                 onXO);
-                                            modelCC.Add(addedModel);
-                                        });
-                                    }
+                                        modelAdd.Add(addedModel);
+                                    });
+                                }
 
-                                    void onRemove()
+                                void onRemove()
+                                {
+                                    eCC.OldItems?
+                                    .OfType<object>()
+                                    .ToList()
+                                    .ForEach(_ =>
                                     {
-                                        eCC.OldItems?.OfType<object>().ToList().ForEach(_ =>
-                                        {
-                                            var removeModel =
-                                                modelCC
-                                                .Elements()
-                                                .First(desc => ReferenceEquals(_, desc.GetInstance()));
-                                            removeModel.Remove();
-                                        });
-                                    }
-
-                                    void onReplace()
+                                        var removeModel =
+                                            modelAdd
+                                            .Elements()
+                                            .First(desc => ReferenceEquals(_, desc.GetInstance()));
+                                        removeModel.Remove();
+                                    });
+                                }
+                                void onReplace()
+                                {
+                                    onRemove();
+                                    onAdd();
+                                }
+                                void onReset()
+                                {
+                                    foreach (var removeModel in modelAdd.Elements().ToArray())
                                     {
-                                        onRemove();
-                                        onAdd();
-                                    }
-                                    void onReset()
-                                    {
-                                        foreach (var removeModel in modelCC.Elements().ToArray())
-                                        {
-                                            removeModel.Remove();
-                                        }
+                                        removeModel.Remove();
                                     }
                                 }
-                            }
-                        };
-                            xel.SetBoundAttributeValue(
+                                // Call the delegate specified by the context.
+                                onCC?.Invoke(modelAdd, eCC);
+                            };
+                            modelAdd.SetBoundAttributeValue(
                                 tag: handlerCC,
                                 SortOrderNOD.oncc,
                                 text: StdFrameworkName.OnCC.InSquareBrackets());
@@ -425,15 +474,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                         throw new NotImplementedException();
                 }
             }
-            if (newValue is null)
+            if (newValue != null)
             {
-                throw new NotImplementedException();
-                // model.SetAttributeValue(StatusNOD.WaitingForValue);
-            }
-            else
-            {
-                throw new NotImplementedException();
-                // RunDiscoveryOnCurrentLevel(newValue, model).SortAttributes<SortOrderNOD>();
+                
             }
         }
 
