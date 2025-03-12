@@ -37,6 +37,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
         {
             OriginModel = other.OriginModel;
             LocalModel = localModel ?? new XElement(nameof(StdFrameworkName.model));
+            if (other.ModelAdded != null)
+            {
+                ModelAdded += other.ModelAdded;
+            }
             foreach (var pi in PICache)
             {
                 var value = pi.GetValue(other);

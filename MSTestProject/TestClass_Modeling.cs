@@ -225,10 +225,6 @@ public class TestClass_Modeling
                 "Expecting response to BCollection count changed.");
 
             actual = currentEvent.OriginModel.SortAttributes<SortOrderNOD>().ToString();
-
-            actual.ToClipboard();
-            actual.ToClipboardAssert();
-            { }
             expected = @" 
 <model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
   <member name=""TotalCost"" pi=""[Int32]"" />
@@ -242,26 +238,6 @@ public class TestClass_Modeling
     </model>
   </member>
 </model>";
-
-            expected = @" 
-<model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
-  <member name=""TotalCost"" pi=""[Int32]"" />
-  <member name=""BCollection"" pi=""[ObservableCollection]"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"">
-    <member name=""Count"" pi=""[Int32]"" />
-    <model name=""(Origin)ClassB"" instance=""[ClassB]"">
-      <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"">
-        <member name=""Cost"" pi=""[Int32]"" />
-        <member name=""Currency"" pi=""[Int32]"" />
-      </member>
-    </model>
-  </member>
-</model>";
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting values to match."
-            );
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -324,78 +300,36 @@ public class TestClass_Modeling
                 .ForEach(_ => A.BCollection.Add(_));
 
             actual = A.OriginModel.SortAttributes<SortOrderNOD>().ToString();
-
-
-            actual.ToClipboard();
-            actual.ToClipboardAssert();
-            { }
             expected = @" 
 <model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
   <member name=""TotalCost"" pi=""[Int32]"" />
   <member name=""BCollection"" pi=""[ObservableCollection]"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"">
     <member name=""Count"" pi=""[Int32]"" />
-    <model name=""(Origin)ClassB"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassB]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"">
-      <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" onpc=""[OnPC]"">
-        <member name=""Cost"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
-        <member name=""Currency"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
-      </member>
-    </model>
-    <model name=""(Origin)ClassB"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassB]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"">
-      <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" onpc=""[OnPC]"">
-        <member name=""Cost"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
-        <member name=""Currency"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
-      </member>
-    </model>
-    <model name=""(Origin)ClassB"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassB]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"">
-      <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" onpc=""[OnPC]"">
-        <member name=""Cost"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
-        <member name=""Currency"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
-      </member>
-    </model>
-    <model name=""(Origin)ClassB"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassB]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"">
-      <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" onpc=""[OnPC]"">
-        <member name=""Cost"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
-        <member name=""Currency"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
-      </member>
-    </model>
-    <model name=""(Origin)ClassB"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassB]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"">
-      <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" onpc=""[OnPC]"">
-        <member name=""Cost"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
-        <member name=""Currency"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
-      </member>
-    </model>
-  </member>
-</model>";
-            expected = @" 
-<model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
-  <member name=""TotalCost"" pi=""[Int32]"" />
-  <member name=""BCollection"" pi=""[ObservableCollection]"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"">
-    <member name=""Count"" pi=""[Int32]"" />
-    <model name=""(Origin)ClassB"" instance=""[ClassB]"" context=""[ModelingContext]"">
+    <model name=""(Origin)ClassB"" instance=""[ClassB]"">
       <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
         <member name=""Cost"" pi=""[Int32]"" />
         <member name=""Currency"" pi=""[Int32]"" />
       </member>
     </model>
-    <model name=""(Origin)ClassB"" instance=""[ClassB]"" context=""[ModelingContext]"">
+    <model name=""(Origin)ClassB"" instance=""[ClassB]"">
       <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
         <member name=""Cost"" pi=""[Int32]"" />
         <member name=""Currency"" pi=""[Int32]"" />
       </member>
     </model>
-    <model name=""(Origin)ClassB"" instance=""[ClassB]"" context=""[ModelingContext]"">
+    <model name=""(Origin)ClassB"" instance=""[ClassB]"">
       <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
         <member name=""Cost"" pi=""[Int32]"" />
         <member name=""Currency"" pi=""[Int32]"" />
       </member>
     </model>
-    <model name=""(Origin)ClassB"" instance=""[ClassB]"" context=""[ModelingContext]"">
+    <model name=""(Origin)ClassB"" instance=""[ClassB]"">
       <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
         <member name=""Cost"" pi=""[Int32]"" />
         <member name=""Currency"" pi=""[Int32]"" />
       </member>
     </model>
-    <model name=""(Origin)ClassB"" instance=""[ClassB]"" context=""[ModelingContext]"">
+    <model name=""(Origin)ClassB"" instance=""[ClassB]"">
       <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
         <member name=""Cost"" pi=""[Int32]"" />
         <member name=""Currency"" pi=""[Int32]"" />
@@ -474,11 +408,17 @@ Total of C.Cost 73905";
                 eventsOA.Select(_ => (_.e as AwaitedEventArgs)?.Args?.ToString()));
 
             actual = joined;
+
+            actual.ToClipboard();
+            actual.ToClipboardAssert();
+            { }
             expected = @" 
 Removing INPC Subscription
 Remove <model name=""(Origin)ClassB"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassB]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"" />
 Removing INPC Subscription
 Remove <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" onpc=""[OnPC]"" />";
+
+
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
