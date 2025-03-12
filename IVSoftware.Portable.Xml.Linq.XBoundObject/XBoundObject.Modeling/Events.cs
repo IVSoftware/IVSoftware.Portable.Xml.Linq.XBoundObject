@@ -5,7 +5,7 @@ using System.Xml.Linq;
 
 namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
 {
-    class XObjectChangedOrChangingEventArgs : XObjectChangeEventArgs
+    public class XObjectChangedOrChangingEventArgs : XObjectChangeEventArgs
     {
         public XObjectChangedOrChangingEventArgs(XObjectChangeEventArgs e, bool isChanging)
             : base(e.ObjectChange)

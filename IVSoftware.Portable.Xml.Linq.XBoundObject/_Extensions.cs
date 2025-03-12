@@ -226,26 +226,33 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         /// <returns>The <see cref="XElement"/> with sorted attributes.</returns>
         public static XElement SortAttributes<T>(this XElement @this) where T : Enum
         {
-            var dict = @this
-                .Attributes()
-                .ToDictionary(
-                attr => attr.Name.LocalName,
-                comparer: StringComparer.OrdinalIgnoreCase);
-            @this.RemoveAttributes();
-            foreach (var key in Enum.GetNames(typeof(T)))
+            lock (_lock)
             {
-                if (dict.TryGetValue(key, out var xattr))
+                IsSorting = true;
+                var dict = @this
+                    .Attributes()
+                    .ToDictionary(
+                    attr => attr.Name.LocalName,
+                    comparer: StringComparer.OrdinalIgnoreCase);
+                @this.RemoveAttributes();
+                foreach (var key in Enum.GetNames(typeof(T)))
                 {
-                    @this.Add(xattr);
-                    dict.Remove(key);
+                    if (dict.TryGetValue(key, out var xattr))
+                    {
+                        @this.Add(xattr);
+                        dict.Remove(key);
+                    }
                 }
+                @this.Add(dict.Values);
+                foreach (var xel in @this.Elements())
+                {
+                    xel.SortAttributes<T>();
+                }
+                IsSorting = false;
+                return @this;
             }
-            @this.Add(dict.Values);
-            foreach (var xel in @this.Elements())
-            {
-                xel.SortAttributes<T>();
-            }
-            return @this;
         }
+        private static object _lock = new object();
+        internal static bool IsSorting { get; private set; }
     }
 }

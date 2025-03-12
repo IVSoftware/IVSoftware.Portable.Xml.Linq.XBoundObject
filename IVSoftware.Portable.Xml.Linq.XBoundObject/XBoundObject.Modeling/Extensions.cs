@@ -31,6 +31,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
         {
             OriginModel = model ?? new XElement(nameof(StdFrameworkName.model));
             OriginModel.SetBoundAttributeValue(this, StdFrameworkName.context);
+            OriginModel.Changing += (sender, e)
+                => XObjectChange?.Invoke(sender, new XObjectChangedOrChangingEventArgs(e, true));
+            OriginModel.Changed += (sender, e)
+                => XObjectChange?.Invoke(sender, new XObjectChangedOrChangingEventArgs(e, false));
         }
         // Clone Constructor
         private ModelingContext(ModelingContext other, XElement localModel = null)
@@ -74,6 +78,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
         public XObjectChangeDelegate XObjectChangeDelegate { get; set; } = null;
 
         public ModelingOption Options { get; set; } = 0;
+        public event EventHandler<XObjectChangedOrChangingEventArgs> XObjectChange;
 
         internal void RaiseModelAdded(object sender, XElement element)
         {
@@ -287,11 +292,17 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             context.ModelAdded += (sender, e) =>
             {
                 var modelAdd = e.Element;
+                bool isOrigin = ReferenceEquals(modelAdd, context.OriginModel);
 #if DEBUG
                 var shallow = modelAdd.ToShallow();
+                if (isOrigin)
+                {   /* G T K */
+                }
+                else
+                {   /* G T K */
+                }
 #endif
-                if (modelAdd.Name != $"{StdFrameworkName.model}" &&
-                    modelAdd.GetInstance() is object o)
+                if (!isOrigin && modelAdd.GetInstance() is object o)
                 {
                     if (modelAdd.Attribute(SortOrderNOD.onpc.ToString()) is null)   // Check for refresh
                     {
@@ -392,18 +403,74 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                     }
                 }
             };
-            context.OriginModel.Changing += (sender, e)
-                => onXObjectCommon(sender, new XObjectChangedOrChangingEventArgs(e, true));
-            context.OriginModel.Changed += (sender, e) 
-                => onXObjectCommon(sender, new XObjectChangedOrChangingEventArgs(e, false));
+            context.XObjectChange += (sender, e) =>
+            {
+                switch (e.ObjectChange)
+                {
+                    case XObjectChange.Remove:
+                            switch (sender)
+                            {
+                                case XAttribute xattr:
+                                    if (Extensions.IsSorting)
+                                    {   /* G T K    N O O P */
+                                    }
+                                    else
+                                    {
+                                        switch (xattr.Name.LocalName)
+                                        {
+                                            case nameof(SortOrderNOD.instance):
+                                            case nameof(SortOrderNOD.oncc):
+                                            case nameof(SortOrderNOD.onpc):
+                                                // If this occurs out of band, we need to know that and respond!
+                                                Debug.Fail("Unexpected. These are handled when the XElement removes.");
+                                                break;
+                                        }
+                                    }
+                                    break;
+                                case XElement xel:
+                                    if (e.IsChanging)
+                                    {   /* G T K */
+                                    }
+                                    else
+                                    {
+                                        if (xel.GetInstance() is object o)
+                                        {
+                                            if (o is INotifyPropertyChanged inpc)
+                                            {
+                                                if (xel.To<PropertyChangedEventHandler>() is PropertyChangedEventHandler handlerPC)
+                                                {
+                                                    throw new NotImplementedException("TODO");
+                                                }
+                                                else
+                                                {
+                                                    // If this occurs out of band, we need to know that and respond!
+                                                    Debug.Fail("Expecting that inpc has a bound handler to unsubscribe.");
+                                                }
+                                            }
+                                            if (o is INotifyCollectionChanged incc)
+                                            {
+                                                if (xel.To<NotifyCollectionChangedEventHandler>() is NotifyCollectionChangedEventHandler handlerPC)
+                                                {
+                                                    throw new NotImplementedException("TODO");
+                                                }
+                                                else
+                                                {
+                                                    // If this occurs out of band, we need to know that and respond!
+                                                    Debug.Fail("Expecting that inpc has a bound handler to unsubscribe.");
+                                                }
+                                            }
+                                        }
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
+                        break;
+                }
+            };
             // Show time
             model = @this.CreateModel(context);
             return @this;
-
-            void onXObjectCommon(object sender, XObjectChangedOrChangingEventArgs e)
-            {
-                onXO?.Invoke(sender, e);
-            }
         }
         public static void RefreshModel(this XElement model, object newValue)
         {
