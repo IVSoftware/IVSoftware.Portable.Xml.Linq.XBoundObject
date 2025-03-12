@@ -341,8 +341,10 @@ public class TestClass_Modeling
     </model>
   </member>
 </model>";
-
             expected = @" 
+<model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
+  <member name=""TotalCost"" pi=""[Int32]"" />
+  <member name=""BCollection"" pi=""[ObservableCollection]"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"">
     <member name=""Count"" pi=""[Int32]"" />
     <model name=""(Origin)ClassB"" instance=""[ClassB]"" context=""[ModelingContext]"">
       <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">

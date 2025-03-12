@@ -317,10 +317,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                                         _ = newItem
                                             .WithNotifyOnDescendants(
                                                 out XElement addedModel,
-                                                onPC,
-                                                onCC,
-                                                onXO,
-                                                options);
+                                                context);
                                         modelAdd.Add(addedModel);
                                     });
                                 }
@@ -375,6 +372,21 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             {
                 onXO?.Invoke(sender, e);
             }
+        }
+        /// <summary>
+        /// Returns a new local model, leaving the context.Origin model intact.
+        /// </summary>
+        internal static T WithNotifyOnDescendants<T>(
+            this T @this, 
+            out XElement localModel, 
+            ModelingContext context)
+        {
+            return @this.WithNotifyOnDescendants(
+                out localModel,
+                context.PropertyChangedDelegate,
+                context.NotifyCollectionChangedDelegate,
+                context.XObjectChangeDelegate,
+                context.Options);
         }
         public static void RefreshModel(this XElement model, object newValue)
         {
