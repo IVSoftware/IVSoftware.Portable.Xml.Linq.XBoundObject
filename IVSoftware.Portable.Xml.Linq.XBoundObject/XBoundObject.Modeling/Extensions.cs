@@ -33,9 +33,11 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             OriginModel.SetBoundAttributeValue(this, StdFrameworkName.context);
         }
         // Clone Constructor
-        private ModelingContext(ModelingContext other)
+        private ModelingContext(ModelingContext other, XElement localModel = null)
         {
             IsClone = true;
+            OriginModel = other.OriginModel;
+            LocalModel = localModel ?? new XElement(nameof(StdFrameworkName.model));
             foreach (var pi in PICache)
             {
                 var value = pi.GetValue(other);
@@ -61,7 +63,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
 
 
         public ModelingContext Clone() => new ModelingContext(this);
-        public XElement OriginModel { get; private set; }
+        public XElement OriginModel { get; }
+        public XElement LocalModel { get; }
+        public XElement TargetModel => IsClone ? LocalModel : OriginModel;
         public PropertyChangedDelegate PropertyChangedDelegate { get; set; } = null;
         public NotifyCollectionChangedDelegate NotifyCollectionChangedDelegate { get; set; } = null;
         public XObjectChangeDelegate XObjectChangeDelegate { get; set; } = null;
@@ -97,7 +101,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             {
                 context?.RaiseModelAdded(sender: @this, element: xel);
             }
-            return context.OriginModel;
+            return context.TargetModel;
         }
         public static IEnumerable<XElement> ModelDescendantsAndSelf(this object @this, ModelingContext context = null)
         {
@@ -105,23 +109,23 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                 throw new InvalidOperationException($"Can't create a model of a {nameof(ModelingContext)}.");
             var type = @this.GetType();
             context = context ?? new ModelingContext();
-            if (!context.OriginModel.Ancestors().Any())
+            if (!context.TargetModel.Ancestors().Any())
             {
                 if(context.Options.HasFlag(ModelingOption.ShowFullNameForTypes))
                 {
-                    context.OriginModel.SetAttributeValue(
+                    context.TargetModel.SetAttributeValue(
                         nameof(SortOrderNOD.name),
                         $"(Origin){type.ToTypeNameText()}");
                 }
                 else
                 {
-                    context.OriginModel.SetAttributeValue(
+                    context.TargetModel.SetAttributeValue(
                         nameof(SortOrderNOD.name),
                         $"(Origin){type.ToShortTypeNameText()}");
                 }
             }
-            localDiscoverModel(@this, context.OriginModel);
-            foreach (var xel in context.OriginModel.DescendantsAndSelf())
+            localDiscoverModel(@this, context.TargetModel);
+            foreach (var xel in context.TargetModel.DescendantsAndSelf())
             {
                 yield return xel;
             }

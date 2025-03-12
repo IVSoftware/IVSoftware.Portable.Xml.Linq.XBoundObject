@@ -633,7 +633,7 @@ Remove <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants
                 builder.Add($"{tabs}{xel.ToShallow()}");
             }
 
-            actual = context.OriginModel.ToString();
+            actual = context.TargetModel.ToString();
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
