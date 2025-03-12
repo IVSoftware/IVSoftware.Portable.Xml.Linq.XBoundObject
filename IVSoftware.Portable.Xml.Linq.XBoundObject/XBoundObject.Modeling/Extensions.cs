@@ -32,8 +32,36 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             OriginModel = model ?? new XElement(nameof(StdFrameworkName.model));
             OriginModel.SetBoundAttributeValue(this, StdFrameworkName.context);
         }
+        // Clone Constructor
+        private ModelingContext(ModelingContext other)
+        {
+            IsClone = true;
+            foreach (var pi in PICache)
+            {
+                var value = pi.GetValue(other);
+                pi.SetValue(this, value);
+            }
+        }
+        public PropertyInfo[] PICache
+        {
+            get
+            {
+                if (_piCache is null)
+                {
+                    _piCache =
+                        typeof(ModelingContext)
+                        .GetProperties()
+                        .Where(_ => _.CanRead && _.CanWrite)
+                        .ToArray();
+                }
+                return _piCache;
+            }
+        }
+        PropertyInfo[] _piCache = null;
 
-        public XElement OriginModel { get; }
+
+        public ModelingContext Clone() => new ModelingContext(this);
+        public XElement OriginModel { get; private set; }
         public PropertyChangedDelegate PropertyChangedDelegate { get; set; } = null;
         public NotifyCollectionChangedDelegate NotifyCollectionChangedDelegate { get; set; } = null;
         public XObjectChangeDelegate XObjectChangeDelegate { get; set; } = null;
@@ -45,6 +73,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             ModelAdded?.Invoke(sender, new ElementAvailableEventArgs(element));
         }
         public event EventHandler<ElementAvailableEventArgs> ModelAdded;
+
+        public bool IsClone { get; }
     }
     public class ElementAvailableEventArgs : EventArgs
     {
@@ -56,6 +86,11 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
     {
         public static XElement CreateModel(this object @this, ModelingContext context = null)
         {
+#if DEBUG
+            if (context.IsClone)
+            {   /* G T K */
+            }
+#endif
             if (@this is ModelingContext)
                 throw new InvalidOperationException($"Can't create a model of a {nameof(ModelingContext)}.");
             foreach (var xel in @this.ModelDescendantsAndSelf(context))
@@ -314,10 +349,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                                     .ToList()
                                     .ForEach(newItem =>
                                     {
-                                        _ = newItem
-                                            .WithNotifyOnDescendants(
-                                                out XElement addedModel,
-                                                context);
+                                        var addedModel = newItem.CreateModel(context.Clone());
                                         modelAdd.Add(addedModel);
                                     });
                                 }
@@ -372,21 +404,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             {
                 onXO?.Invoke(sender, e);
             }
-        }
-        /// <summary>
-        /// Returns a new local model, leaving the context.Origin model intact.
-        /// </summary>
-        internal static T WithNotifyOnDescendants<T>(
-            this T @this, 
-            out XElement localModel, 
-            ModelingContext context)
-        {
-            return @this.WithNotifyOnDescendants(
-                out localModel,
-                context.PropertyChangedDelegate,
-                context.NotifyCollectionChangedDelegate,
-                context.XObjectChangeDelegate,
-                context.Options);
         }
         public static void RefreshModel(this XElement model, object newValue)
         {
