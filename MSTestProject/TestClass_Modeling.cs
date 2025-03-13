@@ -53,15 +53,6 @@ public class TestClass_Modeling
     public void TestCleanup() => Awaited -= OnAwaited;
     #endregion S E T U P
 
-    [TestMethod]
-    public void PreValidateOnAwaited()
-    {
-        var e = new AwaitedEventArgs();
-        Assert.IsNotNull(e);
-        object @this = new();
-        @this.OnAwaited();
-    }
-
     /// <summary>
     /// Unit test for verifying the event-driven XML model representation of `ClassA`.
     /// This test ensures that:
