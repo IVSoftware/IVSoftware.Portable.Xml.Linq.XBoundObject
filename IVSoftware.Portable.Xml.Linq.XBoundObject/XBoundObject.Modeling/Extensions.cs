@@ -71,8 +71,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             }
         }
         PropertyInfo[] _piCache = null;
-
-
         public ModelingContext Clone() => new ModelingContext(this);
         public XElement OriginModel { get; }
         public XElement LocalModel { get; }
@@ -521,13 +519,11 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                 
             }
         }
-
         public static string ToTypeNameForOptionText(this Type @this, ModelingOption options)
             =>
             options.HasFlag(ModelingOption.ShowFullNameForTypes)
             ? @this.ToTypeNameText()
             : @this.ToShortTypeNameText();
-
         public static string ToTypeNameText(this Type @this)
         {
             if (@this?.FullName == null) return "Unknown";
@@ -542,10 +538,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
         }
         public static string ToShortTypeNameText(this Type @this)
             => @this.ToTypeNameText().Split('.').Last();
-
         public static string InSquareBrackets(this string @this) => $"[{@this}]";
         public static string InSquareBrackets(this Enum @this) => $"[{@this.ToString()}]";
-
         public static T GetInstance<T>(this XElement @this, bool @throw = false)
         {
             if (@this.Attribute(nameof(SortOrderNOD.instance)) is XBoundAttribute xba)
@@ -591,7 +585,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             _
             .Attribute(nameof(SortOrderNOD.name))?
             .Value == propertyName);
-
         internal static bool IsEnumOrValueTypeOrString(this object @this)
             => @this is Enum || @this is ValueType || @this is string;
         internal static bool IsEnumOrValueTypeOrString(this Type @this)
