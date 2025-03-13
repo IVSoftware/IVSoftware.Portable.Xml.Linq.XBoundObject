@@ -53,6 +53,15 @@ public class TestClass_Modeling
     public void TestCleanup() => Awaited -= OnAwaited;
     #endregion S E T U P
 
+    [TestMethod]
+    public void PreValidateOnAwaited()
+    {
+        var e = new AwaitedEventArgs();
+        Assert.IsNotNull(e);
+        object @this = new();
+        @this.OnAwaited();
+    }
+
     /// <summary>
     /// Unit test for verifying the event-driven XML model representation of `ClassA`.
     /// This test ensures that:
@@ -142,10 +151,6 @@ public class TestClass_Modeling
         void subtestInspectInitialModelForClassA()
         {
             actual = A.OriginModel.SortAttributes<SortOrderNOD>().ToString();
-
-            actual.ToClipboard();
-            actual.ToClipboardAssert("Expecting model of ClassA with TotalCost property and the BCollection which is empty");
-            { }
             expected = @" 
 <model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
   <member name=""TotalCost"" pi=""[Int32]"" />
@@ -175,9 +180,6 @@ public class TestClass_Modeling
             );
 
             actual = adHoc.SortAttributes<SortOrderNOD>().ToString();
-            actual.ToClipboard();
-            actual.ToClipboardAssert("Expecting expecting full names for types");
-            { }
             expected = @" 
 <model name=""(Origin)XBoundObjectMSTest.TestClassesForModeling.SO_79467031_5438626.ClassA"" instance=""[XBoundObjectMSTest.TestClassesForModeling.SO_79467031_5438626.ClassA]"" context=""[ModelingContext]"">
   <member name=""TotalCost"" pi=""[System.Int32]"" />
@@ -185,13 +187,6 @@ public class TestClass_Modeling
     <member name=""Count"" pi=""[System.Int32]"" />
   </member>
 </model>";
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting expecting full names for types"
-            );
-
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
@@ -230,7 +225,7 @@ public class TestClass_Modeling
   <member name=""TotalCost"" pi=""[Int32]"" />
   <member name=""BCollection"" pi=""[ObservableCollection]"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"">
     <member name=""Count"" pi=""[Int32]"" />
-    <model name=""(Origin)ClassB"" instance=""[ClassB]"">
+    <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"">
       <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
         <member name=""Cost"" pi=""[Int32]"" />
         <member name=""Currency"" pi=""[Int32]"" />
@@ -300,36 +295,40 @@ public class TestClass_Modeling
                 .ForEach(_ => A.BCollection.Add(_));
 
             actual = A.OriginModel.SortAttributes<SortOrderNOD>().ToString();
+
+            actual.ToClipboard();
+            actual.ToClipboardAssert();
+            { }
             expected = @" 
 <model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
   <member name=""TotalCost"" pi=""[Int32]"" />
   <member name=""BCollection"" pi=""[ObservableCollection]"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"">
     <member name=""Count"" pi=""[Int32]"" />
-    <model name=""(Origin)ClassB"" instance=""[ClassB]"">
+    <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"">
       <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
         <member name=""Cost"" pi=""[Int32]"" />
         <member name=""Currency"" pi=""[Int32]"" />
       </member>
     </model>
-    <model name=""(Origin)ClassB"" instance=""[ClassB]"">
+    <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"">
       <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
         <member name=""Cost"" pi=""[Int32]"" />
         <member name=""Currency"" pi=""[Int32]"" />
       </member>
     </model>
-    <model name=""(Origin)ClassB"" instance=""[ClassB]"">
+    <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"">
       <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
         <member name=""Cost"" pi=""[Int32]"" />
         <member name=""Currency"" pi=""[Int32]"" />
       </member>
     </model>
-    <model name=""(Origin)ClassB"" instance=""[ClassB]"">
+    <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"">
       <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
         <member name=""Cost"" pi=""[Int32]"" />
         <member name=""Currency"" pi=""[Int32]"" />
       </member>
     </model>
-    <model name=""(Origin)ClassB"" instance=""[ClassB]"">
+    <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"">
       <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
         <member name=""Cost"" pi=""[Int32]"" />
         <member name=""Currency"" pi=""[Int32]"" />
@@ -411,18 +410,17 @@ Total of C.Cost 73905";
 
             actual.ToClipboard();
             actual.ToClipboardAssert();
-            { }
+
             expected = @" 
 Removing INPC Subscription
-Remove <model name=""(Origin)ClassB"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassB]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"" />
+Remove <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"" />
 Removing INPC Subscription
-Remove <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" onpc=""[OnPC]"" />";
-
+Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting removal messages"
+                "Expecting OnAwaited hooks for removal events."
             );
             clearQueues(ClearQueue.All);
             remove.C.Cost = rando.Next(Int16.MaxValue);
@@ -465,12 +463,10 @@ Remove <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants
             A.BCollection.Clear();
 
             actual = A.OriginModel.SortAttributes<SortOrderNOD>().ToString();
-            actual.ToClipboard();
-            actual.ToClipboardAssert("Expecting origin model reflects removal.");
             expected = @" 
-<model name=""(Origin)ClassA"" statusnod=""NoAvailableChangedEvents"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassA]"" notifyinfo=""[NotifyInfo]"">
-  <member name=""TotalCost"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
-  <member name=""BCollection"" statusnod=""INPCSource, INCCSource"" pi=""[System.Collections.ObjectModel.ObservableCollection]"" instance=""[System.Collections.ObjectModel.ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"" />
+<model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
+  <member name=""TotalCost"" pi=""[Int32]"" />
+  <member name=""BCollection"" pi=""[ObservableCollection]"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"" />
 </model>";
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -483,31 +479,28 @@ Remove <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants
                 eventsOA.Select(_ => (_.e as AwaitedEventArgs)?.Args?.ToString()));
 
             actual = joined;
-            actual.ToClipboard();
-            actual.ToClipboardAssert("Expecting comprehensive unsubscribe based on XObject events.");
-            { }
             expected = @" 
 Removing INPC Subscription
-Remove <model name=""(Origin)ClassB"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassB]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"" />
+Remove <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"" />
 Removing INPC Subscription
-Remove <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" onpc=""[OnPC]"" />
+Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />
 Removing INPC Subscription
-Remove <model name=""(Origin)ClassB"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassB]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"" />
+Remove <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"" />
 Removing INPC Subscription
-Remove <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" onpc=""[OnPC]"" />
+Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />
 Removing INPC Subscription
-Remove <model name=""(Origin)ClassB"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassB]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"" />
+Remove <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"" />
 Removing INPC Subscription
-Remove <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" onpc=""[OnPC]"" />
+Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />
 Removing INPC Subscription
-Remove <model name=""(Origin)ClassB"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassB]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"" />
+Remove <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"" />
 Removing INPC Subscription
-Remove <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ClassC]"" onpc=""[OnPC]"" />";
+Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting comprehensive unsubscribe based on XObject events."
+                "Expecting comprehensive unsubscribe based on XObject events and OnAwaited hook."
             );
 
             clearQueues(ClearQueue.All);
@@ -550,13 +543,9 @@ Remove <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants
                 .ToArray()
                 .First();
 
-            actual = originModel.ToString();
-
-            actual.ToClipboard();
-            actual.ToClipboardAssert();
-            { }
+            actual = originModel.SortAttributes<SortOrderNOD>().ToString();
             expected = @" 
-<model name=""(Origin)XBoundObjectMSTest.TestClassesForModeling.SO_79467031_5438626.ClassA"" instance=""[ClassA]"">
+<model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
   <member name=""TotalCost"" />
   <member name=""BCollection"" instance=""[ObservableCollection]"">
     <model instance=""[ClassB]"">
@@ -584,7 +573,7 @@ Remove <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting values to match."
+                "Expecting model to match."
             );
             originModel.RemoveAll();
         }
@@ -595,20 +584,12 @@ Remove <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants
             foreach (var xel in classA.ModelDescendantsAndSelf(context))
             {
                 string tabs = string.Join(string.Empty, Enumerable.Repeat("  ", xel.Ancestors().Count()));
-                builder.Add($"{tabs}{xel.ToShallow()}");
+                builder.Add($"{tabs}{xel.ToShallow().SortAttributes<SortOrderNOD>()}");
             }
-
-            actual = context.TargetModel.ToString();
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting values to match."
-            );
-
             var joined = string.Join(Environment.NewLine, builder);
             actual = joined;
             expected = @" 
-<model instance=""[ClassA]"" />
+<model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"" />
   <member name=""TotalCost"" />
   <member name=""BCollection"" instance=""[ObservableCollection]"" />
     <model instance=""[ClassB]"" />
@@ -630,6 +611,74 @@ Remove <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants
                 actual.NormalizeResult(),
                 "Expecting each element has yielded a shallow representation."
             );
+
+            actual = context.OriginModel.SortAttributes<SortOrderNOD>().ToString();
+            expected = @" 
+<model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
+  <member name=""TotalCost"" />
+  <member name=""BCollection"" instance=""[ObservableCollection]"">
+    <model instance=""[ClassB]"">
+      <member name=""C"" instance=""[ClassC]"">
+        <member name=""Cost"" />
+        <member name=""Currency"" />
+      </member>
+    </model>
+    <model instance=""[ClassB]"">
+      <member name=""C"" instance=""[ClassC]"">
+        <member name=""Cost"" />
+        <member name=""Currency"" />
+      </member>
+    </model>
+    <model instance=""[ClassB]"">
+      <member name=""C"" instance=""[ClassC]"">
+        <member name=""Cost"" />
+        <member name=""Currency"" />
+      </member>
+    </model>
+    <member name=""Count"" />
+  </member>
+</model>";
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting origin model format"
+            );
+
+            // Attempt a refresh of the BCollection
+            var addedModel = classA.CreateModel(context.Clone());
+
+            actual = addedModel.ToString();
+            expected = @" 
+<model name=""(Origin)ClassA"" instance=""[ClassA]"">
+  <member name=""TotalCost"" />
+  <member name=""BCollection"" instance=""[ObservableCollection]"">
+    <model instance=""[ClassB]"">
+      <member name=""C"" instance=""[ClassC]"">
+        <member name=""Cost"" />
+        <member name=""Currency"" />
+      </member>
+    </model>
+    <model instance=""[ClassB]"">
+      <member name=""C"" instance=""[ClassC]"">
+        <member name=""Cost"" />
+        <member name=""Currency"" />
+      </member>
+    </model>
+    <model instance=""[ClassB]"">
+      <member name=""C"" instance=""[ClassC]"">
+        <member name=""Cost"" />
+        <member name=""Currency"" />
+      </member>
+    </model>
+    <member name=""Count"" />
+  </member>
+</model>";
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting target model format (i.e. without the [ModelingContext] xba)."
+            );
+
         }
         void subtestIncludeValueTypeInstances()
         {
@@ -639,10 +688,8 @@ Remove <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants
             };
 
             actual = classA.CreateModel(context).ToString();
-            actual.ToClipboard();
-            actual.ToClipboardAssert("Expecting msg");
             expected = @" 
-<model instance=""[ClassA]"">
+<model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
   <member name=""TotalCost"" instance=""[Int32]"" />
   <member name=""BCollection"" instance=""[ObservableCollection]"">
     <model instance=""[ClassB]"">
@@ -666,11 +713,10 @@ Remove <member name=""C"" statusnod=""INPCSource"" pi=""[WithNotifyOnDescendants
     <member name=""Count"" instance=""[Int32]"" />
   </member>
 </model>";
-
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting msg"
+                "Expecting value type instances"
             );
         }
         #endregion S U B T E S T S
