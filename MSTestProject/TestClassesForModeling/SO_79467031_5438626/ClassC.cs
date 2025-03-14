@@ -5,6 +5,7 @@ namespace XBoundObjectMSTest.TestClassesForModeling.SO_79467031_5438626
 {
     public class ClassC : INotifyPropertyChanged
     {
+        public string Name { get; init; } = string.Empty;
         public int Cost
         {
             get => _cost;

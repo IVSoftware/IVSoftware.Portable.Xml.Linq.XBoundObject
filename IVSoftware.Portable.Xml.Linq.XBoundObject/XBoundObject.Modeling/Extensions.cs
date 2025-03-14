@@ -71,7 +71,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             }
         }
         PropertyInfo[] _piCache = null;
-        public ModelingContext Clone() => new ModelingContext(this);
+        public ModelingContext Clone(XElement localModel = null)
+            => new ModelingContext(this, localModel);
         public XElement OriginModel { get; }
         public XElement LocalModel { get; }
         public XElement TargetModel => LocalModel ?? OriginModel;
@@ -408,14 +409,12 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                                 }
                                 else
                                 {
+                                    // These can also occur out of band.
                                     switch (xattr.Name.LocalName)
                                     {
-                                        case nameof(SortOrderNOD.instance):
-                                        case nameof(SortOrderNOD.oncc):
-                                        case nameof(SortOrderNOD.onpc):
-                                            // If this occurs out of band, we need to know that and respond!
-                                            Debug.Fail("Unexpected. These are handled when the XElement removes.");
-                                            break;
+                                        case nameof(SortOrderNOD.instance): localRemoveHandlers(xattr.Parent, SortOrderNOD.instance); break;
+                                        case nameof(SortOrderNOD.onpc): localRemoveHandlers(xattr.Parent, SortOrderNOD.onpc); break;
+                                        case nameof(SortOrderNOD.oncc): localRemoveHandlers(xattr.Parent, SortOrderNOD.oncc); break;
                                     }
                                 }
                                 break;
@@ -432,34 +431,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                                             Debug.WriteLineIf(true, $"250313 {desc.ToShallow()}");
                                             desc.Remove(); // [Careful] Do not expect a recursion event for ValueTypes under normal options config.
                                         }
-                                        if (o is INotifyPropertyChanged inpc)
-                                        {
-                                            if (xel.To<PropertyChangedEventHandler>() is PropertyChangedEventHandler handlerPC)
-                                            {
-                                                inpc.PropertyChanged -= handlerPC;
-                                                xel.OnAwaited(new AwaitedEventArgs(args: $"Removing INPC Subscription"));
-                                                xel.OnAwaited(new AwaitedEventArgs(args: $"{e.ObjectChange} {xel.ToShallow()}"));
-                                            }
-                                            else
-                                            {
-                                                // If this occurs out of band, we need to know that and respond!
-                                                Debug.Fail("Expecting that inpc has a bound handler to unsubscribe.");
-                                            }
-                                        }
-                                        if (o is INotifyCollectionChanged incc)
-                                        {
-                                            if (xel.To<NotifyCollectionChangedEventHandler>() is NotifyCollectionChangedEventHandler handlerCC)
-                                            {
-                                                incc.CollectionChanged -= handlerCC;
-                                                xel.OnAwaited(new AwaitedEventArgs(args: $"Removing INCC Subscription"));
-                                                xel.OnAwaited(new AwaitedEventArgs(args: $"{e.ObjectChange} {xel.ToShallow()}"));
-                                            }
-                                            else
-                                            {
-                                                // If this occurs out of band, we need to know that and respond!
-                                                Debug.Fail("Expecting that inpc has a bound handler to unsubscribe.");
-                                            }
-                                        }
+                                        localRemoveHandlers(xel, SortOrderNOD.instance);
                                     }
                                 }
                                 else
@@ -470,6 +442,46 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                                 break;
                         }
                         break;
+                        void localRemoveHandlers(XElement xel, SortOrderNOD @case)
+                        {
+                            if (xel?.GetInstance() is object o)
+                            {
+                                if (Equals(@case, SortOrderNOD.instance) || Equals(@case, SortOrderNOD.onpc))
+                                {
+                                    if (o is INotifyPropertyChanged inpc)
+                                    {
+                                        if (xel.To<PropertyChangedEventHandler>() is PropertyChangedEventHandler handlerPC)
+                                        {
+                                            inpc.PropertyChanged -= handlerPC;
+                                            xel.OnAwaited(new AwaitedEventArgs(args: $"Removing INPC Subscription"));
+                                            xel.OnAwaited(new AwaitedEventArgs(args: $"{e.ObjectChange} {xel.ToShallow()}"));
+                                        }
+                                        else
+                                        {
+                                            // If this occurs out of band, we need to know that and respond!
+                                            Debug.Fail("Expecting that inpc has a bound handler to unsubscribe.");
+                                        }
+                                    }
+                                }
+                                if (Equals(@case, SortOrderNOD.instance) || Equals(@case, SortOrderNOD.oncc))
+                                {
+                                    if (o is INotifyCollectionChanged incc)
+                                    {
+                                        if (xel.To<NotifyCollectionChangedEventHandler>() is NotifyCollectionChangedEventHandler handlerCC)
+                                        {
+                                            incc.CollectionChanged -= handlerCC;
+                                            xel.OnAwaited(new AwaitedEventArgs(args: $"Removing INCC Subscription"));
+                                            xel.OnAwaited(new AwaitedEventArgs(args: $"{e.ObjectChange} {xel.ToShallow()}"));
+                                        }
+                                        else
+                                        {
+                                            // If this occurs out of band, we need to know that and respond!
+                                            Debug.Fail("Expecting that incc has a bound handler to unsubscribe.");
+                                        }
+                                    }
+                                }
+                            }
+                        }
                 }
             };
             // Show time
@@ -516,7 +528,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             }
             if (newValue != null)
             {
-                
+                if (model.AncestorOfType<ModelingContext>() is ModelingContext context)
+                {
+                    newValue.CreateModel(context.Clone(model));
+                }
             }
         }
         public static string ToTypeNameForOptionText(this Type @this, ModelingOption options)

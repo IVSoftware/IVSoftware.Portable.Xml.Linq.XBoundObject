@@ -7,6 +7,9 @@ using System.Xml.Linq;
 using XBoundObjectMSTest.TestClassesForModeling.SO_79467031_5438626;
 using IVSoftware.Portable.Threading;
 using System.Collections;
+using System.Collections.ObjectModel;
+using XBoundObjectMSTest.TestClassesForModeling.Common;
+using System.ComponentModel;
 
 namespace XBoundObjectMSTest;
 
@@ -504,7 +507,49 @@ Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
 
         #endregion S U B T E S T S
     }
+    
+    [TestMethod]
+    public void Test_SO_79467031_5438626_BCollection()
+    {
+        int autoIncrement = 1;
+        int SumOfBCost = 0;
+        ObservableCollection<ClassB>? BCollection = null;
+        BCollection = new ObservableCollection<ClassB>
+        {
+            new ClassB{C = new ClassC{Name = $"Item C{autoIncrement++}"} },
+            new ClassB{C = new ClassC{Name = $"Item C{autoIncrement++}"} },
+            new ClassB{C = new ClassC{Name = $"Item C{autoIncrement++}"} },
+        }.WithNotifyOnDescendants(OnPropertyChanged);
 
+        void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            eventsPC.Enqueue(new SenderEventPair(sender, e));
+            switch (e.PropertyName)
+            {
+                case nameof(ClassC.Cost):
+                    SumOfBCost = BCollection?.Sum(_ => _.C?.Cost ?? 0) ?? 0;
+                    break;
+                default:
+                    break;
+            }
+        }
+        BCollection[0].C.Cost = rando.Next(Int32.MaxValue);
+        currentEvent = eventsPC.DequeueSingle();
+        localOnTestReplaceCObjects();
+
+        BCollection[0].C.Cost = rando.Next(Int32.MaxValue);
+        currentEvent = eventsPC.DequeueSingle();
+        { }
+
+        void localOnTestReplaceCObjects()
+        {
+            int replaceIndex = 1;
+            foreach (ClassB classB in BCollection)
+            {
+                classB.C = new ClassC { Name = $"Replace C{replaceIndex++}" };
+            }
+        }
+    }
 
     [TestMethod]
     public void IterationBasics()
@@ -711,5 +756,138 @@ Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
             );
         }
         #endregion S U B T E S T S
+    }
+
+
+    // EXPECT
+    // - The ObservableCollection is initialized with four ABC instances.
+    // - CRITICAL: The origin model should correctly reflect all pre-existing instances in the collection.
+    // - Enumerating the collection should NOT trigger any events.
+    // - The collection's ToString() override should return the expected formatted string representation.
+
+    [TestMethod]
+    public void Test_ObservableCollectionNOD()
+    {
+        XElement originModel;
+        Dictionary<Enum, int> eventDict = new();
+        var obc = new ObservableCollection<ABC>
+            {
+                new ABC(),
+                new ABC(),
+                new ABC(),
+                new ABC(),
+            }.WithNotifyOnDescendants(
+            out originModel,
+            onPC: (sender, e) => eventsPC.Enqueue(new SenderEventPair(sender, e)),
+            onCC: (sender, e) => eventsCC.Enqueue(new SenderEventPair(sender, e)));
+
+
+        // ====================================================================
+        // Use the ToString() override of class ABC to show the contents of OBC.
+        // ====================================================================
+
+        var joined = string.Join(Environment.NewLine, obc);
+        actual = joined;
+        actual.ToClipboard();
+        actual.ToClipboardAssert("Expecting msg");
+        { }
+        expected = @" 
+A | B | C
+A | B | C
+A | B | C
+A | B | C";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting msg"
+        );
+
+        Assert.AreEqual(0, eventDict.Count, "Expecting no events yet");
+
+
+        actual = originModel.SortAttributes<SortOrderNOD>().ToString();
+        actual.ToClipboard();
+        actual.ToClipboardAssert("Expecting origin model to match");
+        { }
+        expected = @" 
+<model name=""(Origin)ObservableCollection"" statusnod=""INPCSource, INCCSource"" instance=""[System.Collections.ObjectModel.ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"" notifyinfo=""[NotifyInfo]"">
+  <member name=""Count"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
+  <model name=""(Origin)ABC"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ABC]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"">
+    <member name=""A"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
+    <member name=""B"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
+    <member name=""C"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
+  </model>
+  <model name=""(Origin)ABC"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ABC]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"">
+    <member name=""A"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
+    <member name=""B"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
+    <member name=""C"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
+  </model>
+  <model name=""(Origin)ABC"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ABC]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"">
+    <member name=""A"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
+    <member name=""B"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
+    <member name=""C"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
+  </model>
+  <model name=""(Origin)ABC"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ABC]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"">
+    <member name=""A"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
+    <member name=""B"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
+    <member name=""C"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
+  </model>
+</model>";
+
+        expected = @" 
+<model name=""(Origin)ObservableCollection"" instance=""[ObservableCollection]"" context=""[ModelingContext]"">
+  <member name=""Count"" />
+  <model name=""(Origin)ABC"" instance=""[ABC]"" onpc=""[OnPC]"">
+    <member name=""A"" runtimetype=""[String]"" />
+    <member name=""B"" runtimetype=""[String]"" />
+    <member name=""C"" runtimetype=""[String]"" />
+  </model>
+  <model name=""(Origin)ABC"" instance=""[ABC]"" onpc=""[OnPC]"">
+    <member name=""A"" runtimetype=""[String]"" />
+    <member name=""B"" runtimetype=""[String]"" />
+    <member name=""C"" runtimetype=""[String]"" />
+  </model>
+  <model name=""(Origin)ABC"" instance=""[ABC]"" onpc=""[OnPC]"">
+    <member name=""A"" runtimetype=""[String]"" />
+    <member name=""B"" runtimetype=""[String]"" />
+    <member name=""C"" runtimetype=""[String]"" />
+  </model>
+  <model name=""(Origin)ABC"" instance=""[ABC]"" onpc=""[OnPC]"">
+    <member name=""A"" runtimetype=""[String]"" />
+    <member name=""B"" runtimetype=""[String]"" />
+    <member name=""C"" runtimetype=""[String]"" />
+  </model>
+</model>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting origin model to match"
+        );
+
+        // ====================================================================
+        // We are REPLACING the FIRST LIST ITEM in its entirity.
+        // ====================================================================
+        clearQueues();
+        obc[0] = new ABC();
+
+        currentEvent = eventsCC.DequeueSingle();
+
+        Assert.AreEqual(
+            NotifyCollectionChangedAction.Replace,
+            currentEvent.NotifyCollectionChangedEventArgs.Action
+        );
+
+        // =====================================================================
+        // NOW make sure the new instance has successfully bound PropertyChanges.
+        // =====================================================================
+
+        obc[0].A = "AA";    // Property change
+        currentEvent = eventsPC.DequeueSingle();
+        Assert.AreEqual(
+            nameof(ABC.A),
+            currentEvent.PropertyName,
+            "Expecting property changed event has been raised.");
     }
 }
