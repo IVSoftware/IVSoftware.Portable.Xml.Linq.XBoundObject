@@ -214,7 +214,6 @@ public class TestClass_Modeling
                 "Expecting response to BCollection count changed.");
 
             actual = currentEvent.OriginModel.SortAttributes<SortOrderNOD>().ToString();
-                { }
             expected = @" 
 <model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
   <member name=""TotalCost"" pi=""[Int32]"" />
@@ -229,26 +228,6 @@ public class TestClass_Modeling
     </model>
   </member>
 </model>";
-            expected = @" 
-<model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
-  <member name=""TotalCost"" pi=""[Int32]"" />
-  <member name=""BCollection"" pi=""[ObservableCollection]"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"">
-    <member name=""Count"" pi=""[Int32]"" instance=""[Int32]"" />
-    <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"">
-      <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
-        <member name=""Name"" pi=""[String]"" />
-        <member name=""Cost"" pi=""[Int32]"" />
-        <member name=""Currency"" pi=""[Int32]"" />
-      </member>
-    </model>
-  </member>
-</model>";
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting values to match."
-            );
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),

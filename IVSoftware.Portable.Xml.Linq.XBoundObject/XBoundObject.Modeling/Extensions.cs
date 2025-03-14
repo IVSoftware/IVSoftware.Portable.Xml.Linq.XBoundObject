@@ -144,19 +144,12 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             void localDiscoverModel(object instance, XElement localModel, HashSet<object> visited = null)
             {
                 visited = visited ?? new HashSet<object>();
-                if (context.Options.HasFlag(ModelingOption.ShowFullNameForTypes))
+                if (!instance.IsEnumOrValueTypeOrString() || context.Options.HasFlag(ModelingOption.IncludeValueTypeInstances))
                 {
                     localModel.SetBoundAttributeValue(
                         instance,
                         name: nameof(instance),
-                        instance.GetType().ToTypeNameText().InSquareBrackets());
-                }
-                else
-                {
-                    localModel.SetBoundAttributeValue(
-                        instance, 
-                        name: nameof(instance),
-                        instance.GetType().ToShortTypeNameText().InSquareBrackets());
+                        instance.GetType().ToTypeNameForOptionText(context.Options).InSquareBrackets());
                 }
                 localRunRecursiveDiscovery(localModel);
 
@@ -530,10 +523,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             {
                 if (model.AncestorOfType<ModelingContext>() is ModelingContext context)
                 {
-                    if (!newValue.IsEnumOrValueTypeOrString() || context.Options.HasFlag(ModelingOption.IncludeValueTypeInstances))
-                    {
-                        newValue.CreateModel(context.Clone(model));
-                    }
+                    newValue.CreateModel(context.Clone(model));
                 }
             }
         }
