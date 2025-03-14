@@ -511,6 +511,8 @@ Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
     [TestMethod]
     public void Test_SO_79467031_5438626_BCollection()
     {
+        var builder = new List<string>();
+        string joined;
         int autoIncrement = 1;
         int SumOfBCost = 0;
         ObservableCollection<ClassB>? BCollection = null;
@@ -526,24 +528,81 @@ Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
             eventsPC.Enqueue(new SenderEventPair(sender, e));
             switch (e.PropertyName)
             {
-                case nameof(ClassC.Cost):
+                case nameof(ClassC.Cost):   // Cost changed
+                case nameof(ClassB.C):      // The 'C' instance swapped out
                     SumOfBCost = BCollection?.Sum(_ => _.C?.Cost ?? 0) ?? 0;
+                    var values = BCollection?.Select(_ => (_.C?.Cost ?? 0).ToString());
+                    builder.Add($"{string.Join(" + ", values ?? [])} = {SumOfBCost}");
                     break;
                 default:
                     break;
             }
         }
-        BCollection[0].C.Cost = rando.Next(Int32.MaxValue);
-        currentEvent = eventsPC.DequeueSingle();
+        // Set of three.
+        BCollection[0].C.Cost = rando.Next(Int16.MaxValue);
+        BCollection[1].C.Cost = rando.Next(Int16.MaxValue);
+        BCollection[2].C.Cost = rando.Next(Int16.MaxValue);
+
+        joined = string.Join(Environment.NewLine, builder);
+        actual = joined;
+        actual.ToClipboard();
+        actual.ToClipboardAssert("Expecting SumOfBCost updates.");
+        { }
+        expected = @" 
+8148 + 0 + 0 = 8148
+8148 + 3628 + 0 = 11776
+8148 + 3628 + 15302 = 27078";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting SumOfBCost updates."
+        );
+        builder.Clear();
+
         localOnTestReplaceCObjects();
 
-        // We have PC events from ClassB.C changing, so flush them.
-        clearQueues(); 
-
-        BCollection[0].C.Cost = rando.Next(Int32.MaxValue);
-
-        currentEvent = eventsPC.DequeueSingle();
+        joined = string.Join(Environment.NewLine, builder);
+        actual = joined;
+        actual.ToClipboard();
+        actual.ToClipboardAssert("Expecting 3 replacement values of zero.");
         { }
+        expected = @" 
+0 + 3628 + 15302 = 18930
+0 + 0 + 15302 = 15302
+0 + 0 + 0 = 0";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting SumOfBCost updates."
+        );
+        builder.Clear();
+
+        // We have PC events from ClassB.C changing, so flush them.
+        clearQueues();
+
+        // Set of three.
+        BCollection[0].C.Cost = rando.Next(Int16.MaxValue);
+        BCollection[1].C.Cost = rando.Next(Int16.MaxValue);
+        BCollection[2].C.Cost = rando.Next(Int16.MaxValue);
+
+        joined = string.Join(Environment.NewLine, builder);
+        actual = joined;
+        actual.ToClipboard();
+        actual.ToClipboardAssert("Expecting relacement objects are still firing events.");
+        { }
+        expected = @" 
+25283 + 0 + 0 = 25283
+25283 + 21544 + 0 = 46827
+25283 + 21544 + 14180 = 61007";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting relacement objects are still firing events."
+        );
+        builder.Clear();
 
         void localOnTestReplaceCObjects()
         {
