@@ -537,7 +537,11 @@ Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
         currentEvent = eventsPC.DequeueSingle();
         localOnTestReplaceCObjects();
 
+        // We have PC events from ClassB.C changing, so flush them.
+        clearQueues(); 
+
         BCollection[0].C.Cost = rando.Next(Int32.MaxValue);
+
         currentEvent = eventsPC.DequeueSingle();
         { }
 
