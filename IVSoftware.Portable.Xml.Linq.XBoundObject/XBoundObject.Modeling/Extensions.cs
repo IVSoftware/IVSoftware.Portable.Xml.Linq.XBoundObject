@@ -498,8 +498,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
         }
         public static void RefreshModel(this XElement model, object newValue)
         {
-            var oldValue = model.GetInstance();
-            { }
             var attrsB4 = model.Attributes().ToArray();
             // Perform an unconditional complete reset.
             foreach (var element in model.Elements().ToArray())
@@ -532,7 +530,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             {
                 if (model.AncestorOfType<ModelingContext>() is ModelingContext context)
                 {
-                    newValue.CreateModel(context.Clone(model));
+                    if (!newValue.IsEnumOrValueTypeOrString() || context.Options.HasFlag(ModelingOption.IncludeValueTypeInstances))
+                    {
+                        newValue.CreateModel(context.Clone(model));
+                    }
                 }
             }
         }

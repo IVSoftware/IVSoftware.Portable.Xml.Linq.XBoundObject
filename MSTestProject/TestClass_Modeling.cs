@@ -214,6 +214,7 @@ public class TestClass_Modeling
                 "Expecting response to BCollection count changed.");
 
             actual = currentEvent.OriginModel.SortAttributes<SortOrderNOD>().ToString();
+                { }
             expected = @" 
 <model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
   <member name=""TotalCost"" pi=""[Int32]"" />
@@ -221,6 +222,21 @@ public class TestClass_Modeling
     <member name=""Count"" pi=""[Int32]"" />
     <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"">
       <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
+        <member name=""Name"" pi=""[String]"" />
+        <member name=""Cost"" pi=""[Int32]"" />
+        <member name=""Currency"" pi=""[Int32]"" />
+      </member>
+    </model>
+  </member>
+</model>";
+            expected = @" 
+<model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
+  <member name=""TotalCost"" pi=""[Int32]"" />
+  <member name=""BCollection"" pi=""[ObservableCollection]"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"">
+    <member name=""Count"" pi=""[Int32]"" instance=""[Int32]"" />
+    <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"">
+      <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
+        <member name=""Name"" pi=""[String]"" />
         <member name=""Cost"" pi=""[Int32]"" />
         <member name=""Currency"" pi=""[Int32]"" />
       </member>
@@ -228,6 +244,11 @@ public class TestClass_Modeling
   </member>
 </model>";
 
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting values to match."
+            );
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
@@ -649,18 +670,21 @@ Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
   <member name=""BCollection"" instance=""[ObservableCollection]"">
     <model instance=""[ClassB]"">
       <member name=""C"" instance=""[ClassC]"">
+        <member name=""Name"" />
         <member name=""Cost"" />
         <member name=""Currency"" />
       </member>
     </model>
     <model instance=""[ClassB]"">
       <member name=""C"" instance=""[ClassC]"">
+        <member name=""Name"" />
         <member name=""Cost"" />
         <member name=""Currency"" />
       </member>
     </model>
     <model instance=""[ClassB]"">
       <member name=""C"" instance=""[ClassC]"">
+        <member name=""Name"" />
         <member name=""Cost"" />
         <member name=""Currency"" />
       </member>
@@ -669,6 +693,11 @@ Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
   </member>
 </model>";
 
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting values to match."
+            );
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
@@ -687,25 +716,28 @@ Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
             }
             var joined = string.Join(Environment.NewLine, builder);
             actual = joined;
+
             expected = @" 
 <model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"" />
   <member name=""TotalCost"" />
   <member name=""BCollection"" instance=""[ObservableCollection]"" />
     <model instance=""[ClassB]"" />
       <member name=""C"" instance=""[ClassC]"" />
+        <member name=""Name"" />
         <member name=""Cost"" />
         <member name=""Currency"" />
     <model instance=""[ClassB]"" />
       <member name=""C"" instance=""[ClassC]"" />
+        <member name=""Name"" />
         <member name=""Cost"" />
         <member name=""Currency"" />
     <model instance=""[ClassB]"" />
       <member name=""C"" instance=""[ClassC]"" />
+        <member name=""Name"" />
         <member name=""Cost"" />
         <member name=""Currency"" />
     <member name=""Count"" />";
-
-            Assert.AreEqual(
+                Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
                 "Expecting each element has yielded a shallow representation."
@@ -718,18 +750,21 @@ Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
   <member name=""BCollection"" instance=""[ObservableCollection]"">
     <model instance=""[ClassB]"">
       <member name=""C"" instance=""[ClassC]"">
+        <member name=""Name"" />
         <member name=""Cost"" />
         <member name=""Currency"" />
       </member>
     </model>
     <model instance=""[ClassB]"">
       <member name=""C"" instance=""[ClassC]"">
+        <member name=""Name"" />
         <member name=""Cost"" />
         <member name=""Currency"" />
       </member>
     </model>
     <model instance=""[ClassB]"">
       <member name=""C"" instance=""[ClassC]"">
+        <member name=""Name"" />
         <member name=""Cost"" />
         <member name=""Currency"" />
       </member>
@@ -753,18 +788,21 @@ Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
   <member name=""BCollection"" instance=""[ObservableCollection]"">
     <model instance=""[ClassB]"">
       <member name=""C"" instance=""[ClassC]"">
+        <member name=""Name"" />
         <member name=""Cost"" />
         <member name=""Currency"" />
       </member>
     </model>
     <model instance=""[ClassB]"">
       <member name=""C"" instance=""[ClassC]"">
+        <member name=""Name"" />
         <member name=""Cost"" />
         <member name=""Currency"" />
       </member>
     </model>
     <model instance=""[ClassB]"">
       <member name=""C"" instance=""[ClassC]"">
+        <member name=""Name"" />
         <member name=""Cost"" />
         <member name=""Currency"" />
       </member>
@@ -777,7 +815,6 @@ Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
                 actual.NormalizeResult(),
                 "Expecting target model format (i.e. without the [ModelingContext] xba)."
             );
-
         }
         void subtestIncludeValueTypeInstances()
         {
@@ -793,18 +830,21 @@ Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
   <member name=""BCollection"" instance=""[ObservableCollection]"">
     <model instance=""[ClassB]"">
       <member name=""C"" instance=""[ClassC]"">
+        <member name=""Name"" instance=""[String]"" />
         <member name=""Cost"" instance=""[Int32]"" />
         <member name=""Currency"" instance=""[Int32]"" />
       </member>
     </model>
     <model instance=""[ClassB]"">
       <member name=""C"" instance=""[ClassC]"">
+        <member name=""Name"" instance=""[String]"" />
         <member name=""Cost"" instance=""[Int32]"" />
         <member name=""Currency"" instance=""[Int32]"" />
       </member>
     </model>
     <model instance=""[ClassB]"">
       <member name=""C"" instance=""[ClassC]"">
+        <member name=""Name"" instance=""[String]"" />
         <member name=""Cost"" instance=""[Int32]"" />
         <member name=""Currency"" instance=""[Int32]"" />
       </member>
