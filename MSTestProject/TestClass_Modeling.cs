@@ -289,10 +289,6 @@ public class TestClass_Modeling
                 .ForEach(_ => A.BCollection.Add(_));
 
             actual = A.OriginModel.SortAttributes<SortOrderNOD>().ToString();
-
-            actual.ToClipboard();
-            actual.ToClipboardAssert();
-            { }
             expected = @" 
 <model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
   <member name=""TotalCost"" pi=""[Int32]"" />
@@ -300,36 +296,47 @@ public class TestClass_Modeling
     <member name=""Count"" pi=""[Int32]"" />
     <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"">
       <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
+        <member name=""Name"" pi=""[String]"" />
         <member name=""Cost"" pi=""[Int32]"" />
         <member name=""Currency"" pi=""[Int32]"" />
       </member>
     </model>
     <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"">
       <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
+        <member name=""Name"" pi=""[String]"" />
         <member name=""Cost"" pi=""[Int32]"" />
         <member name=""Currency"" pi=""[Int32]"" />
       </member>
     </model>
     <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"">
       <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
+        <member name=""Name"" pi=""[String]"" />
         <member name=""Cost"" pi=""[Int32]"" />
         <member name=""Currency"" pi=""[Int32]"" />
       </member>
     </model>
     <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"">
       <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
+        <member name=""Name"" pi=""[String]"" />
         <member name=""Cost"" pi=""[Int32]"" />
         <member name=""Currency"" pi=""[Int32]"" />
       </member>
     </model>
     <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"">
       <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"">
+        <member name=""Name"" pi=""[String]"" />
         <member name=""Cost"" pi=""[Int32]"" />
         <member name=""Currency"" pi=""[Int32]"" />
       </member>
     </model>
   </member>
 </model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting values to match."
+            );
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
@@ -871,8 +878,6 @@ Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
         var joined = string.Join(Environment.NewLine, obc);
         actual = joined;
         actual.ToClipboard();
-        actual.ToClipboardAssert("Expecting msg");
-        { }
         expected = @" 
 A | B | C
 A | B | C
@@ -882,43 +887,17 @@ A | B | C";
         Assert.AreEqual(
             expected.NormalizeResult(),
             actual.NormalizeResult(),
-            "Expecting msg"
+            "Expecting ToString representation of 4 ABC items"
         );
 
         Assert.AreEqual(0, eventDict.Count, "Expecting no events yet");
-
 
         actual = originModel.SortAttributes<SortOrderNOD>().ToString();
         actual.ToClipboard();
         actual.ToClipboardAssert("Expecting origin model to match");
         { }
         expected = @" 
-<model name=""(Origin)ObservableCollection"" statusnod=""INPCSource, INCCSource"" instance=""[System.Collections.ObjectModel.ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"" notifyinfo=""[NotifyInfo]"">
-  <member name=""Count"" statusnod=""NoObservableMemberProperties"" pi=""[System.Int32]"" />
-  <model name=""(Origin)ABC"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ABC]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"">
-    <member name=""A"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
-    <member name=""B"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
-    <member name=""C"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
-  </model>
-  <model name=""(Origin)ABC"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ABC]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"">
-    <member name=""A"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
-    <member name=""B"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
-    <member name=""C"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
-  </model>
-  <model name=""(Origin)ABC"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ABC]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"">
-    <member name=""A"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
-    <member name=""B"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
-    <member name=""C"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
-  </model>
-  <model name=""(Origin)ABC"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.TestModels.ABC]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"">
-    <member name=""A"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
-    <member name=""B"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
-    <member name=""C"" statusnod=""NoObservableMemberProperties"" pi=""[System.Object]"" runtimetype=""System.String"" />
-  </model>
-</model>";
-
-        expected = @" 
-<model name=""(Origin)ObservableCollection"" instance=""[ObservableCollection]"" context=""[ModelingContext]"">
+<model name=""(Origin)ObservableCollection"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"" context=""[ModelingContext]"">
   <member name=""Count"" />
   <model name=""(Origin)ABC"" instance=""[ABC]"" onpc=""[OnPC]"">
     <member name=""A"" runtimetype=""[String]"" />
@@ -941,7 +920,6 @@ A | B | C";
     <member name=""C"" runtimetype=""[String]"" />
   </model>
 </model>";
-
         Assert.AreEqual(
             expected.NormalizeResult(),
             actual.NormalizeResult(),
@@ -972,4 +950,5 @@ A | B | C";
             currentEvent.PropertyName,
             "Expecting property changed event has been raised.");
     }
+    public string MemberId { get; init; } = System.Guid.NewGuid().ToString().ToUpper();
 }

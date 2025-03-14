@@ -288,7 +288,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                 {   /* G T K */
                 }
 #endif
-                if (!isOrigin && modelAdded.GetInstance() is object o)
+                if (modelAdded.GetInstance() is object o)
                 {
                     if (modelAdded.Attribute(SortOrderNOD.onpc.ToString()) is null)   // Check for refresh
                     {
