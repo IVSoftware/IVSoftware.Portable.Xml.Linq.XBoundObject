@@ -1095,22 +1095,29 @@ Add    XElement   Changed : model  (Origin)ClassB";
     {
         // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         string actual, expected, joined;
+        XElement originModel;
+        ObservableCollection<INPCwithINPCs> obc;
 
-        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        // Instances where member properties ABC1 and ABC2 are null.
-        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        var obc = new ObservableCollection<INPCwithINPCs>()
+        subtestInstancesWithNullMemberPropertiesABC1andABC2();
+
+
+        subtestAssignABC1InstanceVerifyINPC();
+
+        #region S U B T E S T S
+        void subtestInstancesWithNullMemberPropertiesABC1andABC2()
+        {
+            obc = new ObservableCollection<INPCwithINPCs>()
             {
                 new INPCwithINPCs (),
                 new INPCwithINPCs (),
             }.WithNotifyOnDescendants(
-            out XElement originModel,
-            onPC: (sender, e) => eventsPC.Enqueue(new SenderEventPair(sender, e)),
-            onCC: (sender, e) => eventsCC.Enqueue(new SenderEventPair(sender, e)),
-            options: ModelingOption.CachePropertyInfo);
+                out originModel,
+                onPC: (sender, e) => eventsPC.Enqueue(new SenderEventPair(sender, e)),
+                onCC: (sender, e) => eventsCC.Enqueue(new SenderEventPair(sender, e)),
+                options: ModelingOption.CachePropertyInfo);
 
-        actual = originModel.SortAttributes<SortOrderNOD>().ToString();
-        expected = @" 
+            actual = originModel.SortAttributes<SortOrderNOD>().ToString();
+            expected = @" 
 <model name=""(Origin)ObservableCollection"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"" context=""[ModelingContext]"">
   <member name=""Count"" pi=""[Int32]"" />
   <model name=""(Origin)INPCwithINPCs"" instance=""[INPCwithINPCs]"" onpc=""[OnPC]"">
@@ -1123,47 +1130,67 @@ Add    XElement   Changed : model  (Origin)ClassB";
   </model>
 </model>";
 
-        Assert.AreEqual(
-            expected.NormalizeResult(),
-            actual.NormalizeResult(),
-            "Expecting ABC1 and ABC2 to default to NULL."
-        );
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting ABC1 and ABC2 to default to NULL."
+            );
+        }
 
-        // CRITICAL BEHAVIOR !
-        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        // ABC new instance must come up connected!
-        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        obc[0].ABC1 = new ABC();
-        currentEvent = eventsPC.DequeueSingle();
+        #endregion S U B T E S T S
 
-        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        // What Just Happened:
-        // - ABC1 just went from null status of WaitingForValue to
-        //   a new state of having a model and running discovery on it.
-        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        void subtestAssignABC1InstanceVerifyINPC()
+        {
+            // CRITICAL BEHAVIOR !
+            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // ABC new instance must come up connected!
+            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            clearQueues(ClearQueue.OnAwaitedEvents);
+            obc[0].ABC1 = new ABC();
+            currentEvent = eventsPC.DequeueSingle();
 
-        // EXPECT
-        // - There should be 'runtimetype' attributes because the declared property is different (i.e. 'object').
-        // - The ABC1 property model should be populated and no longer 'WaitingForValue'.
-        actual =
-            currentEvent.SenderModel.SortAttributes<SortOrderNOD>().ToString();
-        expected = @" 
+            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // What Just Happened:
+            // - ABC1 just went from null status of WaitingForValue to
+            //   a new state of having a model and running discovery on it.
+            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+            // EXPECT
+            // - There should be 'runtimetype' attributes because the declared property is different (i.e. 'object').
+            // - The ABC1 property model should be populated and no longer 'WaitingForValue'.
+            actual =
+                currentEvent.SenderModel.SortAttributes<SortOrderNOD>().ToString();
+            expected = @" 
 <member name=""ABC1"" pi=""[ABC]"" instance=""[ABC]"" onpc=""[OnPC]"">
   <member name=""A"" pi=""[Object]"" runtimetype=""[String]"" />
   <member name=""B"" pi=""[Object]"" runtimetype=""[String]"" />
   <member name=""C"" pi=""[Object]"" runtimetype=""[String]"" />
 </member>";
 
-        Assert.AreEqual(
-            expected.NormalizeResult(),
-            actual.NormalizeResult(),
-            "Expecting property changed for ABC1"
-        );
-        Assert.AreEqual(
-            currentEvent.PropertyName,
-            nameof(INPCwithINPCs.ABC1),
-            "Expecting ABC1 is modeled as a NON-NULL instance");
-        Assert.IsNotNull(currentEvent.PropertyChangedEventArgs);
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting property changed for ABC1"
+            );
+            Assert.AreEqual(
+                currentEvent.PropertyName,
+                nameof(INPCwithINPCs.ABC1),
+                "Expecting ABC1 is modeled as a NON-NULL instance");
+            Assert.IsNotNull(currentEvent.PropertyChangedEventArgs);
+
+
+            joined = string.Join(Environment.NewLine, eventsOA.Select(_ => (_.e as AwaitedEventArgs)?.Args?.ToString()));
+            actual = joined;
+            expected = @" 
+Added INPC Subscription
+<member name=""ABC1"" pi=""[ABC]"" instance=""[ABC]"" onpc=""[OnPC]"" />";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting ABC1 subscription OA."
+                );
+            }
 
         // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         // Set back to null
