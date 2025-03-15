@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using XBoundObjectMSTest.TestClassesForModeling.Test_Singleton;
 using XBoundObjectMSTest.TestClassesForModeling.Test_ModelInit;
+using IVSoftware.Portable.Xml.Linq;
 
 namespace XBoundObjectMSTest;
 internal enum CallerName
@@ -1527,5 +1528,284 @@ Added INPC Subscription
 
         // Thows an exception and fails the test if event wasn't received.
         currentEvent = eventsCC.DequeueSingle();
+    }
+
+    [TestMethod]
+    public void Test_SetNullPropertyToString()
+    {
+        XElement originModel;
+        ClassWithOnePropertyINPC 
+            cwopLevel0;
+
+        subtestClassWithSingleObjectDefaultNullProperty();
+
+        subtestLookForPropertyChangedWhenPropertyIsSet();
+
+
+        #region S U B T E S T S 
+        void subtestClassWithSingleObjectDefaultNullProperty()
+        {
+            cwopLevel0 =
+                new ClassWithOnePropertyINPC()
+                .WithNotifyOnDescendants(
+                    out originModel,
+                    onPC: (sender, e) => eventsPC.Enqueue(new SenderEventPair(sender, e)),
+                    onCC: (sender, e) => eventsCC.Enqueue(new SenderEventPair(sender, e)),
+                    options: ModelingOption.CachePropertyInfo);
+            // Loopback
+            _ = originModel.To<ClassWithOnePropertyINPC>(@throw: true);
+
+
+            actual = originModel.SortAttributes<SortOrderNOD>().ToString();
+            expected = @" 
+<model name=""(Origin)ClassWithOnePropertyINPC"" instance=""[ClassWithOnePropertyINPC]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""A"" pi=""[Object]"" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting null instance of System.Object"
+            );
+        }
+        
+
+        void subtestLookForPropertyChangedWhenPropertyIsSet()
+        {
+            // =========================================================
+            // Setting 'A' to an instance come with certain expectations.
+            // - Doing this must raise a PropertyChanged event.
+            // =========================================================
+
+            cwopLevel0.A = Guid.NewGuid().ToString(); // Property Change
+
+            currentEvent = eventsPC.Dequeue();
+            Assert.AreEqual(0, eventsPC.Count);
+            Assert.AreEqual(1, currentEvent.SenderModel?.Ancestors().Count());
+
+            actual = originModel.SortAttributes<SortOrderNOD>().ToString();
+            expected = @" 
+<model name=""(Origin)ClassWithOnePropertyINPC"" instance=""[ClassWithOnePropertyINPC]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""A"" pi=""[Object]"" runtimetype=""String"" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting origin model to match"
+            );
+            // Look at PROPERTY model
+            actual = currentEvent.SenderModel.SortAttributes<SortOrderNOD>().ToString() ?? throw new NullReferenceException();
+            expected = @" 
+<member name=""A"" pi=""[Object]"" runtimetype=""String"" />";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting refreshed property model"
+            );
+        }
+        #endregion S U B T E S T S 
+
+        // =========================================================
+        // Setting 'A' back to null
+        // =========================================================
+
+        cwopLevel0.A = null; // Property Change
+
+        currentEvent = eventsPC.Dequeue();
+        Assert.AreEqual(0, eventsPC.Count);
+
+        actual = originModel.SortAttributes<SortOrderNOD>().ToString();
+        expected = @" 
+<model name=""(Origin)ClassWithOnePropertyINPC"" instance=""[ClassWithOnePropertyINPC]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""A"" pi=""[Object]"" />
+</model>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting INPCSource"
+        );
+        // =========================================================
+        // Setting 'A'to a new INPC instance at level 1
+        // =========================================================
+
+        cwopLevel0.A = new ClassWithOnePropertyINPC(); // Property Change
+
+        currentEvent = eventsPC.Dequeue();
+        Assert.AreEqual(0, eventsPC.Count);
+
+        actual = originModel.SortAttributes<SortOrderNOD>().ToString();
+
+        expected = @" 
+<model name=""(Origin)ClassWithOnePropertyINPC"" instance=""[ClassWithOnePropertyINPC]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""A"" pi=""[Object]"" instance=""[ClassWithOnePropertyINPC]"" onpc=""[OnPC]"">
+    <member name=""A"" pi=""[Object]"" />
+  </member>
+</model>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting INPCSource"
+        );
+        Assert.AreEqual(1, currentEvent.SenderModel.Ancestors().Count());
+
+        object? objectLevel1 =
+            currentEvent.SenderModel.Attribute(nameof(SortOrderNOD.instance)) is XBoundAttribute xba
+            ? xba.Tag
+            : null;
+        Assert.AreEqual(objectLevel1?.GetType(), typeof(ClassWithOnePropertyINPC));
+
+        // =========================================================
+        // Setting 'A' on the leaf instance to a string
+        // =========================================================
+
+        var cwopLevel1 = (ClassWithOnePropertyINPC)objectLevel1;
+
+        cwopLevel1.A = Guid.NewGuid().ToString(); // Property Change
+
+        currentEvent = eventsPC.Dequeue();
+        Assert.AreEqual(0, eventsPC.Count);
+
+        Assert.AreEqual(2, currentEvent.SenderModel?.Ancestors().Count());
+
+        actual = originModel.SortAttributes<SortOrderNOD>().ToString() ?? throw new NullReferenceException();
+        expected = @" 
+<model name=""(Origin)ClassWithOnePropertyINPC"" instance=""[ClassWithOnePropertyINPC]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""A"" pi=""[Object]"" instance=""[ClassWithOnePropertyINPC]"" onpc=""[OnPC]"">
+    <member name=""A"" pi=""[Object]"" runtimetype=""String"" />
+  </member>
+</model>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting model is RELATIVE TO SENDER AT LEVEL 1"
+        );
+
+        // =========================================================
+        // GETTING READY TO FOR UNSUBSCRIBE TESTS - first make sure
+        // we've got at least two INPS under the main one.
+        // =========================================================
+
+        var leafABC = new ABC
+        {
+            A = new EmptyClass()
+        };
+
+        cwopLevel1.A = leafABC; // [Careful] THIS IS RIGHT. It's a change on level 1. Property Change
+
+        currentEvent = eventsPC.Dequeue();
+        Assert.AreEqual(0, eventsPC.Count);
+        Assert.AreEqual(2, currentEvent.SenderModel?.Ancestors().Count());
+
+        Assert.ReferenceEquals(
+            cwopLevel1,
+            currentEvent!
+            .SenderModel?
+            .Parent?
+            .To<ClassWithOnePropertyINPC>(@throw: true));
+
+        var abcLevel2 = currentEvent.SenderModel.To<ABC>(@throw: true);
+
+        actual = originModel.SortAttributes<SortOrderNOD>().ToString();
+        expected = @" 
+<model name=""(Origin)ClassWithOnePropertyINPC"" instance=""[ClassWithOnePropertyINPC]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""A"" pi=""[Object]"" instance=""[ClassWithOnePropertyINPC]"" onpc=""[OnPC]"">
+    <member name=""A"" pi=""[Object]"" instance=""[ABC]"" onpc=""[OnPC]"">
+      <member name=""A"" pi=""[Object]"" instance=""[EmptyClass]"" />
+      <member name=""B"" pi=""[Object]"" runtimetype=""[String]"" />
+      <member name=""C"" pi=""[Object]"" runtimetype=""[String]"" />
+    </member>
+  </member>
+</model>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting to see all layers in their glory."
+        );
+
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ P R O P E R T Y    C H A N G E   ++++++++++++++++++++++++
+        abcLevel2.B = 250309; // 15 years!
+
+        currentEvent = eventsPC.Dequeue();
+        Assert.AreEqual(0, eventsPC.Count);
+        Assert.AreEqual(3, currentEvent.SenderModel?.Ancestors().Count());
+
+        actual = originModel.SortAttributes<SortOrderNOD>().ToString();
+        expected = @" 
+<model name=""(Origin)ClassWithOnePropertyINPC"" instance=""[ClassWithOnePropertyINPC]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""A"" pi=""[Object]"" instance=""[ClassWithOnePropertyINPC]"" onpc=""[OnPC]"">
+    <member name=""A"" pi=""[Object]"" instance=""[ABC]"" onpc=""[OnPC]"">
+      <member name=""A"" pi=""[Object]"" instance=""[EmptyClass]"" />
+      <member name=""B"" pi=""[Object]"" runtimetype=""Int32"" />
+      <member name=""C"" pi=""[Object]"" runtimetype=""[String]"" />
+    </member>
+  </member>
+</model>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting origin model to match"
+        );
+
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ P R O P E R T Y    C H A N G E   ++++++++++++++++++++++++
+        abcLevel2.C = new EmptyOnNotifyClass();
+
+        currentEvent = eventsPC.Dequeue();
+        Assert.AreEqual(0, eventsPC.Count);
+
+        Assert.AreEqual(3, currentEvent.SenderModel.Ancestors().Count());
+
+        actual = originModel.SortAttributes<SortOrderNOD>().ToString();
+        expected = @" 
+<model name=""(Origin)ClassWithOnePropertyINPC"" instance=""[ClassWithOnePropertyINPC]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""A"" pi=""[Object]"" instance=""[ClassWithOnePropertyINPC]"" onpc=""[OnPC]"">
+    <member name=""A"" pi=""[Object]"" instance=""[ABC]"" onpc=""[OnPC]"">
+      <member name=""A"" pi=""[Object]"" instance=""[EmptyClass]"" />
+      <member name=""B"" pi=""[Object]"" runtimetype=""Int32"" />
+      <member name=""C"" pi=""[Object]"" instance=""[EmptyOnNotifyClass]"" onpc=""[OnPC]"" />
+    </member>
+  </member>
+</model>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting origin model to match."
+        );
+
+        // =========================================================
+        // NOW READY TO FOR UNSUBSCRIBE TESTS
+        // =========================================================
+
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ P R O P E R T Y    C H A N G E   ++++++++++++++++++++++++
+        abcLevel2.C = null!;
+
+        currentEvent = eventsPC.Dequeue();
+        Assert.AreEqual(0, eventsPC.Count);
+        Assert.AreEqual(3, currentEvent.SenderModel.Ancestors().Count());
+
+        actual = originModel.SortAttributes<SortOrderNOD>().ToString();
+        expected = @" 
+<model name=""(Origin)ClassWithOnePropertyINPC"" instance=""[ClassWithOnePropertyINPC]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""A"" pi=""[Object]"" instance=""[ClassWithOnePropertyINPC]"" onpc=""[OnPC]"">
+    <member name=""A"" pi=""[Object]"" instance=""[ABC]"" onpc=""[OnPC]"">
+      <member name=""A"" pi=""[Object]"" instance=""[EmptyClass]"" />
+      <member name=""B"" pi=""[Object]"" runtimetype=""Int32"" />
+      <member name=""C"" pi=""[Object]"" />
+    </member>
+  </member>
+</model>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting abcLevel2.C is now null."
+        );
     }
 }
