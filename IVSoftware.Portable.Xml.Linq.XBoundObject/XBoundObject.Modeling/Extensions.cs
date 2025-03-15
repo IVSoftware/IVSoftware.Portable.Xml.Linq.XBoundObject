@@ -105,9 +105,11 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
         public NotifyCollectionChangedDelegate NotifyCollectionChangedDelegate { get; set; } = null;
         public XObjectChangeDelegate XObjectChangeDelegate { get; set; } = null;
 
-        public ModelingOption Options { get; set; } = 0;
-        public event EventHandler<XObjectChangedOrChangingEventArgs> XObjectChange;
+        // This is the default value for WithNotifyOnDescendants
+        // it's 'not' redundant to set it non-zero here as well.
+        public ModelingOption Options { get; set; } = ModelingOption.CachePropertyInfo;
 
+        public event EventHandler<XObjectChangedOrChangingEventArgs> XObjectChange;
         internal void RaiseModelAdded(object sender, XElement element)
         {
             ModelAdded?.Invoke(sender, new ElementAvailableEventArgs(element));
@@ -342,7 +344,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             PropertyChangedDelegate onPC,
             NotifyCollectionChangedDelegate onCC = null,
             XObjectChangeDelegate onXO = null,
-            ModelingOption options = 0)
+            ModelingOption options = ModelingOption.CachePropertyInfo)
             => @this.WithNotifyOnDescendants(out XElement _, onPC, onCC, onXO, options);
 
         /// <summary>
@@ -362,7 +364,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             PropertyChangedDelegate onPC,
             NotifyCollectionChangedDelegate onCC = null,
             XObjectChangeDelegate onXO = null,
-            ModelingOption options = 0)
+            ModelingOption options = ModelingOption.CachePropertyInfo)
         {
             var context = new ModelingContext()
             {
@@ -631,12 +633,14 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
         public static void RefreshModel(this XElement model, object newValue)
         {
             var attrsB4 = model.Attributes().ToArray();
+
             // Perform an unconditional complete reset.
+            // [Careful] In the case of newValue being null, the model.Parent may also be null.
             foreach (var element in model.Elements().ToArray())
             {
                 foreach (var desc in element.DescendantsAndSelf().ToArray())
                 {
-                    desc.Remove();
+                    if(desc.Parent != null) desc.Remove();
                 }
             }
             foreach (var attr in model.Attributes().ToArray())
@@ -652,7 +656,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                     case nameof(SortOrderNOD.onpc):
                     case nameof(SortOrderNOD.oncc):
                     case nameof(SortOrderNOD.notifyinfo):
-                        attr.Remove();
+                        if(attr.Parent != null) attr.Remove();
                         break;
                     default:
                         {   /* N O O P */

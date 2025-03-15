@@ -13,6 +13,7 @@ using System.Diagnostics;
 using XBoundObjectMSTest.TestClassesForModeling.Test_Singleton;
 using XBoundObjectMSTest.TestClassesForModeling.Test_ModelInit;
 using IVSoftware.Portable.Xml.Linq;
+using XBoundObjectMSTest.TestClassesForModeling.AddRemoveWithDeepNesting;
 
 namespace XBoundObjectMSTest;
 internal enum CallerName
@@ -681,45 +682,40 @@ Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
         {
             XElement originModel =
                 classA
-                .ModelDescendantsAndSelf(null)
+                .ModelDescendantsAndSelf()
                 .ToArray()
                 .First();
 
             actual = originModel.SortAttributes<SortOrderNOD>().ToString();
             expected = @" 
 <model name=""(Origin)ClassA"" instance=""[ClassA]"" context=""[ModelingContext]"">
-  <member name=""TotalCost"" />
-  <member name=""BCollection"" instance=""[ObservableCollection]"">
+  <member name=""TotalCost"" pi=""[Int32]"" />
+  <member name=""BCollection"" pi=""[ObservableCollection]"" instance=""[ObservableCollection]"">
     <model instance=""[ClassB]"">
-      <member name=""C"" instance=""[ClassC]"">
-        <member name=""Name"" />
-        <member name=""Cost"" />
-        <member name=""Currency"" />
+      <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"">
+        <member name=""Name"" pi=""[String]"" />
+        <member name=""Cost"" pi=""[Int32]"" />
+        <member name=""Currency"" pi=""[Int32]"" />
       </member>
     </model>
     <model instance=""[ClassB]"">
-      <member name=""C"" instance=""[ClassC]"">
-        <member name=""Name"" />
-        <member name=""Cost"" />
-        <member name=""Currency"" />
+      <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"">
+        <member name=""Name"" pi=""[String]"" />
+        <member name=""Cost"" pi=""[Int32]"" />
+        <member name=""Currency"" pi=""[Int32]"" />
       </member>
     </model>
     <model instance=""[ClassB]"">
-      <member name=""C"" instance=""[ClassC]"">
-        <member name=""Name"" />
-        <member name=""Cost"" />
-        <member name=""Currency"" />
+      <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"">
+        <member name=""Name"" pi=""[String]"" />
+        <member name=""Cost"" pi=""[Int32]"" />
+        <member name=""Currency"" pi=""[Int32]"" />
       </member>
     </model>
-    <member name=""Count"" />
+    <member name=""Count"" pi=""[Int32]"" />
   </member>
 </model>";
 
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting values to match."
-            );
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
@@ -729,7 +725,7 @@ Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
         }
         void subtestDiscoveryEnumerator()
         {
-            ModelingContext context = new();
+            ModelingContext context = new() { Options = 0 };
             var builder = new List<string>();
             foreach (var xel in classA.ModelDescendantsAndSelf(context))
             {
@@ -1494,7 +1490,6 @@ Added INPC Subscription
         );
     }
 
-
     [TestMethod]
     public void Test_ObservableCollectionSolo()
     {
@@ -1535,7 +1530,8 @@ Added INPC Subscription
     {
         XElement originModel;
         ClassWithOnePropertyINPC 
-            cwopLevel0;
+            cwopLevel0, 
+            cwopLevel1;
 
         subtestClassWithSingleObjectDefaultNullProperty();
 
@@ -1662,7 +1658,7 @@ Added INPC Subscription
         // Setting 'A' on the leaf instance to a string
         // =========================================================
 
-        var cwopLevel1 = (ClassWithOnePropertyINPC)objectLevel1;
+        cwopLevel1 = (ClassWithOnePropertyINPC)objectLevel1;
 
         cwopLevel1.A = Guid.NewGuid().ToString(); // Property Change
 
@@ -1807,5 +1803,291 @@ Added INPC Subscription
             actual.NormalizeResult(),
             "Expecting abcLevel2.C is now null."
         );
+    }
+
+    [TestMethod]
+    public void AddRemoveWithDeepNesting()
+    {
+        ModelGO classGO = new ModelGO().WithNotifyOnDescendants(
+            out XElement model,
+            onPC: (sender, e) => eventsPC.Enqueue(new SenderEventPair(sender, e)),
+            onCC: (sender, e) => eventsCC.Enqueue(new SenderEventPair(sender, e)),
+            onXO: (sender, e) => eventsXO.Enqueue(new SenderEventPair(sender, e)));
+
+        ModelLevel1GO? classGO1 = null;
+        ModelLevel2GO? classGO2 = null;
+        subtestInitialModel();
+        subtestEventingForGuidChange();
+        subtestEventingForObjectChangeLevel0();
+        subtestEventingForObjectChangeLevel1();
+        subtestDisposeLevel0CU();
+        { }
+
+        // EXPECT:
+        // - string Guid{ get; }
+        // - Initial model waiting for object
+        void subtestInitialModel()
+        {
+            actual = model.SortAttributes<SortOrderNOD>().ToString();
+            expected = @" 
+<model name=""(Origin)ModelGO"" instance=""[ModelGO]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""Guid"" pi=""[String]"" />
+  <member name=""CompleteUnknown"" pi=""[Object]"" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting initial model"
+            );
+        }
+
+        // EXPECT:
+        // - The single PE event arrives in eventsPC
+        // - Inspection of PropertyModel and SenderModel are accurate.
+        void subtestEventingForGuidChange()
+        {
+            clearQueues();
+            classGO.Guid = $"{Guid.NewGuid()}"; // Property Change
+            currentEvent = eventsPC.DequeueSingle();
+
+            // The property change.
+            actual = currentEvent.SenderModel.SortAttributes<SortOrderNOD>().ToString();
+            expected = @" 
+<member name=""Guid"" pi=""[String]"" />";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting PROPERTY model"
+            );
+
+            // DIFFERENT! Look at the INPC parent!
+            actual =
+                currentEvent
+                .SenderModel?
+                .Parent?
+                .SortAttributes<SortOrderNOD>().ToString() ?? throw new NullReferenceException();
+            expected = @" 
+<model name=""(Origin)ModelGO"" instance=""[ModelGO]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""Guid"" pi=""[String]"" />
+  <member name=""CompleteUnknown"" pi=""[Object]"" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting SENDER model"
+            );
+        }
+
+        // EXPECT:
+        // - The single PE event arrives in eventsPC
+        // - Inspection of PropertyModel and SenderModel are accurate.
+        // - TYPE of CU is properly identified in the instance attribute.
+        void subtestEventingForObjectChangeLevel0()
+        {
+            clearQueues();
+            classGO.CompleteUnknown = new ModelLevel1GO(); // Property Change
+            currentEvent = eventsPC.DequeueSingle();
+
+            // The property change.
+            actual = currentEvent.SenderModel.SortAttributes<SortOrderNOD>().ToString();
+            expected = @" 
+<member name=""CompleteUnknown"" pi=""[Object]"" instance=""[ModelLevel1GO]"" onpc=""[OnPC]"">
+  <member name=""Guid"" pi=""[String]"" />
+  <member name=""CompleteUnknown"" pi=""[Object]"" />
+</member>";
+
+           Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting PROPERTY model"
+            );
+
+            // DIFFERENT! Verify the INPC parent is still ModelGO
+            actual =
+                currentEvent
+                .SenderModel?
+                .Parent?.SortAttributes<SortOrderNOD>().ToString() ?? throw new NullReferenceException();
+            expected = @" 
+<model name=""(Origin)ModelGO"" instance=""[ModelGO]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""Guid"" pi=""[String]"" />
+  <member name=""CompleteUnknown"" pi=""[Object]"" instance=""[ModelLevel1GO]"" onpc=""[OnPC]"">
+    <member name=""Guid"" pi=""[String]"" />
+    <member name=""CompleteUnknown"" pi=""[Object]"" />
+  </member>
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting INPC PARENT model"
+            );
+
+            // EXPECT
+            // - Retrieve instance from Property Model
+            classGO1 =
+                currentEvent?
+                .SenderModel?
+                .GetInstance<ModelLevel1GO>()
+                ?? null!;
+            Assert.IsNotNull(classGO1);
+        }
+
+        // EXPECT
+        // Property changes of the deepest nested object are responsive.
+        void subtestEventingForObjectChangeLevel1()
+        {
+            clearQueues();
+            Assert.IsNotNull(classGO1);
+            classGO1.CompleteUnknown = new ModelLevel2GO(); // Property Change
+            currentEvent = eventsPC.DequeueSingle();
+
+            // ModelLevel2GO.CompleteUnknown has changed.
+            actual = currentEvent.SenderModel.SortAttributes<SortOrderNOD>().ToString();
+            expected = @" 
+<member name=""CompleteUnknown"" pi=""[Object]"" instance=""[ModelLevel2GO]"" onpc=""[OnPC]"">
+  <member name=""Guid"" pi=""[String]"" />
+  <member name=""CompleteUnknown"" pi=""[Object]"" />
+</member>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting PROPERTY model"
+            );
+
+            // The sender of the property change is now ModelGO1
+            actual =
+                currentEvent
+                .SenderModel?
+                .Parent?
+                .SortAttributes<SortOrderNOD>().ToString() ?? throw new NullReferenceException();
+            expected = @" 
+<member name=""CompleteUnknown"" pi=""[Object]"" instance=""[ModelLevel1GO]"" onpc=""[OnPC]"">
+  <member name=""Guid"" pi=""[String]"" />
+  <member name=""CompleteUnknown"" pi=""[Object]"" instance=""[ModelLevel2GO]"" onpc=""[OnPC]"">
+    <member name=""Guid"" pi=""[String]"" />
+    <member name=""CompleteUnknown"" pi=""[Object]"" />
+  </member>
+</member>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting INPC PARENT model"
+            );
+            // EXPECT
+            // - Retrieve instance of GO2 from PROPERTY Model
+            classGO2 =
+                currentEvent?
+                .SenderModel?
+                .GetInstance<ModelLevel2GO>()
+                ?? throw new NullReferenceException("Make sure you're retrieving the right instance from the right model");
+
+            // EXPECT
+            // Property change at the deepest level is still connected.
+            clearQueues();
+            classGO2.Guid = $"{Guid.NewGuid()}";
+            currentEvent = eventsPC.DequeueSingle();
+
+            // NOW VIEW PROPERTY, SENDER, AND ROOT.
+
+            actual = currentEvent.SenderModel.SortAttributes<SortOrderNOD>().ToString();
+            expected = @" 
+<member name=""Guid"" pi=""[String]"" />";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting PROPERTY model"
+            );
+
+            actual =
+                currentEvent
+                .SenderModel?
+                .Parent?
+                .SortAttributes<SortOrderNOD>().ToString() ?? throw new NullReferenceException();
+            expected = @" 
+<member name=""CompleteUnknown"" pi=""[Object]"" instance=""[ModelLevel2GO]"" onpc=""[OnPC]"">
+  <member name=""Guid"" pi=""[String]"" />
+  <member name=""CompleteUnknown"" pi=""[Object]"" />
+</member>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting INPC PARENT model"
+            );
+
+            actual = currentEvent.OriginModel.SortAttributes<SortOrderNOD>().ToString();
+            expected = @" 
+<model name=""(Origin)ModelGO"" instance=""[ModelGO]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""Guid"" pi=""[String]"" />
+  <member name=""CompleteUnknown"" pi=""[Object]"" instance=""[ModelLevel1GO]"" onpc=""[OnPC]"">
+    <member name=""Guid"" pi=""[String]"" />
+    <member name=""CompleteUnknown"" pi=""[Object]"" instance=""[ModelLevel2GO]"" onpc=""[OnPC]"">
+      <member name=""Guid"" pi=""[String]"" />
+      <member name=""CompleteUnknown"" pi=""[Object]"" />
+    </member>
+  </member>
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting PROPERTY model"
+            );
+        }
+
+        // Expect verified removal of all connection points.
+        void subtestDisposeLevel0CU() { }
+        {
+            clearQueues(ClearQueue.All);
+            classGO.CompleteUnknown = null;
+            currentEvent = eventsPC.DequeueSingle();
+
+            var joined = string.Join(Environment.NewLine, eventsXO.Select(_ => _.ToString()));
+            actual = joined;
+
+            actual.ToClipboard();
+            actual.ToClipboardAssert();
+            { }
+            expected = @" 
+[XElement.Remove] <member name=""Guid"" statusnod=""NoObservableMemberProperties"" pi=""[System.String]"" />
+[XElement.Remove] <member name=""Guid"" statusnod=""NoObservableMemberProperties"" pi=""[System.String]"" />
+[XElement.Remove] <member name=""CompleteUnknown"" statusnod=""INPCSource"" pi=""[System.Object]"" instance=""[WithNotifyOnDescendants.Proto.MSTest.ModelLevel2GO]"" onpc=""[OnPC]"" />
+[XElement.Remove] <member name=""CompleteUnknown"" statusnod=""INPCSource"" pi=""[System.Object]"" instance=""[WithNotifyOnDescendants.Proto.MSTest.ModelLevel2GO]"" onpc=""[OnPC]"" />
+[XAttribute.Remove] statusnod=""INPCSource""
+[XBoundAttribute.Remove] instance=""[WithNotifyOnDescendants.Proto.MSTest.ModelLevel1GO]""
+[XBoundAttribute.Remove] onpc=""[OnPC]""
+[XAttribute.Add] statusnod=""WaitingForValue""";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting values to match."
+            );
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting XObject events resulting from removal of models."
+            );
+
+            actual = currentEvent.OriginModel.SortAttributes<SortOrderNOD>().ToString();
+            expected = @" 
+<model name=""(Origin)ModelGO"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.ModelGO]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"">
+  <member name=""Guid"" statusnod=""NoObservableMemberProperties"" pi=""[System.String]"" />
+  <member name=""CompleteUnknown"" statusnod=""WaitingForValue"" pi=""[System.Object]"" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting removal (now WaitingForValue at level 0"
+            );
+        }
     }
 }
