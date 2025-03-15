@@ -225,6 +225,24 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                                 );
                             }
                             currentElement.Add(member);
+                            if(pi.GetCustomAttribute<WaitForValueCreatedAttribute>() is WaitForValueCreatedAttribute attr)
+                            {
+                                if (type.GetProperty(attr.IsValueCreatedPropertyName) is PropertyInfo piInspector)
+                                {
+                                    if (Equals(piInspector.GetValue(localInstance), true))
+                                    {   /* G T K */
+                                        // Lazy T is not carried forward but is STILL AVAILABLE HERE.
+                                        // https://github.com/IVSoftware/WithNotifyOnDescendants/blob/master/WithNotifyOnDescendants/Attributes.cs
+                                        // LINK: LazyProxyDictionary, LazyProxy
+                                        // Singleton or Lazy T has a value. Safe to proceed!
+                                    }
+                                    else
+                                    {
+                                        // Do NOT invoke getter. It will prematurely invoke the singleton.
+                                        continue;
+                                    }
+                                }
+                            }
                             if (pi.GetValue(localInstance) is object childInstance)
                             {
                                 var childType = childInstance.GetType();

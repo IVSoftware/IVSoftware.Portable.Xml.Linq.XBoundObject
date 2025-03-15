@@ -10,6 +10,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using XBoundObjectMSTest.TestClassesForModeling.Common;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace XBoundObjectMSTest;
 internal enum CallerName
@@ -1346,5 +1347,80 @@ Added INPC Subscription
             );
         }
         #endregion S U B T E S T S
+    }
+    /// <summary>
+    /// This test verifies that the Lazy<T> proxy correctly triggers notifications 
+    /// for property changes, allowing the model to run discovery.
+    /// 
+    /// Problem: The Lazy<T> implementation does not provide notifications when 
+    ///          its value is created or updated.
+    /// 
+    /// Solution: By utilizing a notification mechanism, this test ensures that 
+    ///           property change events are properly raised, allowing discovery 
+    ///           to detect changes in singleton instances.
+    ///           
+    /// Test Flow:
+    /// 1. Initialize a ValidSingletonTestModel with notification handlers.
+    /// 2. Validate that the model structure is as expected before activation.
+    /// 3. Trigger property access and confirm notifications fire correctly.
+    /// 4. Verify that Lazy<T> watcher mechanism allows property changes to be detected.
+    /// 5. Ensure that the model updates only after the LazyProxy expires and fires a change.
+    /// </summary>
+    [TestMethod]
+    public void Test_Singleton()
+    {
+        object @lock = new();
+        Stopwatch stopwatch = new Stopwatch();
+
+        ClassWithSingletonProperty cwsp =
+            new ClassWithSingletonProperty()
+            .WithNotifyOnDescendants(
+                out XElement originModel,
+                onPC: (sender, e) =>
+                {
+                    eventsPC.Enqueue(new SenderEventPair(sender, e));
+                },
+                onCC: (sender, e) => eventsCC.Enqueue(new SenderEventPair(sender, e)), 
+                options: ModelingOption.CachePropertyInfo
+            );
+        actual = originModel.SortAttributes<SortOrderNOD>().ToString();
+        expected = @" 
+<model name=""(Origin)ClassWithSingletonProperty"" instance=""[ClassWithSingletonProperty]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""ABC1IsValueCreated"" pi=""[Boolean]"" />
+  <member name=""ABC1"" pi=""[INotifyPropertyChanged]"" />
+</model>";
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting discovery without activating singleton."
+        );
+
+        clearQueues();
+        Assert.IsFalse(cwsp.ABC1IsValueCreated);
+        var abc1 = (ABC)cwsp.ABC1;
+        Assert.IsTrue(cwsp.ABC1IsValueCreated);
+        currentEvent = eventsPC.DequeueSingle();
+        Assert.AreEqual(
+            nameof(ClassWithSingletonProperty.ABC1),
+            currentEvent.PropertyName,
+            "Expecting property change when singleton is activated"
+        );
+
+        actual = originModel.SortAttributes<SortOrderNOD>().ToString();
+        expected = @" 
+<model name=""(Origin)ClassWithSingletonProperty"" instance=""[ClassWithSingletonProperty]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""ABC1IsValueCreated"" pi=""[Boolean]"" />
+  <member name=""ABC1"" pi=""[INotifyPropertyChanged]"" instance=""[ABC]"" onpc=""[OnPC]"">
+    <member name=""A"" pi=""[Object]"" runtimetype=""[String]"" />
+    <member name=""B"" pi=""[Object]"" runtimetype=""[String]"" />
+    <member name=""C"" pi=""[Object]"" runtimetype=""[String]"" />
+  </member>
+</model>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting model creation for new singleton instance."
+        );
     }
 }
