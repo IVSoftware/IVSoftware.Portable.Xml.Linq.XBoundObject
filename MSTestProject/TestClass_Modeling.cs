@@ -2046,42 +2046,19 @@ Added INPC Subscription
             classGO.CompleteUnknown = null;
             currentEvent = eventsPC.DequeueSingle();
 
-            var joined = string.Join(Environment.NewLine, eventsXO.Select(_ => _.ToString()));
+            var joined = string.Join(
+                Environment.NewLine, 
+                eventsXO
+                .Where(_ => _.e is XObjectChangedOrChangingEventArgs ePlus && !ePlus.IsChanging )
+                .Select(_ => _.ToString()));
             actual = joined;
-
-            actual.ToClipboard();
-            actual.ToClipboardAssert();
-            { }
             expected = @" 
-[XElement.Remove] <member name=""Guid"" statusnod=""NoObservableMemberProperties"" pi=""[System.String]"" />
-[XElement.Remove] <member name=""Guid"" statusnod=""NoObservableMemberProperties"" pi=""[System.String]"" />
-[XElement.Remove] <member name=""CompleteUnknown"" statusnod=""INPCSource"" pi=""[System.Object]"" instance=""[WithNotifyOnDescendants.Proto.MSTest.ModelLevel2GO]"" onpc=""[OnPC]"" />
-[XElement.Remove] <member name=""CompleteUnknown"" statusnod=""INPCSource"" pi=""[System.Object]"" instance=""[WithNotifyOnDescendants.Proto.MSTest.ModelLevel2GO]"" onpc=""[OnPC]"" />
-[XAttribute.Remove] statusnod=""INPCSource""
-[XBoundAttribute.Remove] instance=""[WithNotifyOnDescendants.Proto.MSTest.ModelLevel1GO]""
-[XBoundAttribute.Remove] onpc=""[OnPC]""
-[XAttribute.Add] statusnod=""WaitingForValue""";
-
-
-            expected = @" 
-[XElement.Remove] <member name=""Guid"" pi=""[String]"" />
-[XElement.Remove] <member name=""Guid"" pi=""[String]"" />
-[XElement.Remove] <member name=""CompleteUnknown"" pi=""[Object]"" />
-[XElement.Remove] <member name=""CompleteUnknown"" pi=""[Object]"" />
-[XElement.Remove] <member name=""Guid"" pi=""[String]"" />
-[XElement.Remove] <member name=""Guid"" pi=""[String]"" />
-[XElement.Remove] <member name=""CompleteUnknown"" pi=""[Object]"" instance=""[ModelLevel2GO]"" onpc=""[OnPC]"" />
-[XElement.Remove] <member name=""CompleteUnknown"" pi=""[Object]"" instance=""[ModelLevel2GO]"" onpc=""[OnPC]"" />
-[XBoundAttribute.Remove] instance=""[ModelLevel1GO]""
-[XBoundAttribute.Remove] instance=""[ModelLevel1GO]""
-[XBoundAttribute.Remove] onpc=""[OnPC]""
-[XBoundAttribute.Remove] onpc=""[OnPC]""";
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting values to match."
-            );
+Remove XElement   Changed : member Guid
+Remove XElement   Changed : member CompleteUnknown
+Remove XElement   Changed : member Guid
+Remove XElement   Changed : member CompleteUnknown
+Remove XElement   Changed : noparent 
+Remove XElement   Changed : noparent ";
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -2089,17 +2066,32 @@ Added INPC Subscription
                 "Expecting XObject events resulting from removal of models."
             );
 
-            actual = currentEvent.OriginModel.SortAttributes<SortOrderNOD>().ToString();
+            joined = string.Join(Environment.NewLine, eventsOA.Select(_ => (_.e as AwaitedEventArgs)?.Args?.ToString()));
+            actual = joined;
             expected = @" 
-<model name=""(Origin)ModelGO"" statusnod=""INPCSource"" instance=""[WithNotifyOnDescendants.Proto.MSTest.ModelGO]"" onpc=""[OnPC]"" notifyinfo=""[NotifyInfo]"">
-  <member name=""Guid"" statusnod=""NoObservableMemberProperties"" pi=""[System.String]"" />
-  <member name=""CompleteUnknown"" statusnod=""WaitingForValue"" pi=""[System.Object]"" />
-</model>";
+Removing INPC Subscription
+Remove <member name=""CompleteUnknown"" pi=""[Object]"" instance=""[ModelLevel2GO]"" onpc=""[OnPC]"" />
+Removing INPC Subscription
+Remove <member name=""CompleteUnknown"" pi=""[Object]"" instance=""[ModelLevel1GO]"" onpc=""[OnPC]"" />";
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting removal (now WaitingForValue at level 0"
+                "Expecting unsubscription 2x OA."
+            );
+
+            actual = currentEvent.OriginModel.SortAttributes<SortOrderNOD>().ToString();
+
+            expected = @" 
+<model name=""(Origin)ModelGO"" instance=""[ModelGO]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""Guid"" pi=""[String]"" />
+  <member name=""CompleteUnknown"" pi=""[Object]"" />
+</model>";
+
+           Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting removal (no instance of CompleteUnknown @ level 0)"
             );
         }
     }
