@@ -19,11 +19,31 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
         public SenderEventPair(object sender, EventArgs e)
         {
             this.sender = sender;
-            SenderModel = sender as XElement;
+            SenderModel =
+                sender is XElement xel
+                ? xel
+                : sender is XAttribute xattr
+                    ? xattr.Parent is null
+                        ? new XElement("noparent")
+                        : xattr.Parent
+                    : null;
             this.e = e;
             PropertyChangedEventArgs = e as PropertyChangedEventArgs;
             NotifyCollectionChangedEventArgs = e as NotifyCollectionChangedEventArgs;
             XObjectChangeEventArgs = e as XObjectChangeEventArgs;
+
+#if DEBUG
+            if (XObjectChangeEventArgs != null)
+            {
+                if(SenderModel is null)
+                {
+                    Debug.Fail("Unexpected");
+                }
+                else
+                {   /* G T K */
+                }
+            }
+#endif
             switch(e)
             {
                 case PropertyChangingEventArgs eChanging:
@@ -68,7 +88,13 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             }
             else if(XObjectChangeEventArgs != null)
             {
-                return $"[{sender.GetType().Name}.{XObjectChangeEventArgs.ObjectChange}] {sender}";
+                switch (XObjectChangeEventArgs)
+                {
+                    case XObjectChangedOrChangingEventArgs ePlus:
+                        return ePlus.ToString(SenderModel, timestamp: false);
+                    default:
+                        return $"[{sender.GetType().Name}.{XObjectChangeEventArgs.ObjectChange}] {sender}";
+                }
             }
             return base.ToString();
         }

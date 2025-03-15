@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Xml.Linq;
 
@@ -31,6 +32,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                     name = xel.Name.LocalName;
                     propertyName = xel.Attribute(nameof(SortOrderNOD.name))?.Value;
                     break;
+                default:
+                    var msg = $"ERROR: Sender is {(sender?.GetType()?.Name ?? "Unknown")}";
+                    Debug.Fail(msg);
+                    return msg;
             }
             var value = $@"{ObjectChange.ToString().PadRight(6)} {typeName.PadRight(10)} {(IsChanging ? "Changing:" : "Changed :")} {name.PadRight(6)} {propertyName}";
             if (timestamp)

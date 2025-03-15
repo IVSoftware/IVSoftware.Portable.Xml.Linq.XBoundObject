@@ -2062,6 +2062,21 @@ Added INPC Subscription
 [XBoundAttribute.Remove] onpc=""[OnPC]""
 [XAttribute.Add] statusnod=""WaitingForValue""";
 
+
+            expected = @" 
+[XElement.Remove] <member name=""Guid"" pi=""[String]"" />
+[XElement.Remove] <member name=""Guid"" pi=""[String]"" />
+[XElement.Remove] <member name=""CompleteUnknown"" pi=""[Object]"" />
+[XElement.Remove] <member name=""CompleteUnknown"" pi=""[Object]"" />
+[XElement.Remove] <member name=""Guid"" pi=""[String]"" />
+[XElement.Remove] <member name=""Guid"" pi=""[String]"" />
+[XElement.Remove] <member name=""CompleteUnknown"" pi=""[Object]"" instance=""[ModelLevel2GO]"" onpc=""[OnPC]"" />
+[XElement.Remove] <member name=""CompleteUnknown"" pi=""[Object]"" instance=""[ModelLevel2GO]"" onpc=""[OnPC]"" />
+[XBoundAttribute.Remove] instance=""[ModelLevel1GO]""
+[XBoundAttribute.Remove] instance=""[ModelLevel1GO]""
+[XBoundAttribute.Remove] onpc=""[OnPC]""
+[XBoundAttribute.Remove] onpc=""[OnPC]""";
+
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
