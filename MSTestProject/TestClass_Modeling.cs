@@ -961,80 +961,92 @@ A | B | C";
 
 
     [TestMethod]
-    public void Test_XObjectChangeDelegate() 
+    public void Test_XObjectChangeDelegate()
     {
         List<string> builder = new();
-        string joined;
-        var classA = new ClassA(false);
-        _ = classA.WithNotifyOnDescendants(
-            out XElement model,
-            onPC: (sender, e) =>
-            { 
-                eventsPC.Enqueue(new SenderEventPair(sender, e));
-            },
-            onCC: (sender, e) =>
-            {
-                eventsCC.Enqueue(new SenderEventPair(sender, e));
-            },
-            onXO: (sender, e) =>
-            {
-                if (e is XObjectChangedOrChangingEventArgs ePlus)
+        void localOnAwaited(object? sender, AwaitedEventArgs e)
+        {
+            builder.Add($"{e.Args}");
+        }
+        try
+        {
+            Awaited += localOnAwaited;
+            string joined;
+            var classA = new ClassA(false);
+            _ = classA.WithNotifyOnDescendants(
+                out XElement model,
+                onPC: (sender, e) =>
                 {
-                    builder.Add(ePlus.ToString(sender, timestamp: false) ?? "Error");
-                }
-            });
+                    eventsPC.Enqueue(new SenderEventPair(sender, e));
+                },
+                onCC: (sender, e) =>
+                {
+                    eventsCC.Enqueue(new SenderEventPair(sender, e));
+                },
+                onXO: (sender, e) =>
+                {
+                    if (e is XObjectChangedOrChangingEventArgs ePlus)
+                    {
+                        builder.Add(ePlus.ToString(sender, timestamp: false) ?? "Error");
+                    }
+                });
 
-        joined = string.Join(Environment.NewLine, builder);
-        actual = joined;
+            joined = string.Join(Environment.NewLine, builder);
+            actual = joined;
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting un-timestamped message reporting"
+            );
+            builder.Clear();
 
-        actual.ToClipboard();
-        actual.ToClipboardAssert();
-        { }
-        Assert.AreEqual(
-            expected.NormalizeResult(),
-            actual.NormalizeResult(),
-            "Expecting un-timestamped message reporting"
-        );
-        builder.Clear();
+            classA.BCollection.Add(new());
 
-        classA.BCollection.Add(new());
-
-        joined = string.Join(Environment.NewLine, builder);
-        actual = joined;
-
-        actual.ToClipboard();
-        actual.ToClipboardAssert();
-        { }
-        expected = @"
+            joined = string.Join(Environment.NewLine, builder);
+            actual = joined;
+            expected = @"
 ";
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting un-timestamped message reporting"
+            );
+            classA.BCollection[0] = new();
 
-        Assert.AreEqual(
-            expected.NormalizeResult(),
-            actual.NormalizeResult(),
-            "Expecting un-timestamped message reporting"
-        );
-        classA.BCollection[0] = new();
-
-        joined = string.Join(Environment.NewLine, builder);
-        actual = joined;
-        actual.ToClipboard();
-        actual.ToClipboardAssert("Expecting un-timestamped message reporting");
-        { }
-        expected = @" 
+            joined = string.Join(Environment.NewLine, builder);
+            actual = joined;
+            actual.ToClipboard();
+            actual.ToClipboardAssert("Expecting subscription removal");
+            { }
+            expected = @" 
 Remove XElement   Changing: member Currency
 Remove XElement   Changed : member Currency
 Remove XElement   Changing: member Cost
 Remove XElement   Changed : member Cost
 Remove XElement   Changing: member Name
 Remove XElement   Changed : member Name
+Removing INPC Subscription
+Remove <member name=""C"" instance=""[ClassC]"" onpc=""[OnPC]"" />
 Remove XElement   Changing: member C
 Remove XElement   Changed : member C
+Removing INPC Subscription
+Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />
 Remove XElement   Changing: model  (Origin)ClassB
 Remove XElement   Changed : model  (Origin)ClassB";
-        Assert.AreEqual(
-            expected.NormalizeResult(),
-            actual.NormalizeResult(),
-            "Expecting un-timestamped message reporting"
-        );
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting un-timestamped message reporting"
+            );
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail(ex.Message);
+        }
+        finally
+        {
+            Awaited -= localOnAwaited;
+        }
     }
 }
