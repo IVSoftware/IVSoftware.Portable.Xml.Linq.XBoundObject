@@ -180,6 +180,45 @@ public static object GetMember(this XElement @this, string propertyName){...}
 ```
 ___
 
+**Modeling Options and Delegate Declarations**
+
+```
+[Flags]
+public enum ModelingOption
+{
+    /// <summary>
+    /// Binds the PropertyInfo to the member XElement enabling singletion reflection.
+    /// </summary>
+    CachePropertyInfo = 0x1,
+
+    /// <summary>
+    /// Shows the FullName of the type as attribute text values, normalized to a non-generic type name.
+    /// </summary>
+    /// <remarks>When not set, the short name is used after normalizing to a non-generic type name.</remarks>
+    ShowFullNameForTypes = 0x2,
+
+    /// <summary>
+    /// Overrides default behavior where only reference types are bound to the member XElement.
+    /// </summary>
+    /// <remarks>
+    /// Since value types, enums and strings aren't observable entities themselves, and have 
+    /// no potential for hosting observable entities, these instances (especially stings, which 
+    /// might be quite large) are deliberately not bound to the member XElement.
+    /// </remarks>
+    IncludeValueTypeInstances = 0x4,
+}
+```
+___
+
+**Delegate Declarations**
+
+```
+public delegate void PropertyChangedDelegate(object sender, PropertyChangedEventArgs e);
+public delegate void NotifyCollectionChangedDelegate(object sender, NotifyCollectionChangedEventArgs e);
+public delegate void XObjectChangeDelegate(object sender, XObjectChangeEventArgs e);
+```
+
+
 
 
 
