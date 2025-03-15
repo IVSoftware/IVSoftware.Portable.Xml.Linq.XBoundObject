@@ -514,7 +514,16 @@ Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
 
         #endregion S U B T E S T S
     }
-    
+
+    /// <summary>
+    /// Unit test for verifying the event-driven updates and sum calculations in an ObservableCollection<ClassB>.
+    /// This test ensures that:
+    /// 1. Property changes in `ClassC.Cost` or swapping of `ClassB.C` within `BCollection` triggers appropriate updates.
+    /// 2. The formatted summary of cost calculations is built and updated correctly.
+    /// 3. Randomly setting `ClassC.Cost` results in accurate and expected summations and outputs.
+    /// 4. Replacing `ClassC` instances results in updated cost calculations and confirms the propagation of change events.
+    /// </summary>
+
     [TestMethod]
     public void Test_SO_79467031_5438626_BCollection()
     {
@@ -622,7 +631,7 @@ Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
     }
 
     [TestMethod]
-    public void IterationBasics()
+    public void Test_IterationBasics()
     {
         ClassA classA = new();
         // Add 3 ClassB instances to classA;
@@ -847,7 +856,6 @@ Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />";
         #endregion S U B T E S T S
     }
 
-
     // EXPECT
     // - The ObservableCollection is initialized with four ABC instances.
     // - CRITICAL: The origin model should correctly reflect all pre-existing instances in the collection.
@@ -950,5 +958,138 @@ A | B | C";
             currentEvent.PropertyName,
             "Expecting property changed event has been raised.");
     }
-    public string MemberId { get; init; } = System.Guid.NewGuid().ToString().ToUpper();
+
+
+    [TestMethod]
+    public void Test_XObjectChangeDelegate() 
+    {
+        List<string> builder = new();
+        string joined;
+        var classA = new ClassA(false);
+        _ = classA.WithNotifyOnDescendants(
+            out XElement model,
+            onPC: (sender, e) =>
+            { 
+                eventsPC.Enqueue(new SenderEventPair(sender, e));
+            },
+            onCC: (sender, e) =>
+            {
+                eventsCC.Enqueue(new SenderEventPair(sender, e));
+            },
+            onXO: (sender, e) =>
+            {
+                if (e is XObjectChangedOrChangingEventArgs ePlus)
+                {
+                    builder.Add(ePlus.ToString(sender, timestamp: false) ?? "Error");
+                }
+            });
+
+        joined = string.Join(Environment.NewLine, builder);
+        actual = joined;
+        expected = @" 
+Add    XAttribute Changing: name   
+Add    XAttribute Changed : name   
+Add    XAttribute Changing: instance 
+Add    XAttribute Changed : instance 
+Add    XElement   Changing: member TotalCost
+Add    XElement   Changed : member TotalCost
+Add    XElement   Changing: member BCollection
+Add    XElement   Changed : member BCollection
+Add    XAttribute Changing: instance 
+Add    XAttribute Changed : instance 
+Add    XElement   Changing: member Count
+Add    XElement   Changed : member Count
+Add    XAttribute Changing: onpc   
+Add    XAttribute Changed : onpc   
+Add    XAttribute Changing: oncc   
+Add    XAttribute Changed : oncc   
+Remove XAttribute Changing: context 
+Remove XAttribute Changed : context 
+Remove XAttribute Changing: name   
+Remove XAttribute Changed : name   
+Remove XAttribute Changing: instance 
+Remove XAttribute Changed : instance 
+Add    XAttribute Changing: name   
+Add    XAttribute Changed : name   
+Add    XAttribute Changing: instance 
+Add    XAttribute Changed : instance 
+Add    XAttribute Changing: context 
+Add    XAttribute Changed : context 
+Remove XAttribute Changing: name   
+Remove XAttribute Changed : name   
+Add    XAttribute Changing: name   
+Add    XAttribute Changed : name   
+Remove XAttribute Changing: name   
+Remove XAttribute Changed : name   
+Remove XAttribute Changing: instance 
+Remove XAttribute Changed : instance 
+Remove XAttribute Changing: onpc   
+Remove XAttribute Changed : onpc   
+Remove XAttribute Changing: oncc   
+Remove XAttribute Changed : oncc   
+Add    XAttribute Changing: name   
+Add    XAttribute Changed : name   
+Add    XAttribute Changing: instance 
+Add    XAttribute Changed : instance 
+Add    XAttribute Changing: onpc   
+Add    XAttribute Changed : onpc   
+Add    XAttribute Changing: oncc   
+Add    XAttribute Changed : oncc   
+Remove XAttribute Changing: name   
+Remove XAttribute Changed : name   
+Add    XAttribute Changing: name   
+Add    XAttribute Changed : name   ";
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting un-timestamped message reporting"
+        );
+        builder.Clear();
+
+        classA.BCollection.Add(new());
+
+        joined = string.Join(Environment.NewLine, builder);
+        actual = joined;
+
+        actual.ToClipboard();
+        actual.ToClipboardAssert();
+        { }
+        expected = @" 
+Add    XElement   Changing: model  (Origin)ClassB
+Add    XElement   Changed : model  (Origin)ClassB";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting un-timestamped message reporting"
+        );
+        classA.BCollection[0] = new();
+
+        joined = string.Join(Environment.NewLine, builder);
+        actual = joined;
+        actual.ToClipboard();
+        actual.ToClipboardAssert("Expecting un-timestamped message reporting");
+        { }
+        expected = @" 
+Add    XElement   Changing: model  (Origin)ClassB
+Add    XElement   Changed : model  (Origin)ClassB
+Remove XElement   Changing: member Currency
+Remove XElement   Changed : member Currency
+Remove XElement   Changing: member Cost
+Remove XElement   Changed : member Cost
+Remove XElement   Changing: member Name
+Remove XElement   Changed : member Name
+Remove XElement   Changing: member C
+Remove XElement   Changed : member C
+Remove XElement   Changing: model  (Origin)ClassB
+Remove XElement   Changed : model  (Origin)ClassB
+Add    XElement   Changing: model  (Origin)ClassB
+Add    XElement   Changed : model  (Origin)ClassB";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting un-timestamped message reporting"
+        );
+    }
 }

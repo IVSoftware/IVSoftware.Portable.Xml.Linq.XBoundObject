@@ -250,6 +250,9 @@ When an Enum type is expanded to an XML hierarchy, a two way lookup is xbound to
 2. Use the `To<T>()` extension to retrieve objects or actions to perform. 
 
 
+___
 
+
+### [NotifyWithDescendants](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/NotifyWithDescendants.md)
 
 

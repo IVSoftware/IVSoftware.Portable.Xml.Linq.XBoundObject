@@ -476,6 +476,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                             }
                         }
                 }
+                // After doing the internal housekeeping, remember to fire the client's delegate!
+                onXO?.Invoke(sender, e);
             };
             // Show time
             model = @this.CreateModel(context);
