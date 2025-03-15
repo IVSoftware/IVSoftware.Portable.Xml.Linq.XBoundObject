@@ -986,59 +986,10 @@ A | B | C";
 
         joined = string.Join(Environment.NewLine, builder);
         actual = joined;
-        expected = @" 
-Add    XAttribute Changing: name   
-Add    XAttribute Changed : name   
-Add    XAttribute Changing: instance 
-Add    XAttribute Changed : instance 
-Add    XElement   Changing: member TotalCost
-Add    XElement   Changed : member TotalCost
-Add    XElement   Changing: member BCollection
-Add    XElement   Changed : member BCollection
-Add    XAttribute Changing: instance 
-Add    XAttribute Changed : instance 
-Add    XElement   Changing: member Count
-Add    XElement   Changed : member Count
-Add    XAttribute Changing: onpc   
-Add    XAttribute Changed : onpc   
-Add    XAttribute Changing: oncc   
-Add    XAttribute Changed : oncc   
-Remove XAttribute Changing: context 
-Remove XAttribute Changed : context 
-Remove XAttribute Changing: name   
-Remove XAttribute Changed : name   
-Remove XAttribute Changing: instance 
-Remove XAttribute Changed : instance 
-Add    XAttribute Changing: name   
-Add    XAttribute Changed : name   
-Add    XAttribute Changing: instance 
-Add    XAttribute Changed : instance 
-Add    XAttribute Changing: context 
-Add    XAttribute Changed : context 
-Remove XAttribute Changing: name   
-Remove XAttribute Changed : name   
-Add    XAttribute Changing: name   
-Add    XAttribute Changed : name   
-Remove XAttribute Changing: name   
-Remove XAttribute Changed : name   
-Remove XAttribute Changing: instance 
-Remove XAttribute Changed : instance 
-Remove XAttribute Changing: onpc   
-Remove XAttribute Changed : onpc   
-Remove XAttribute Changing: oncc   
-Remove XAttribute Changed : oncc   
-Add    XAttribute Changing: name   
-Add    XAttribute Changed : name   
-Add    XAttribute Changing: instance 
-Add    XAttribute Changed : instance 
-Add    XAttribute Changing: onpc   
-Add    XAttribute Changed : onpc   
-Add    XAttribute Changing: oncc   
-Add    XAttribute Changed : oncc   
-Remove XAttribute Changing: name   
-Remove XAttribute Changed : name   
-Add    XAttribute Changing: name   
-Add    XAttribute Changed : name   ";
+
+        actual.ToClipboard();
+        actual.ToClipboardAssert();
+        { }
         Assert.AreEqual(
             expected.NormalizeResult(),
             actual.NormalizeResult(),
@@ -1054,9 +1005,8 @@ Add    XAttribute Changed : name   ";
         actual.ToClipboard();
         actual.ToClipboardAssert();
         { }
-        expected = @" 
-Add    XElement   Changing: model  (Origin)ClassB
-Add    XElement   Changed : model  (Origin)ClassB";
+        expected = @"
+";
 
         Assert.AreEqual(
             expected.NormalizeResult(),
@@ -1071,8 +1021,6 @@ Add    XElement   Changed : model  (Origin)ClassB";
         actual.ToClipboardAssert("Expecting un-timestamped message reporting");
         { }
         expected = @" 
-Add    XElement   Changing: model  (Origin)ClassB
-Add    XElement   Changed : model  (Origin)ClassB
 Remove XElement   Changing: member Currency
 Remove XElement   Changed : member Currency
 Remove XElement   Changing: member Cost
@@ -1082,10 +1030,7 @@ Remove XElement   Changed : member Name
 Remove XElement   Changing: member C
 Remove XElement   Changed : member C
 Remove XElement   Changing: model  (Origin)ClassB
-Remove XElement   Changed : model  (Origin)ClassB
-Add    XElement   Changing: model  (Origin)ClassB
-Add    XElement   Changed : model  (Origin)ClassB";
-
+Remove XElement   Changed : model  (Origin)ClassB";
         Assert.AreEqual(
             expected.NormalizeResult(),
             actual.NormalizeResult(),

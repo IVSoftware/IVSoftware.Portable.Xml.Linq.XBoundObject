@@ -409,6 +409,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                                         case nameof(SortOrderNOD.onpc): localRemoveHandlers(xattr.Parent, SortOrderNOD.onpc); break;
                                         case nameof(SortOrderNOD.oncc): localRemoveHandlers(xattr.Parent, SortOrderNOD.oncc); break;
                                     }
+                                    // [Careful] Don't move, because we need to take IsSorting into account.
+                                    onXO?.Invoke(sender, e);
                                 }
                                 break;
                             case XElement xel:
@@ -430,6 +432,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                                 else
                                 {   /* G T K */
                                 }
+                                // [Careful] Don't move. See attr above..
+                                onXO?.Invoke(sender, e);
                                 break;
                             default:
                                 break;
@@ -476,8 +480,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                             }
                         }
                 }
-                // After doing the internal housekeeping, remember to fire the client's delegate!
-                onXO?.Invoke(sender, e);
             };
             // Show time
             model = @this.CreateModel(context);
