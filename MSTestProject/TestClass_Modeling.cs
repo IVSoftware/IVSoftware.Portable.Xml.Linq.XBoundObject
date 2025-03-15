@@ -924,33 +924,31 @@ A | B | C";
         Assert.AreEqual(0, eventDict.Count, "Expecting no events yet");
 
         actual = originModel.SortAttributes<SortOrderNOD>().ToString();
-        actual.ToClipboard();
-        actual.ToClipboardAssert("Expecting origin model to match");
-        { }
         expected = @" 
 <model name=""(Origin)ObservableCollection"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"" context=""[ModelingContext]"">
-  <member name=""Count"" />
+  <member name=""Count"" pi=""[Int32]"" />
   <model name=""(Origin)ABC"" instance=""[ABC]"" onpc=""[OnPC]"">
-    <member name=""A"" runtimetype=""[String]"" />
-    <member name=""B"" runtimetype=""[String]"" />
-    <member name=""C"" runtimetype=""[String]"" />
+    <member name=""A"" pi=""[Object]"" runtimetype=""[String]"" />
+    <member name=""B"" pi=""[Object]"" runtimetype=""[String]"" />
+    <member name=""C"" pi=""[Object]"" runtimetype=""[String]"" />
   </model>
   <model name=""(Origin)ABC"" instance=""[ABC]"" onpc=""[OnPC]"">
-    <member name=""A"" runtimetype=""[String]"" />
-    <member name=""B"" runtimetype=""[String]"" />
-    <member name=""C"" runtimetype=""[String]"" />
+    <member name=""A"" pi=""[Object]"" runtimetype=""[String]"" />
+    <member name=""B"" pi=""[Object]"" runtimetype=""[String]"" />
+    <member name=""C"" pi=""[Object]"" runtimetype=""[String]"" />
   </model>
   <model name=""(Origin)ABC"" instance=""[ABC]"" onpc=""[OnPC]"">
-    <member name=""A"" runtimetype=""[String]"" />
-    <member name=""B"" runtimetype=""[String]"" />
-    <member name=""C"" runtimetype=""[String]"" />
+    <member name=""A"" pi=""[Object]"" runtimetype=""[String]"" />
+    <member name=""B"" pi=""[Object]"" runtimetype=""[String]"" />
+    <member name=""C"" pi=""[Object]"" runtimetype=""[String]"" />
   </model>
   <model name=""(Origin)ABC"" instance=""[ABC]"" onpc=""[OnPC]"">
-    <member name=""A"" runtimetype=""[String]"" />
-    <member name=""B"" runtimetype=""[String]"" />
-    <member name=""C"" runtimetype=""[String]"" />
+    <member name=""A"" pi=""[Object]"" runtimetype=""[String]"" />
+    <member name=""B"" pi=""[Object]"" runtimetype=""[String]"" />
+    <member name=""C"" pi=""[Object]"" runtimetype=""[String]"" />
   </model>
 </model>";
+
         Assert.AreEqual(
             expected.NormalizeResult(),
             actual.NormalizeResult(),
