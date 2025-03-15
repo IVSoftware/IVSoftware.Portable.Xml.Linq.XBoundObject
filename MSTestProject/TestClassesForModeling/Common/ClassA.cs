@@ -8,7 +8,7 @@ using System;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 
-namespace XBoundObjectMSTest.TestClassesForModeling.SO_79467031_5438626
+namespace XBoundObjectMSTest.TestClassesForModeling.Common
 {
     public class ClassA
     {

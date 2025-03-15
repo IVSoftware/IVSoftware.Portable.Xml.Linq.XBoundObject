@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using XBoundObjectMSTest.TestClassesForModeling.Common;
 
-namespace XBoundObjectMSTest.TestClassesForModeling.SO_79467031_5438626
+namespace XBoundObjectMSTest.TestClassesForModeling.Test_Singleton
 {
     class ClassWithSingletonProperty : INotifyPropertyChanged
     {

@@ -4,13 +4,14 @@ using static IVSoftware.Portable.Threading.Extensions;
 using IVSoftware.WinOS.MSTest.Extensions;
 using System.Collections.Specialized;
 using System.Xml.Linq;
-using XBoundObjectMSTest.TestClassesForModeling.SO_79467031_5438626;
 using IVSoftware.Portable.Threading;
 using System.Collections;
 using System.Collections.ObjectModel;
 using XBoundObjectMSTest.TestClassesForModeling.Common;
 using System.ComponentModel;
 using System.Diagnostics;
+using XBoundObjectMSTest.TestClassesForModeling.Test_Singleton;
+using XBoundObjectMSTest.TestClassesForModeling.Test_ModelInit;
 
 namespace XBoundObjectMSTest;
 internal enum CallerName
@@ -199,12 +200,13 @@ public class TestClass_Modeling
 
             actual = adHoc.SortAttributes<SortOrderNOD>().ToString();
             expected = @" 
-<model name=""(Origin)XBoundObjectMSTest.TestClassesForModeling.SO_79467031_5438626.ClassA"" instance=""[XBoundObjectMSTest.TestClassesForModeling.SO_79467031_5438626.ClassA]"" context=""[ModelingContext]"">
+<model name=""(Origin)XBoundObjectMSTest.TestClassesForModeling.Common.ClassA"" instance=""[XBoundObjectMSTest.TestClassesForModeling.Common.ClassA]"" context=""[ModelingContext]"">
   <member name=""TotalCost"" pi=""[System.Int32]"" />
   <member name=""BCollection"" pi=""[System.Collections.ObjectModel.ObservableCollection]"" instance=""[System.Collections.ObjectModel.ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"">
     <member name=""Count"" pi=""[System.Int32]"" />
   </member>
 </model>";
+
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
@@ -1421,6 +1423,75 @@ Added INPC Subscription
             expected.NormalizeResult(),
             actual.NormalizeResult(),
             "Expecting model creation for new singleton instance."
+        );
+    }
+
+
+
+    [TestMethod]
+    public void Test_ModelInit()
+    {
+        void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+        void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        string actual, expected;
+        XElement? model = null;
+
+        // =========================================================
+        // Empty class with no available changed events.
+        // =========================================================
+        new EmptyClass()
+            .WithNotifyOnDescendants(out model, OnPropertyChanged, OnCollectionChanged);
+
+        actual = model.SortAttributes<SortOrderNOD>().ToString();
+        expected = @" 
+<model name=""(Origin)EmptyClass"" instance=""[EmptyClass]"" context=""[ModelingContext]"" />";
+       
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting no event handlers for this instance"
+        );
+
+        // =========================================================
+        // Empty class with available INPC
+        // =========================================================
+        _ = new EmptyOnNotifyClass()
+            .WithNotifyOnDescendants(out model, OnPropertyChanged, OnCollectionChanged);
+
+        actual = model.SortAttributes<SortOrderNOD>().ToString();
+        expected = @" 
+<model name=""(Origin)EmptyOnNotifyClass"" instance=""[EmptyOnNotifyClass]"" onpc=""[OnPC]"" context=""[ModelingContext]"" />";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting INPC detected on class with no child properties."
+        );
+
+        // =========================================================
+        // Observable Collection
+        // =========================================================
+        _ = new ObservableCollection<object>()
+            .WithNotifyOnDescendants(out model, OnPropertyChanged, OnCollectionChanged);
+
+        actual = model.SortAttributes<SortOrderNOD>().ToString();
+
+        expected = @" 
+<model name=""(Origin)ObservableCollection"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"" context=""[ModelingContext]"">
+  <member name=""Count"" />
+</model>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting INPC and INCC both detected on ObservableCollection T."
         );
     }
 }

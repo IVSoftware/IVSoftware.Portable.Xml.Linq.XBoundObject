@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace XBoundObjectMSTest.TestClassesForModeling.SO_79467031_5438626
+namespace XBoundObjectMSTest.TestClassesForModeling.Common
 {
     public class ClassC : INotifyPropertyChanged
     {

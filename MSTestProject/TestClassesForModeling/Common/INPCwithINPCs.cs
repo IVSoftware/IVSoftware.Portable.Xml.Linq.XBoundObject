@@ -5,9 +5,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using XBoundObjectMSTest.TestClassesForModeling.Common;
 
-namespace XBoundObjectMSTest.TestClassesForModeling.SO_79467031_5438626
+namespace XBoundObjectMSTest.TestClassesForModeling.Common
 {
     class INPCwithINPCs : INotifyPropertyChanged
     {
