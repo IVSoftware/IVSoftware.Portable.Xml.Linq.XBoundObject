@@ -2091,5 +2091,109 @@ Remove <member name=""CompleteUnknown"" pi=""[Object]"" instance=""[ModelLevel1G
                 "Expecting removal (no instance of CompleteUnknown @ level 0)"
             );
         }
+    } 
+
+    /// <summary>
+    /// CONDITION: Starting with free-standing instances of ModelGO and ModelGOA.
+    /// EXPECT: 
+    /// 1 - After setting ModelGO.CompleteUnknown to ModelGOA, changes to ModelGOA should notify.
+    /// 2 - After setting ModelGO.CompleteUnknown back to null, changes to ModelGOA should no longer notify.
+    /// </summary>
+    [TestMethod]
+    public void RoundTripINPC()
+    {
+        var classGO = new ModelGO().WithNotifyOnDescendants(onPC: (sender, e) =>
+        {
+            eventsPC.Enqueue(new SenderEventPair(sender, e));
+        });
+        var classGOA = new ModelGO();
+
+        subtestAddNestedClassToModelGO();
+        subtestExerciseGuidPropertyOnModelGOA();
+        subtestExerciseObjectPropertyAsStringOnModelGOA();
+        subtestClearObjectPropertyAndVerifyUnsubscribeOnModelGO();
+
+        #region L o c a l F x       
+        void subtestAddNestedClassToModelGO()
+        {
+            clearQueues();
+            classGO.CompleteUnknown = classGOA; // Raise a Property Change
+            currentEvent = eventsPC.DequeueSingle();
+
+            actual = currentEvent.OriginModel.SortAttributes<SortOrderNOD>().ToString();
+            expected = @" 
+<model name=""(Origin)ModelGO"" instance=""[ModelGO]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""Guid"" pi=""[String]"" />
+  <member name=""CompleteUnknown"" pi=""[Object]"" instance=""[ModelGO]"" onpc=""[OnPC]"">
+    <member name=""Guid"" pi=""[String]"" />
+    <member name=""CompleteUnknown"" pi=""[Object]"" />
+  </member>
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting origin model reflects default instance of ModelGOA"
+            );
+        }
+        void subtestExerciseGuidPropertyOnModelGOA()
+        {
+            classGOA.Guid = $"{Guid.NewGuid()}";    // Raise Property Change
+            currentEvent = eventsPC.DequeueSingle();
+            actual = currentEvent.SenderModel.SortAttributes<SortOrderNOD>().ToString();
+            expected = @" 
+<member name=""Guid"" pi=""[String]"" />";
+
+           Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting property change on nested class."
+            );
+        }
+        void subtestClearObjectPropertyAndVerifyUnsubscribeOnModelGO()
+        {
+            classGO.CompleteUnknown = null;  // Property Change
+            currentEvent = eventsPC.DequeueSingle();
+
+            actual = currentEvent.OriginModel.SortAttributes<SortOrderNOD>().ToString();
+            expected = @" 
+<model name=""(Origin)ModelGO"" instance=""[ModelGO]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""Guid"" pi=""[String]"" />
+  <member name=""CompleteUnknown"" pi=""[Object]"" />
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting the child model to be nulled out."
+            );
+
+            // EXPECT
+            // - Now, changing a property in classGOA should no longer 
+            //   invoke the origin handler.
+            clearQueues();
+            classGOA.Guid = $"{Guid.NewGuid()}";
+            Assert.AreEqual(0, eventsPC.Count, "Expecting property change no longer invokes the origin handler.");
+
+        }
+        // EXPECT:
+        // The `runtimetype` attribute should note the difference
+        // between pi.PropertyType and the currentInstance.GetType()
+        void subtestExerciseObjectPropertyAsStringOnModelGOA()
+        {
+            classGOA.CompleteUnknown = $"{Guid.NewGuid()}";    // Raise Property Change
+            currentEvent = eventsPC.DequeueSingle();
+
+            actual = currentEvent.SenderModel.SortAttributes<SortOrderNOD>().ToString();
+            expected = @" 
+<member name=""CompleteUnknown"" pi=""[Object]"" runtimetype=""String"" />";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting property change on nested class."
+            );
+        }
+        #endregion L o c a l F x
     }
 }
