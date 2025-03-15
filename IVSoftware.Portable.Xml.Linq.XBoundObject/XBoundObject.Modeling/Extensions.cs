@@ -479,6 +479,31 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                                 }
                             }
                         }
+                    case XObjectChange.Add:
+                        switch (sender)
+                        {
+                            case XAttribute xattr:
+                                if (Extensions.IsSorting)
+                                {   /* G T K    N O O P */
+                                }
+                                else
+                                {
+                                    // [Careful] Don't move, because we need to take IsSorting into account.
+                                    onXO?.Invoke(sender, e);
+                                }
+                                break;
+                            case XElement xel:
+                                // [Careful] Don't move. See cases above..
+                                onXO?.Invoke(sender, e);
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+                    default:
+                        // [Careful] Don't move. See cases above..
+                        onXO?.Invoke(sender, e);
+                        break;
                 }
             };
             // Show time

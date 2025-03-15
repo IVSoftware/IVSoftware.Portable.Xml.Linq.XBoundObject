@@ -985,7 +985,7 @@ A | B | C";
                 },
                 onXO: (sender, e) =>
                 {
-                    if (e is XObjectChangedOrChangingEventArgs ePlus)
+                    if (e is XObjectChangedOrChangingEventArgs ePlus && !ePlus.IsChanging)
                     {
                         builder.Add(ePlus.ToString(sender, timestamp: false) ?? "Error");
                     }
@@ -993,6 +993,16 @@ A | B | C";
 
             joined = string.Join(Environment.NewLine, builder);
             actual = joined;
+            expected = @" 
+Add    XAttribute Changed : name   
+Add    XAttribute Changed : instance 
+Add    XElement   Changed : member TotalCost
+Add    XElement   Changed : member BCollection
+Add    XAttribute Changed : instance 
+Add    XElement   Changed : member Count
+Add    XAttribute Changed : onpc   
+Add    XAttribute Changed : oncc   ";
+
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
@@ -1004,13 +1014,15 @@ A | B | C";
 
             joined = string.Join(Environment.NewLine, builder);
             actual = joined;
-            expected = @"
-";
+            expected = @" 
+Add    XElement   Changed : model  (Origin)ClassB";
+
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
                 "Expecting un-timestamped message reporting"
             );
+            builder.Clear();
             classA.BCollection[0] = new();
 
             joined = string.Join(Environment.NewLine, builder);
@@ -1019,30 +1031,22 @@ A | B | C";
             actual.ToClipboardAssert("Expecting subscription removal");
             { }
             expected = @" 
-Remove XElement   Changing: member Currency
 Remove XElement   Changed : member Currency
-Remove XElement   Changing: member Cost
 Remove XElement   Changed : member Cost
-Remove XElement   Changing: member Name
 Remove XElement   Changed : member Name
 Removing INPC Subscription
 Remove <member name=""C"" instance=""[ClassC]"" onpc=""[OnPC]"" />
-Remove XElement   Changing: member C
 Remove XElement   Changed : member C
 Removing INPC Subscription
 Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />
-Remove XElement   Changing: model  (Origin)ClassB
-Remove XElement   Changed : model  (Origin)ClassB";
+Remove XElement   Changed : model  (Origin)ClassB
+Add    XElement   Changed : model  (Origin)ClassB";
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting un-timestamped message reporting"
+                "Expecting subscription removal"
             );
-        }
-        catch (Exception ex)
-        {
-            Assert.Fail(ex.Message);
         }
         finally
         {
