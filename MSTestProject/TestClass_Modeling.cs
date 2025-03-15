@@ -1088,8 +1088,6 @@ Add    XElement   Changed : model  (Origin)ClassB";
         }
     }
 
-
-
     [TestMethod]
     public void Test_INPCwithINPCs()
     {
@@ -1099,9 +1097,12 @@ Add    XElement   Changed : model  (Origin)ClassB";
         ObservableCollection<INPCwithINPCs> obc;
 
         subtestInstancesWithNullMemberPropertiesABC1andABC2();
-
-
         subtestAssignABC1InstanceVerifyINPC();
+        subtestReturnABC1ToNull();
+        subtestOBCReset();
+        subtestInstancesWithNotNullMemberPropertiesABC1andABC2();
+
+        subtestSetObjectPropertyToValueType();
 
         #region S U B T E S T S
         void subtestInstancesWithNullMemberPropertiesABC1andABC2()
@@ -1136,8 +1137,6 @@ Add    XElement   Changed : model  (Origin)ClassB";
                 "Expecting ABC1 and ABC2 to default to NULL."
             );
         }
-
-        #endregion S U B T E S T S
 
         void subtestAssignABC1InstanceVerifyINPC()
         {
@@ -1185,63 +1184,86 @@ Add    XElement   Changed : model  (Origin)ClassB";
 Added INPC Subscription
 <member name=""ABC1"" pi=""[ABC]"" instance=""[ABC]"" onpc=""[OnPC]"" />";
 
-                Assert.AreEqual(
-                    expected.NormalizeResult(),
-                    actual.NormalizeResult(),
-                    "Expecting ABC1 subscription OA."
-                );
-            }
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting ABC1 subscription OA."
+            );
+        }
 
-        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        // Set back to null
-        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        void subtestReturnABC1ToNull()
+        {
+            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // Set back to null
+            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-        // CRITICAL BEHAVIOR !
-        clearQueues(ClearQueue.OnAwaitedEvents);
-        obc[0].ABC1 = null;
-        currentEvent = eventsPC.DequeueSingle();
-        actual =
-            currentEvent.SenderModel.SortAttributes<SortOrderNOD>().ToString();
-        expected = @" 
+            // CRITICAL BEHAVIOR !
+            clearQueues(ClearQueue.OnAwaitedEvents);
+            obc[0].ABC1 = null;
+            currentEvent = eventsPC.DequeueSingle();
+            actual =
+                currentEvent.SenderModel.SortAttributes<SortOrderNOD>().ToString();
+            expected = @" 
 <member name=""ABC1"" pi=""[ABC]"" />";
 
-        Assert.AreEqual(
-            expected.NormalizeResult(),
-            actual.NormalizeResult(),
-            "Expecting ABC1 is modeled as a NULL instance"
-        );
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting ABC1 is modeled as a NULL instance"
+            );
 
-        joined = string.Join(Environment.NewLine, eventsOA.Select(_=> (_.e as AwaitedEventArgs)?.Args?.ToString()));
-        actual = joined;
-        expected = @" 
+            joined = string.Join(Environment.NewLine, eventsOA.Select(_ => (_.e as AwaitedEventArgs)?.Args?.ToString()));
+            actual = joined;
+            expected = @" 
 Removing INPC Subscription
 Remove <member name=""ABC1"" pi=""[ABC]"" instance=""[ABC]"" onpc=""[OnPC]"" />";
 
-        Assert.AreEqual(
-            expected.NormalizeResult(),
-            actual.NormalizeResult(),
-            "Expecting unsubscription"
-        );
-        // INSTANCES
-        obc.Clear();
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting unsubscription"
+            );
+        }
 
-        actual = originModel.SortAttributes<SortOrderNOD>().ToString();
-        expected = @" 
+        void subtestOBCReset()
+        {
+            clearQueues(ClearQueue.OnAwaitedEvents);
+            obc.Clear();
+
+            actual = originModel.SortAttributes<SortOrderNOD>().ToString();
+            expected = @" 
 <model name=""(Origin)ObservableCollection"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"" context=""[ModelingContext]"" />";
 
-        Assert.AreEqual(
-            expected.NormalizeResult(),
-            actual.NormalizeResult(),
-            "Expecting model shows empty observable collection."
-        );
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting model shows empty observable collection."
+            );
 
-        clearQueues(ClearQueue.OnAwaitedEvents);
-        // Instances where ABC1 and ABC2 are instantiated to begin with.
-        obc.Add(new() { ABC1 = new(), ABC2 = new(), });
-        obc.Add(new() { ABC1 = new(), ABC2 = new(), });
+            joined = string.Join(Environment.NewLine, eventsOA.Select(_ => (_.e as AwaitedEventArgs)?.Args?.ToString()));
+            actual = joined;
+            expected = @" 
+Removing INPC Subscription
+Remove <model name=""(Origin)INPCwithINPCs"" instance=""[INPCwithINPCs]"" onpc=""[OnPC]"" />
+Removing INPC Subscription
+Remove <model name=""(Origin)INPCwithINPCs"" instance=""[INPCwithINPCs]"" onpc=""[OnPC]"" />";
 
-        actual = originModel.SortAttributes<SortOrderNOD>().ToString();
-        expected = @" 
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting unsubscribe 2x OAs."
+            );
+        }    
+
+        void subtestInstancesWithNotNullMemberPropertiesABC1andABC2()
+        {
+            clearQueues(ClearQueue.OnAwaitedEvents);
+            // Instances where ABC1 and ABC2 are instantiated to begin with.
+            obc.Add(new() { ABC1 = new(), ABC2 = new(), });
+            obc.Add(new() { ABC1 = new(), ABC2 = new(), });
+
+            actual = originModel.SortAttributes<SortOrderNOD>().ToString();
+            expected = @" 
 <model name=""(Origin)ObservableCollection"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"" context=""[ModelingContext]"">
   <model name=""(Origin)INPCwithINPCs"" instance=""[INPCwithINPCs]"" onpc=""[OnPC]"">
     <member name=""ABC1"" pi=""[ABC]"" instance=""[ABC]"" onpc=""[OnPC]"">
@@ -1269,15 +1291,15 @@ Remove <member name=""ABC1"" pi=""[ABC]"" instance=""[ABC]"" onpc=""[OnPC]"" />"
   </model>
 </model>";
 
-        Assert.AreEqual(
-            expected.NormalizeResult(),
-            actual.NormalizeResult(),
-            "Expecting NON-NULL property instances."
-        );
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting NON-NULL property instances."
+            );
 
-        joined = string.Join(Environment.NewLine, eventsOA.Select(_ => (_.e as AwaitedEventArgs)?.Args?.ToString()));
-        actual = joined;
-        expected = @" 
+            joined = string.Join(Environment.NewLine, eventsOA.Select(_ => (_.e as AwaitedEventArgs)?.Args?.ToString()));
+            actual = joined;
+            expected = @" 
 Added INPC Subscription
 <model name=""(Origin)INPCwithINPCs"" instance=""[INPCwithINPCs]"" onpc=""[OnPC]"" />
 Added INPC Subscription
@@ -1291,33 +1313,38 @@ Added INPC Subscription
 Added INPC Subscription
 <member name=""ABC2"" pi=""[ABC]"" instance=""[ABC]"" onpc=""[OnPC]"" />";
 
-        Assert.AreEqual(
-            expected.NormalizeResult(),
-            actual.NormalizeResult(),
-            "Expecting 6x subscriptions"
-        );
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting 6x subscriptions"
+            );
+        }       
 
-        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        // Change a value that is NOT an INPC model
-        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        var abc1 = obc[0].ABC1 ?? throw new NullReferenceException();
-        clearQueues();
-        abc1.A = 1; // Property Change
-        currentEvent = eventsPC.DequeueSingle();
+        void subtestSetObjectPropertyToValueType()
+        {
+            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // Change a value that is NOT an INPC model
+            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            var abc1 = obc[0].ABC1 ?? throw new NullReferenceException();
+            clearQueues();
+            abc1.A = 1; // Property Change
+            currentEvent = eventsPC.DequeueSingle();
 
-        actual = currentEvent.SenderModel?.ToString() ?? throw new NullReferenceException();
-        expected = @" 
+            actual = currentEvent.SenderModel?.ToString() ?? throw new NullReferenceException();
+            expected = @" 
 <member name=""A"" pi=""[Object]"" runtimetype=""Int32"" />";
 
-        Assert.AreEqual(
-            expected.NormalizeResult(),
-            actual.NormalizeResult(),
-            "Expecting values to match."
-        );
-        Assert.AreEqual(
-            expected.NormalizeResult(),
-            actual.NormalizeResult(),
-            "Expecting 'A' now has Int32 runtime type because its value is 1."
-        );
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting values to match."
+            );
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting 'A' now has Int32 runtime type because its value is 1."
+            );
+        }
+        #endregion S U B T E S T S
     }
 }
