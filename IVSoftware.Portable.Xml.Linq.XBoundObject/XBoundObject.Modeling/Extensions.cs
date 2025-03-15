@@ -371,6 +371,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                                 SortOrderNOD.onpc,
                                 text: StdFrameworkName.OnPC.InSquareBrackets());
                             inpc.PropertyChanged += handlerPC;
+                            modelAdded.OnAwaited(new AwaitedEventArgs(args: $"Added INPC Subscription"));
+                            modelAdded.OnAwaited(new AwaitedEventArgs(args: $"{modelAdded.ToShallow()}"));
                         }
                     }
                     if (onCC != null && o is INotifyCollectionChanged incc)
@@ -433,6 +435,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                                 SortOrderNOD.oncc,
                                 text: StdFrameworkName.OnCC.InSquareBrackets());
                             incc.CollectionChanged += handlerCC;
+                            modelAdded.OnAwaited(new AwaitedEventArgs(args: $"Added INCC Subscription"));
+                            modelAdded.OnAwaited(new AwaitedEventArgs(args: $"{modelAdded.ToShallow()}"));
                         }
                     }
                 }

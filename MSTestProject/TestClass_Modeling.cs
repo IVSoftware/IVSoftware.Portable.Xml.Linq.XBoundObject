@@ -1001,8 +1001,11 @@ Add    XElement   Changed : member BCollection
 Add    XAttribute Changed : instance 
 Add    XElement   Changed : member Count
 Add    XAttribute Changed : onpc   
-Add    XAttribute Changed : oncc   ";
-
+Added INPC Subscription
+<member name=""BCollection"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" />
+Add    XAttribute Changed : oncc   
+Added INCC Subscription
+<member name=""BCollection"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"" />";
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
@@ -1014,7 +1017,14 @@ Add    XAttribute Changed : oncc   ";
 
             joined = string.Join(Environment.NewLine, builder);
             actual = joined;
+
+            actual.ToClipboard();
+            actual.ToClipboardAssert();
             expected = @" 
+Added INPC Subscription
+<model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />
+Added INPC Subscription
+<member name=""C"" instance=""[ClassC]"" onpc=""[OnPC]"" />
 Add    XElement   Changed : model  (Origin)ClassB";
 
             Assert.AreEqual(
@@ -1027,9 +1037,6 @@ Add    XElement   Changed : model  (Origin)ClassB";
 
             joined = string.Join(Environment.NewLine, builder);
             actual = joined;
-            actual.ToClipboard();
-            actual.ToClipboardAssert("Expecting subscription removal");
-            { }
             expected = @" 
 Remove XElement   Changed : member Currency
 Remove XElement   Changed : member Cost
@@ -1040,6 +1047,10 @@ Remove XElement   Changed : member C
 Removing INPC Subscription
 Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />
 Remove XElement   Changed : model  (Origin)ClassB
+Added INPC Subscription
+<model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />
+Added INPC Subscription
+<member name=""C"" instance=""[ClassC]"" onpc=""[OnPC]"" />
 Add    XElement   Changed : model  (Origin)ClassB";
 
             Assert.AreEqual(
