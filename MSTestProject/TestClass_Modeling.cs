@@ -985,7 +985,6 @@ A | B | C";
             "Expecting property changed event has been raised.");
     }
 
-
     [TestMethod]
     public void Test_XObjectChangeDelegate()
     {
@@ -1350,6 +1349,7 @@ Added INPC Subscription
         }
         #endregion S U B T E S T S
     }
+
     /// <summary>
     /// This test verifies that the Lazy<T> proxy correctly triggers notifications 
     /// for property changes, allowing the model to run discovery.
@@ -1426,8 +1426,6 @@ Added INPC Subscription
         );
     }
 
-
-
     [TestMethod]
     public void Test_ModelInit()
     {
@@ -1493,5 +1491,41 @@ Added INPC Subscription
             actual.NormalizeResult(),
             "Expecting INPC and INCC both detected on ObservableCollection T."
         );
+    }
+
+
+    [TestMethod]
+    public void Test_ObservableCollectionSolo()
+    {
+        void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            Debug.WriteLine($"{e.GetType().Name} {e.PropertyName}");
+            eventsPC.Enqueue(new SenderEventPair(sender, e));
+        }
+        void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            eventsCC.Enqueue(new SenderEventPair(sender, e));
+        }
+
+        var oc =
+            new ObservableCollection<ABC>()
+            .WithNotifyOnDescendants(out XElement originModel, OnPropertyChanged, OnCollectionChanged);
+
+
+        actual = originModel.SortAttributes<SortOrderNOD>().ToString();
+        expected = @" 
+<model name=""(Origin)ObservableCollection"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"" context=""[ModelingContext]"">
+  <member name=""Count"" />
+</model>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting model"
+        );
+        oc.Add(new());
+
+        // Thows an exception and fails the test if event wasn't received.
+        currentEvent = eventsCC.DequeueSingle();
     }
 }
