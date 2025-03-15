@@ -253,6 +253,6 @@ When an Enum type is expanded to an XML hierarchy, a two way lookup is xbound to
 ___
 
 
-### [NotifyWithDescendants](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/NotifyWithDescendants.md)
+### [NotifyWithDescendants](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/NotifyOnDescendants.md)
 
 
