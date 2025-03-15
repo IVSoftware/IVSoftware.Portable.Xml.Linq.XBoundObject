@@ -21,14 +21,39 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
     [Flags]
     public enum ModelingOption
     {
+        /// <summary>
+        /// Binds the PropertyInfo to the member XElement enabling singletion reflection.
+        /// </summary>
         CachePropertyInfo = 0x1,
+
+        /// <summary>
+        /// Shows the FullName of the type as attribute text values, normalized to a non-generic type name.
+        /// </summary>
+        /// <remarks>When not set, the short name is used after normalizing to a non-generic type name.</remarks>
         ShowFullNameForTypes = 0x2,
+
+        /// <summary>
+        /// Overrides default behavior where only reference types are bound to the member XElement.
+        /// </summary>
+        /// <remarks>
+        /// Since value types, enums and strings aren't observable entities themselves, and have 
+        /// no potential for hosting observable entities, these instances (especially stings, which 
+        /// might be quite large) are deliberately not bound to the member XElement.
+        /// </remarks>
         IncludeValueTypeInstances = 0x4,
     }
 
     public delegate void PropertyChangedDelegate(object sender, PropertyChangedEventArgs e);
     public delegate void NotifyCollectionChangedDelegate(object sender, NotifyCollectionChangedEventArgs e);
     public delegate void XObjectChangeDelegate(object sender, XObjectChangeEventArgs e);
+
+    /// <summary>
+    /// Represents a context for modeling complex object structures, managing event subscriptions, and handling change notifications.
+    /// Supports detailed configuration via ModelingOptions to customize behavior such as reflection caching, type name verbosity, 
+    /// and binding behavior for value types and strings. This context facilitates dynamic binding and tracking of model changes 
+    /// at various levels of an object graph, including support for cloning for localized model manipulations. It is designed to handle 
+    /// both property and collection changes along with XML object changes.
+    /// </summary>
     public class ModelingContext
     {
         public ModelingContext(XElement model = null)
@@ -97,23 +122,15 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
     }
     public static class ModelingExtensions
     {
-        public static XElement CreateModel(this object @this, ModelingContext context = null)
-            => @this.CreateModel<SortOrderNOD>(context);
-
-        public static XElement CreateModel<T>(this object @this, ModelingContext context = null) where T: Enum
-        {
-            if (@this is ModelingContext)
-                throw new InvalidOperationException($"Can't create a model of a {nameof(ModelingContext)}.");
-            // [Careful]
-            // - Do not remove this, even though it's checked again in ModelDescendantsAndSelf.
-            // - The issue is that it would end up null since context is not passed bu ref.
-            context = context ?? new ModelingContext();
-            foreach (var xel in @this.ModelDescendantsAndSelf(context))
-            {
-                context?.RaiseModelAdded(sender: @this, element: xel);
-            }
-            return context.TargetModel.SortAttributes<T>();
-        }
+        /// <summary>
+        /// Recursively models the properties of an object and its descendants into XML elements, managing each modeled property 
+        /// and collection with respect to the provided or default modeling context. This method dynamically tracks changes and 
+        /// raises an event when new nodes are added to the model. It handles both simple properties and enumerable collections,
+        /// applying specified modeling options such as type name verbosity, caching of property info, and inclusion of value types.
+        /// </summary>
+        /// <param name="this">The object to model.</param>
+        /// <param name="context">The modeling context to use, which controls the behavior of the modeling process.</param>
+        /// <returns>An enumerable of XElement, each representing a modeled property or object.</returns>
         public static IEnumerable<XElement> ModelDescendantsAndSelf(this object @this, ModelingContext context = null)
         {
             if (@this is ModelingContext)
@@ -226,6 +243,37 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Creates a model of the object and its properties as XML elements, using a default sorting order.
+        /// </summary>
+        /// <param name="this">The object to model.</param>
+        /// <param name="context">The modeling context to use, which controls the behavior of the modeling process.</param>
+        /// <returns>The root XElement of the modeled object, with attributes sorted in default order.</returns>
+        public static XElement CreateModel(this object @this, ModelingContext context = null)
+            => @this.CreateModel<SortOrderNOD>(context);
+
+        /// <summary>
+        /// Creates a model of the object and its properties as XML elements, allowing for custom attribute sorting based on the specified enum.
+        /// </summary>
+        /// <typeparam name="T">The enum type used to define the sorting order of attributes in the model.</typeparam>
+        /// <param name="this">The object to model.</param>
+        /// <param name="context">The modeling context to use, which controls the behavior of the modeling process.</param>
+        /// <returns>The root XElement of the modeled object, with attributes sorted according to the specified enum type.</returns>
+        public static XElement CreateModel<T>(this object @this, ModelingContext context = null) where T: Enum
+        {
+            if (@this is ModelingContext)
+                throw new InvalidOperationException($"Can't create a model of a {nameof(ModelingContext)}.");
+            // [Careful]
+            // - Do not remove this, even though it's checked again in ModelDescendantsAndSelf.
+            // - The issue is that it would end up null since context is not passed bu ref.
+            context = context ?? new ModelingContext();
+            foreach (var xel in @this.ModelDescendantsAndSelf(context))
+            {
+                context?.RaiseModelAdded(sender: @this, element: xel);
+            }
+            return context.TargetModel.SortAttributes<T>();
         }
 
         /// <summary>
@@ -518,6 +566,14 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             }
             return @this;
         }
+
+        /// <summary>
+        /// Refreshes the model represented by an XElement by removing all existing descendant elements and attributes
+        /// that do not represent structural identifiers, then recreates the model based on a new value. This method
+        /// is useful for updating the model representation in response to significant changes in the underlying data.
+        /// </summary>
+        /// <param name="model">The XElement that represents the model to be refreshed.</param>
+        /// <param name="newValue">The new value to use for recreating the model.</param>
         public static void RefreshModel(this XElement model, object newValue)
         {
             var attrsB4 = model.Attributes().ToArray();
@@ -545,7 +601,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                         attr.Remove();
                         break;
                     default:
-                        throw new NotImplementedException();
+                        {   /* N O O P */
+                        }
+                        break;
                 }
             }
             if (newValue != null)
@@ -556,6 +614,66 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
                 }
             }
         }
+        public static T GetInstance<T>(this XElement @this, bool @throw = false)
+        {
+            if (@this.Attribute(nameof(SortOrderNOD.instance)) is XBoundAttribute xba)
+            {
+                if (xba.Tag is T instance)
+                {
+                    return instance;
+                }
+                else
+                {
+                    if (@throw) throw new NullReferenceException($"Expecting {nameof(XBoundAttribute)}.Tag is not null.");
+                    else return default;
+                }
+            }
+            else
+            {
+                if (@throw) throw new NullReferenceException($"Expecting {nameof(SortOrderNOD.instance)} is {nameof(XBoundAttribute)}");
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the object instance associated with the specified XElement by accessing the 'instance' attribute,
+        /// which should be of type XBoundAttribute. If the attribute or the instance within it is missing, the method can either
+        /// throw a NullReferenceException or return null or default, based on the specified parameter.
+        /// </summary>
+        /// <param name="this">The XElement from which to retrieve the object instance.</param>
+        /// <param name="throw">A boolean indicating whether to throw an exception or return the default value.</param>
+        /// <returns>The object instance associated with the XElement; returns null or the default value if the 'instance' attribute is not found or is empty.</returns>
+        public static object GetInstance(this XElement @this, bool @throw = false)
+        {
+            if (@this.Attribute(nameof(SortOrderNOD.instance)) is XBoundAttribute xba)
+            {
+                if (xba.Tag is object instance)
+                {
+                    return instance;
+                }
+                else
+                {
+                    if (@throw) throw new NullReferenceException($"Expecting {nameof(XBoundAttribute)}.Tag is not null.");
+                    else return null;
+                }
+            }
+            else
+            {
+                if (@throw) throw new NullReferenceException($"Expecting {nameof(SortOrderNOD.instance)} is {nameof(XBoundAttribute)}");
+                return default;
+            }
+        }
+        /// <summary>
+        /// Retrieves a child XElement corresponding to a specified property name from the parent XElement.
+        /// </summary>
+        /// <param name="this">The XElement from which to find the child element.</param>
+        /// <param name="propertyName">The name of the property corresponding to the child element to retrieve.</param>
+        /// <returns>The XElement representing the member with the given property name; returns null if no matching element is found.</returns>
+        public static object GetMember(this XElement @this, string propertyName)
+        => @this.Elements().FirstOrDefault(_ =>
+            _
+            .Attribute(nameof(SortOrderNOD.name))?
+            .Value == propertyName);
         public static string ToTypeNameForOptionText(this Type @this, ModelingOption options)
             =>
             options.HasFlag(ModelingOption.ShowFullNameForTypes)
@@ -577,51 +695,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             => @this.ToTypeNameText().Split('.').Last();
         public static string InSquareBrackets(this string @this) => $"[{@this}]";
         public static string InSquareBrackets(this Enum @this) => $"[{@this.ToString()}]";
-        public static T GetInstance<T>(this XElement @this, bool @throw = false)
-        {
-            if (@this.Attribute(nameof(SortOrderNOD.instance)) is XBoundAttribute xba)
-            {
-                if (xba.Tag is T instance)
-                {
-                    return instance;
-                }
-                else
-                {
-                    if (@throw) throw new NullReferenceException($"Expecting {nameof(XBoundAttribute)}.Tag is not null.");
-                    else return default;
-                }
-            }
-            else
-            {
-                if (@throw) throw new NullReferenceException($"Expecting {nameof(SortOrderNOD.instance)} is {nameof(XBoundAttribute)}");
-                return default;
-            }
-        }
-        public static object GetInstance(this XElement @this, bool @throw = false)
-        {
-            if (@this.Attribute(nameof(SortOrderNOD.instance)) is XBoundAttribute xba)
-            {
-                if (xba.Tag is object instance)
-                {
-                    return instance;
-                }
-                else
-                {
-                    if (@throw) throw new NullReferenceException($"Expecting {nameof(XBoundAttribute)}.Tag is not null.");
-                    else return null;
-                }
-            }
-            else
-            {
-                if (@throw) throw new NullReferenceException($"Expecting {nameof(SortOrderNOD.instance)} is {nameof(XBoundAttribute)}");
-                return default;
-            }
-        }
-        public static object GetMember(this XElement @this, string propertyName)
-        => @this.Elements().FirstOrDefault(_ =>
-            _
-            .Attribute(nameof(SortOrderNOD.name))?
-            .Value == propertyName);
         internal static bool IsEnumOrValueTypeOrString(this object @this)
             => @this is Enum || @this is ValueType || @this is string;
         internal static bool IsEnumOrValueTypeOrString(this Type @this)
