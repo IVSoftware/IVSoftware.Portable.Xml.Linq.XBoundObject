@@ -1475,10 +1475,9 @@ Added INPC Subscription
             .WithNotifyOnDescendants(out model, OnPropertyChanged, OnCollectionChanged);
 
         actual = model.SortAttributes<SortOrderNOD>().ToString();
-
         expected = @" 
 <model name=""(Origin)ObservableCollection"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"" context=""[ModelingContext]"">
-  <member name=""Count"" />
+  <member name=""Count"" pi=""[Int32]"" />
 </model>";
 
         Assert.AreEqual(
