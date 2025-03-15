@@ -12,6 +12,10 @@ using XBoundObjectMSTest.TestClassesForModeling.Common;
 using System.ComponentModel;
 
 namespace XBoundObjectMSTest;
+internal enum CallerName
+{
+    WithNotifyOnDescendants,
+}
 
 [TestClass]
 public class TestClass_Modeling
@@ -26,6 +30,7 @@ public class TestClass_Modeling
         OnAwaitedEvents = 0x8,
         All = 0xF
     }
+    CallerName[] BlockedCallers { get; set; } = [];
     string actual = string.Empty, expected = string.Empty, joined = string.Empty;
     XElement? model = null;
     SenderEventPair currentEvent = null!;
@@ -42,7 +47,16 @@ public class TestClass_Modeling
     }
     Random rando = new Random(1);
     private void OnAwaited(object? sender, AwaitedEventArgs e)
-        => eventsOA.Enqueue(new SenderEventPair(sender ?? throw new NullReferenceException(), e));
+    {
+        if(Enum.TryParse(e.Caller, out CallerName caller))
+        {
+            if(BlockedCallers.Contains(caller))
+            {
+                return;
+            }
+        }
+        eventsOA.Enqueue(new SenderEventPair(sender ?? throw new NullReferenceException(), e));
+    }
     [TestInitialize]
     public void TestInitialize()
     {
@@ -50,6 +64,7 @@ public class TestClass_Modeling
         actual = expected = joined = string.Empty;
         rando = new Random(1);
         clearQueues();
+        BlockedCallers = [];
     }
 
     [TestCleanup]
@@ -97,6 +112,10 @@ public class TestClass_Modeling
         // - The new ClassB instance appears in the model within BCollection.
         // - ClassB contains an instance of ClassC with observable properties Cost and Currency.
         subtestAddClassBThenViewModel();
+
+        BlockedCallers = [CallerName.WithNotifyOnDescendants];
+        clearQueues(ClearQueue.OnAwaitedEvents);
+
         // EXPECT
         // - The Cost property in ClassC is updated.
         // - A PropertyChanged event is triggered for the Cost property.
@@ -121,6 +140,10 @@ public class TestClass_Modeling
         // - Computes the total cost by summing up the Cost property of each ClassC instance.
         // - Validates that the expected total cost is 73905.
         subtestTryIteratingForClassC();
+
+        BlockedCallers = [];
+        clearQueues(ClearQueue.OnAwaitedEvents);
+
         // EXPECT
         // - The last item in BCollection is retrieved and removed.
         // - A NotifyCollectionChanged event with action `Remove` is triggered.
