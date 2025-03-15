@@ -1024,10 +1024,11 @@ Add    XAttribute Changed : instance
 Add    XElement   Changed : member Count
 Add    XAttribute Changed : onpc   
 Added INPC Subscription
-<member name=""BCollection"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" />
+<member name=""BCollection"" pi=""[ObservableCollection]"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" />
 Add    XAttribute Changed : oncc   
 Added INCC Subscription
-<member name=""BCollection"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"" />";
+<member name=""BCollection"" pi=""[ObservableCollection]"" instance=""[ObservableCollection]"" onpc=""[OnPC]"" oncc=""[OnCC]"" />";
+
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
@@ -1039,14 +1040,11 @@ Added INCC Subscription
 
             joined = string.Join(Environment.NewLine, builder);
             actual = joined;
-
-            actual.ToClipboard();
-            actual.ToClipboardAssert();
             expected = @" 
 Added INPC Subscription
 <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />
 Added INPC Subscription
-<member name=""C"" instance=""[ClassC]"" onpc=""[OnPC]"" />
+<member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"" />
 Add    XElement   Changed : model  (Origin)ClassB";
 
             Assert.AreEqual(
@@ -1064,7 +1062,7 @@ Remove XElement   Changed : member Currency
 Remove XElement   Changed : member Cost
 Remove XElement   Changed : member Name
 Removing INPC Subscription
-Remove <member name=""C"" instance=""[ClassC]"" onpc=""[OnPC]"" />
+Remove <member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"" />
 Remove XElement   Changed : member C
 Removing INPC Subscription
 Remove <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />
@@ -1072,10 +1070,10 @@ Remove XElement   Changed : model  (Origin)ClassB
 Added INPC Subscription
 <model name=""(Origin)ClassB"" instance=""[ClassB]"" onpc=""[OnPC]"" />
 Added INPC Subscription
-<member name=""C"" instance=""[ClassC]"" onpc=""[OnPC]"" />
+<member name=""C"" pi=""[ClassC]"" instance=""[ClassC]"" onpc=""[OnPC]"" />
 Add    XElement   Changed : model  (Origin)ClassB";
 
-            Assert.AreEqual(
+           Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
                 "Expecting subscription removal"
