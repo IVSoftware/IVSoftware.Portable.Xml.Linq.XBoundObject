@@ -161,7 +161,39 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
             void localDiscoverModel(object instance, XElement localModel, HashSet<object> visited = null)
             {
                 visited = visited ?? new HashSet<object>();
-                if (!instance.IsEnumOrValueTypeOrString() || context.Options.HasFlag(ModelingOption.IncludeValueTypeInstances))
+                if(instance.IsEnumOrValueTypeOrString())
+                {
+                    if(context.Options.HasFlag(ModelingOption.IncludeValueTypeInstances))
+                    {
+                        localModel.SetBoundAttributeValue(
+                            instance,
+                            name: nameof(instance),
+                            instance.GetType().ToTypeNameForOptionText(context.Options).InSquareBrackets());
+                    }
+                    else 
+                    {
+                        // We do this on child types, but AFAIK it's not redundant
+                        // to do it here. And I don't see a more efficient way. Yet.
+                        var localType = instance.GetType();
+                        var pi = localModel.To<PropertyInfo>();
+                        if(pi is null)
+                        {
+                            if( localModel.Attribute(nameof(SortOrderNOD.name))?.Value is string propertyName)
+                            {
+                                pi = localModel.Parent?.GetInstance()?.GetType().GetProperty(propertyName);
+                            }
+                        }
+                        if (pi != null && !Equals(localType, pi.PropertyType))
+                        {
+                            // 'Not' in square brackets ('not' an XBA!)
+                            localModel.SetBoundAttributeValue(
+                                instance,
+                                name: nameof(SortOrderNOD.runtimetype),
+                                localType.ToTypeNameForOptionText(context.Options));
+                        }
+                    }
+                }
+                else
                 {
                     localModel.SetBoundAttributeValue(
                         instance,

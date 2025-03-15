@@ -1279,21 +1279,14 @@ Added INPC Subscription
         currentEvent = eventsPC.DequeueSingle();
 
         actual = currentEvent.SenderModel?.ToString() ?? throw new NullReferenceException();
-        { }
-
-        actual.ToClipboard();
-        actual.ToClipboardAssert();
-        { }
         expected = @" 
-<member name=""A"" pi=""[Object]"" />";
+<member name=""A"" pi=""[Object]"" runtimetype=""Int32"" />";
 
         Assert.AreEqual(
             expected.NormalizeResult(),
             actual.NormalizeResult(),
             "Expecting values to match."
         );
-        expected = @" 
-<member name=""A"" pi=""[Object]"" runtimetype=""Int32"" />";
         Assert.AreEqual(
             expected.NormalizeResult(),
             actual.NormalizeResult(),
