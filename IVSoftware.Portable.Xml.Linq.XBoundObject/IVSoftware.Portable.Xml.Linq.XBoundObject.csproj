@@ -10,7 +10,7 @@
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Author>Thomas C. Gregor</Author>
 		<Owner>IVSoftware LLC</Owner>
-		<Copyright>Copyright © 2023 IVSoftware LLC</Copyright>
+		<Copyright>Copyright © 2023-2025 IVSoftware LLC</Copyright>
 		<FileVersion>$(AssemblyVersion)</FileVersion>
 		<Version>$(AssemblyVersion)</Version>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -26,7 +26,7 @@
 	  <Compile Remove="Screenshots\**" />
 	  <EmbeddedResource Remove="Screenshots\**" />
 	  <None Remove="Screenshots\**" />
-	</ItemGroup>
+	</ItemGroup> 
 	<ItemGroup>
 		<None Include="..\README.md">
 			<Pack>True</Pack>
