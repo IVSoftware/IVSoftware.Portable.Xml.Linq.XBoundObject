@@ -249,10 +249,17 @@ When an Enum type is expanded to an XML hierarchy, a two way lookup is xbound to
 1. Use the `enum` "Friendly Name" to look up an `XElement` to which other objects are bound.
 2. Use the `To<T>()` extension to retrieve objects or actions to perform. 
 
-
 ___
 
 
 ### [NotifyWithDescendants](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/NotifyOnDescendants.md)
+
+
+
+___
+
+
+### [Placer](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/Placer.md)
+
 
 
