@@ -227,6 +227,7 @@ ___
 
 **Placer Class**
 
+```
 /// <summary>
 /// Manages XML element placement based on attribute-driven paths with configurable behavior 
 /// for node creation and existence checks. Supports event-driven notifications for node manipulation 
@@ -268,7 +269,11 @@ public class Placer
         PlacerMode mode = PlacerMode.FindOrCreate,
         string pathAttributeName = "text"
     ){...}
+```
 
+___
+
+```
     /// <summary>
     /// Initializes a new instance of the Placer class, allowing XML element placement using a pre-defined array of path segments. 
     /// This constructor is suited for scenarios where path segments are already determined and not bound to the platform's path delimiter.
@@ -304,7 +309,7 @@ public class Placer
         PlacerMode mode = PlacerMode.FindOrCreate,
         string pathAttributeName = "text"
     ){...}
-
+```
 ## Examples
 
 ### [Build Nested Enum Example](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/BuildNestedEnum.md)
