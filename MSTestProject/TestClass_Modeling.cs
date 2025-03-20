@@ -2196,4 +2196,95 @@ Remove <member name=""CompleteUnknown"" pi=""[Object]"" instance=""[ModelLevel1G
         }
         #endregion L o c a l F x
     }
+
+    [TestMethod]
+    public void Test_ParallelNODs()
+    {
+        var iwi = new INPCwithINPCs().WithNotifyOnDescendants(
+            out XElement modelIWI,
+            onPC: (sender, e) =>
+            {
+            });
+        var abc = new ABC().WithNotifyOnDescendants(
+            out XElement modelABC,
+            onPC: (sender, e) =>
+            {
+            });
+
+        actual = modelIWI.SortAttributes<SortOrderNOD>().ToString();
+        actual.ToClipboard();
+        actual.ToClipboardAssert("Expecting IWI model");
+        { }
+        expected = @" 
+<model name=""(Origin)INPCwithINPCs"" instance=""[INPCwithINPCs]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""ABC1"" pi=""[ABC]"" />
+  <member name=""ABC2"" pi=""[ABC]"" />
+</model>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting IWI model"
+        );
+
+        actual = modelABC.SortAttributes<SortOrderNOD>().ToString();
+        actual.ToClipboard();
+        actual.ToClipboardAssert("Expecting ABC model");
+        { }
+        expected = @" 
+<model name=""(Origin)ABC"" instance=""[ABC]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""A"" pi=""[Object]"" runtimetype=""[String]"" />
+  <member name=""B"" pi=""[Object]"" runtimetype=""[String]"" />
+  <member name=""C"" pi=""[Object]"" runtimetype=""[String]"" />
+</model>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting ABC model"
+        );
+
+
+        var abc2 = new ABC().WithNotifyOnDescendants(
+            onPC: (sender, e) =>
+            {
+                var sep = new SenderEventPair(sender, e);
+                actual = sep.OriginModel.SortAttributes<SortOrderNOD>().ToString();
+                actual.ToClipboard();
+                actual.ToClipboardAssert("Expecting ABC model");
+                { }
+                expected = @" 
+<model name=""(Origin)ABC"" instance=""[ABC]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""A"" pi=""[Object]"" runtimetype=""Int32"" />
+  <member name=""B"" pi=""[Object]"" runtimetype=""[String]"" />
+  <member name=""C"" pi=""[Object]"" runtimetype=""[String]"" />
+</model>";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting Modified ABC model"
+                );
+            });
+        abc2.A = 1;
+
+
+
+        actual = modelABC.SortAttributes<SortOrderNOD>().ToString();
+        actual.ToClipboard();
+        actual.ToClipboardAssert("Expecting ABC model");
+        { }
+        expected = @" 
+<model name=""(Origin)ABC"" instance=""[ABC]"" onpc=""[OnPC]"" context=""[ModelingContext]"">
+  <member name=""A"" pi=""[Object]"" runtimetype=""[String]"" />
+  <member name=""B"" pi=""[Object]"" runtimetype=""[String]"" />
+  <member name=""C"" pi=""[Object]"" runtimetype=""[String]"" />
+</model>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting Unmodified ABC model"
+        );
+    }
 }

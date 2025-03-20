@@ -148,7 +148,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                 $"{value}");
 
         /// <summary>
-        /// Attempts to retrieve an enum value from an attribute in the given XElement.
+        /// Attempts to retrieve an enum member from an Enum type T in the given XElement.
         /// </summary>
         /// <typeparam name="T">The enum type to parse.</typeparam>
         /// <param name="this">The XElement to retrieve the attribute from.</param>
@@ -171,17 +171,28 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             var type = typeof(T);
             value = default;
 
-            var attribute = @this
-                .Attributes()
-                .FirstOrDefault(attr => string.Equals(attr.Name.LocalName, type.Name, stringComparison));
-
-            if (attribute != null && Enum.TryParse(attribute.Value, out T parsedValue))
+            if (@this.To<T>() is T found)
             {
-                value = parsedValue;
+                // Stored as a unique T value
+                value = found;
                 return true;
+            }
+            else
+            {
+                // Stored as a plain old string.
+                var attribute = @this
+                    .Attributes()
+                    .FirstOrDefault(attr => string.Equals(attr.Name.LocalName, type.Name, stringComparison));
+
+                if (attribute != null && Enum.TryParse(attribute.Value, out T parsedValue))
+                {
+                    value = parsedValue;
+                    return true;
+                }
             }
             return false;
         }
+
 
         /// <summary>
         /// Creates a shallow copy of the given XElement, preserving only its name and attributes,
