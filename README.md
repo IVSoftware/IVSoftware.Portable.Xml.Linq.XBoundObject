@@ -225,6 +225,88 @@ public static string ToFullIdPath(this Enum @this, DualKeyLookup dkl, char delim
 ```
 ___
 
+**Placer Class**
+
+
+
+    /// <summary>
+    /// Manages XML element placement based on attribute-driven paths with configurable behavior 
+    /// for node creation and existence checks. Supports event-driven notifications for node manipulation 
+    /// and traversal, allowing for extensive customization and error handling in XML document modifications.
+    /// </summary>
+    /// <remarks>
+    /// The 'fqpath' argument is always assumed to be relative to an implicit root. Avoid setting the path 
+    /// attribute for this implicit root node, i.e. if the "text" attribute holds the label text for the
+    /// level, than the root node should not have a value for the "text" attribute.
+    /// </remarks>
+    /// <param name="fqpath">
+    /// Specifies the fully qualified path of the target XML element as a string. The path is used to navigate through the XML structure, 
+    /// where each segment of the path represents an element identified by its attribute value. This path should be delimited by the 
+    /// platform-specific `Path.DirectorySeparatorChar`, and is always assumed to be relative to the root element of the XML document.
+    /// </param>
+    /// <param name="onBeforeAdd">
+    /// Optional. An event handler that is invoked before a new XML element is added. Provides a chance to customize the addition process.
+    /// </param>
+    /// <param name="onAfterAdd">
+    /// Optional. An event handler that is invoked after a new XML element is added. Allows for actions to be taken immediately following the addition.
+    /// </param>
+    /// <param name="onIterate">
+    /// Optional. An event handler that is invoked as each path segment is processed, providing real-time feedback and control over the traversal.
+    /// </param>
+    /// <param name="mode">
+    /// Specifies the behavior of the Placer when path segments are not found. Default is PlacerMode.FindOrCreate.
+    /// </param>
+    /// <param name="pathAttributeName">
+    /// The name of the attribute used to match each XML element during the path navigation. Default is "text".
+    /// </param>
+    public class Placer
+    {
+        public Placer(
+            XElement xSource,
+            string fqpath,  // String delimited using platform Path.DirectorySeparatorChar
+            AddEventHandler onBeforeAdd = null,
+            AddEventHandler onAfterAdd = null,
+            IterateEventHandler onIterate = null,
+            PlacerMode mode = PlacerMode.FindOrCreate,
+            string pathAttributeName = "text"
+        ){...}
+
+        /// <summary>
+        /// Initializes a new instance of the Placer class, allowing XML element placement using a pre-defined array of path segments. 
+        /// This constructor is suited for scenarios where path segments are already determined and not bound to the platform's path delimiter.
+        /// </summary>
+        /// <param name="xSource">
+        /// The root XML element from which path traversal begins.
+        /// </param>
+        /// <param name="parse">
+        /// An array of strings representing the segments of the path to navigate through the XML structure. Each element of the array 
+        /// represents one segment of the path, corresponding to an element identified by its attribute value.
+        /// </param>
+        /// <param name="onBeforeAdd">
+        /// Optional. An event handler that is invoked before a new XML element is added. Provides a chance to customize the addition process.
+        /// </param>
+        /// <param name="onAfterAdd">
+        /// Optional. An event handler that is invoked after a new XML element is added. Allows for actions to be taken immediately following the addition.
+        /// </param>
+        /// <param name="onIterate">
+        /// Optional. An event handler that is invoked as each path segment is processed, providing real-time feedback and control over the traversal.
+        /// </param>
+        /// <param name="mode">
+        /// Specifies the behavior of the Placer when path segments are not found. Default is PlacerMode.FindOrCreate.
+        /// </param>
+        /// <param name="pathAttributeName">
+        /// The name of the attribute used to match each XML element during the path navigation. Default is "text".
+        /// </param>
+        public Placer(
+            XElement xSource,
+            string[] parse, // Array of strings (decoupled from any set delimiter) 
+            AddEventHandler onBeforeAdd = null,
+            AddEventHandler onAfterAdd = null,
+            IterateEventHandler onIterate = null,
+            PlacerMode mode = PlacerMode.FindOrCreate,
+            string pathAttributeName = "text"
+        ){...}
+
 ## Examples
 
 ### [Build Nested Enum Example](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/BuildNestedEnum.md)
@@ -237,7 +319,6 @@ ___
 
 
 Using `xroot` from the prior example, iterate the XML, attach a clickable object to each node then use the ID to fire its click event. 
-
 
 ___
 
@@ -253,7 +334,6 @@ ___
 
 
 ### [NotifyWithDescendants](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/NotifyOnDescendants.md)
-
 
 
 ___
