@@ -1,4 +1,4 @@
-#### XBoundAttribute
+## XBoundAttribute
 
 A lightweight extension for `System.Xml.Linq` that provides a `Tag` property for `XAttribute`, enabling runtime object storage and action binding.
 
@@ -132,7 +132,6 @@ public static XElement ToShallow(this XElement @this) {...}
 
 ```
 
-
 /// <summary>
 /// Creates a new XElement that includes only the specified attributes, removing all others.
 /// </summary>
@@ -144,7 +143,6 @@ public static XElement WithOnlyAttributes(this XElement @this, params string[] n
 ---
 
 ```
-
 
 /// <summary>
 /// Creates a new XElement that removes the specified attributes, keeping all others.
@@ -310,7 +308,9 @@ ___
         string pathAttributeName = "text"
     ){...}
 ```
-## Examples
+___
+
+# Examples
 
 ### [Build Nested Enum Example](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/BuildNestedEnum.md)
 
