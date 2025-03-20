@@ -25,61 +25,92 @@ namespace IVSoftware.Portable.Xml.Linq
         Throw,
     }
 
-    public enum PathSource
-    {
-        AttributeValue,
-        ElementName,
-    }
-    public enum DefaultAttributeName
-    {
-        text,
-    }
-
     /// <summary>
-    /// No-fail path creation. Fires an event for each XElement created.
+    /// Manages XML element placement based on attribute-driven paths with configurable behavior 
+    /// for node creation and existence checks. Supports event-driven notifications for node manipulation 
+    /// and traversal, allowing for extensive customization and error handling in XML document modifications.
     /// </summary>
     /// <remarks>
-    /// - The 'fqpath' argument is always assumed to be relative to an implicit root.
-    /// - RECOMMENDATION:
-    ///   When using 'PathSource.AttributeValue' do not set the path attribute for the root node.
+    /// The 'fqpath' argument is always assumed to be relative to an implicit root. Avoid setting the path 
+    /// attribute for this implicit root node, i.e. if the "text" attribute holds the label text for the
+    /// level, than the root node should not have a value for the "text" attribute.
     /// </remarks>
-    /// <param fqpath>
-    /// If the root happens to match the path attribute or element name, then the remainder of
-    /// the path will be used to locates a node. It's usually much easier to just set this
-    /// argument in the form of {root\}level0\level1.
+    /// <param name="fqpath">
+    /// Specifies the fully qualified path of the target XML element as a string. The path is used to navigate through the XML structure, 
+    /// where each segment of the path represents an element identified by its attribute value. This path should be delimited by the 
+    /// platform-specific `Path.DirectorySeparatorChar`, and is always assumed to be relative to the root element of the XML document.
+    /// </param>
+    /// <param name="onBeforeAdd">
+    /// Optional. An event handler that is invoked before a new XML element is added. Provides a chance to customize the addition process.
+    /// </param>
+    /// <param name="onAfterAdd">
+    /// Optional. An event handler that is invoked after a new XML element is added. Allows for actions to be taken immediately following the addition.
+    /// </param>
+    /// <param name="onIterate">
+    /// Optional. An event handler that is invoked as each path segment is processed, providing real-time feedback and control over the traversal.
+    /// </param>
+    /// <param name="mode">
+    /// Specifies the behavior of the Placer when path segments are not found. Default is PlacerMode.FindOrCreate.
+    /// </param>
+    /// <param name="pathAttributeName">
+    /// The name of the attribute used to match each XML element during the path navigation. Default is "text".
     /// </param>
     public class Placer
     {
         public Placer(
             XElement xSource,
-            string fqpath,
+            string fqpath,  // String delimited using platform Path.DirectorySeparatorChar
             AddEventHandler onBeforeAdd = null,
             AddEventHandler onAfterAdd = null,
             IterateEventHandler onIterate = null,
             PlacerMode mode = PlacerMode.FindOrCreate,
-            PathSource pathSource = PathSource.AttributeValue,
-            Enum pathAttribute = null
+            string pathAttributeName = "text"
         ) : this(
                 xSource: xSource,
-                parse: fqpath.GetValid().Split('\\'),
+                parse: 
+                    fqpath.GetValid().Trim().Split(Path.DirectorySeparatorChar),
                 onBeforeAdd: onBeforeAdd,
                 onAfterAdd: onAfterAdd,
                 onIterate: onIterate,
                 mode: mode,
-                pathSource: pathSource,
-                pathAttribute: pathAttribute ?? DefaultAttributeName.text
+                pathAttributeName: pathAttributeName
             )
         { }
 
+        /// <summary>
+        /// Initializes a new instance of the Placer class, allowing XML element placement using a pre-defined array of path segments. 
+        /// This constructor is suited for scenarios where path segments are already determined and not bound to the platform's path delimiter.
+        /// </summary>
+        /// <param name="xSource">
+        /// The root XML element from which path traversal begins.
+        /// </param>
+        /// <param name="parse">
+        /// An array of strings representing the segments of the path to navigate through the XML structure. Each element of the array 
+        /// represents one segment of the path, corresponding to an element identified by its attribute value.
+        /// </param>
+        /// <param name="onBeforeAdd">
+        /// Optional. An event handler that is invoked before a new XML element is added. Provides a chance to customize the addition process.
+        /// </param>
+        /// <param name="onAfterAdd">
+        /// Optional. An event handler that is invoked after a new XML element is added. Allows for actions to be taken immediately following the addition.
+        /// </param>
+        /// <param name="onIterate">
+        /// Optional. An event handler that is invoked as each path segment is processed, providing real-time feedback and control over the traversal.
+        /// </param>
+        /// <param name="mode">
+        /// Specifies the behavior of the Placer when path segments are not found. Default is PlacerMode.FindOrCreate.
+        /// </param>
+        /// <param name="pathAttributeName">
+        /// The name of the attribute used to match each XML element during the path navigation. Default is "text".
+        /// </param>
         public Placer(
             XElement xSource,
-            string[] parse,
+            string[] parse, // Array of strings (decoupled from any set delimiter) 
             AddEventHandler onBeforeAdd = null,
             AddEventHandler onAfterAdd = null,
             IterateEventHandler onIterate = null,
             PlacerMode mode = PlacerMode.FindOrCreate,
-            PathSource pathSource = PathSource.AttributeValue,
-            Enum pathAttribute = null
+            string pathAttributeName = "text"
         )
         {
             _xSource = _xTraverse = xSource;
@@ -87,17 +118,7 @@ namespace IVSoftware.Portable.Xml.Linq
             _onAfterAdd = onAfterAdd;
             _onIterate = onIterate;
             _mode = mode;
-            switch (pathSource)
-            {
-                case PathSource.AttributeValue:
-                    placeUsingAttributePath(parse, pathAttribute ?? DefaultAttributeName.text);
-                    break;
-                case PathSource.ElementName:
-                    placeUsingElementName(parse);
-                    break;
-                default:
-                    break;
-            }
+            placeUsingAttributePath(parse, pathAttributeName);
         }
 
         AddEventHandler _onBeforeAdd { get; }
@@ -109,7 +130,7 @@ namespace IVSoftware.Portable.Xml.Linq
         private readonly XElement _xSource;     // Please don't remove. This helps us debug monitor progress.
         private XElement _xTraverse;
         public XElement XResult { get; private set; }
-        private void placeUsingAttributePath(string[] parse, Enum pathAttribute)
+        private void placeUsingAttributePath(string[] parse, string pathAttributeName)
         {
             string requestPath, currentPath;
             bool isPathMatch;
@@ -127,7 +148,7 @@ namespace IVSoftware.Portable.Xml.Linq
                 {
                     if (
                             (i == 0) &&
-                            _xTraverse.Attribute(pathAttribute.ToString())?.Value is string value1 &&
+                            _xTraverse.Attribute(pathAttributeName)?.Value is string value1 &&
                             (value1 == level)
                         )
                     {
@@ -139,7 +160,7 @@ namespace IVSoftware.Portable.Xml.Linq
                         @try =
                             _xTraverse.Elements()
                             .SingleOrDefault(xel =>
-                                xel.Attribute(pathAttribute.ToString())?.Value is string value2 &&
+                                xel.Attribute(pathAttributeName)?.Value is string value2 &&
                                 value2 == level);
                     }
                 }
@@ -148,7 +169,7 @@ namespace IVSoftware.Portable.Xml.Linq
                     Debug.Fail(ex.Message);
                     @try =
                         _xTraverse.Elements()
-                        .FirstOrDefault(xel => xel.Attribute(pathAttribute.ToString()).Value == level);
+                        .FirstOrDefault(xel => xel.Attribute(pathAttributeName).Value == level);
                 }
                 if (@try == null)
                 {
@@ -216,7 +237,7 @@ namespace IVSoftware.Portable.Xml.Linq
                             var e = new AddEventArgs(parent: _xTraverse, path: currentPath, isPathMatch: isPathMatch);
                             // Give user an opportunity to perform a custom placement of the element
                             _onBeforeAdd?.Invoke(this, e);
-                            e.Xel.SetAttributeValue(pathAttribute.ToString(), level);
+                            e.Xel.SetAttributeValue(pathAttributeName, level);
                             if (!e.Handled)
                             {
                                 var existing = _xTraverse.Elements().ToArray();
@@ -236,95 +257,6 @@ namespace IVSoftware.Portable.Xml.Linq
                             {
                                 _onIterate.Invoke(this, e);
                             }
-                            _xTraverse = e.Xel;
-                            Placed++;
-                            break;
-                        default:
-                            break;
-                    }
-                    i++;
-                }
-                // This operation is a success.
-                PlacerResult = PlacerResult.Created;
-                XResult = _xTraverse;
-            }
-        }
-
-        private void placeUsingElementName(string[] parse)
-        {
-            var builder = new List<string>();
-            string level = string.Empty;
-
-            // The first loop traverses the existing paths
-            XElement @try;
-            int i = 0;
-            while (i < parse.Length)
-            {
-                level = parse[i];
-                // REMEMBER: Root matches are ALLOWED.
-                if ((i == 0) && (_xTraverse.Name.LocalName == level))
-                {
-                    // Detected a benign explicit match for root element name (not required).
-                    @try = _xTraverse;
-                }
-                else
-                {
-                    @try = _xTraverse.Element(level);
-                    if (@try == null)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        _xTraverse = @try;
-                    }
-                }
-                builder.Add(level);
-                i++;
-            }
-            if (i == parse.Length)
-            {
-                PlacerResult = PlacerResult.Exists;
-                XResult = _xTraverse;
-            }
-            else
-            {
-                switch (_mode)
-                {
-                    case PlacerMode.FindOrCreate:
-                        break;
-                    case PlacerMode.FindOrThrow:
-                        PlacerResult = PlacerResult.Throw;
-                        throw new KeyNotFoundException("Missing paths identified.");
-                    case PlacerMode.FindOrPartial:
-                        PlacerResult = PlacerResult.Partial;
-                        return;
-                    default:
-                    case PlacerMode.FindOrAssert:
-                        PlacerResult = PlacerResult.Assert;
-                        Debug.Fail("Missing paths identified.");
-                        return;
-                }
-                // The second loop appends XElements to the path until it's complete
-                while (i < parse.Length)
-                {
-                    level = parse[i];
-                    builder.Add(level);
-
-                    switch (_mode)
-                    {
-                        case PlacerMode.FindOrCreate:
-                            // When using the mode of 'PathSource.ElementName' it's
-                            // important to assign the xElementName in this CTor.
-                            var requestPath = string.Join(@"\", parse);
-                            var currentPath = string.Join(@"\", builder);
-                            var e = new AddEventArgs(parent: _xTraverse, path: currentPath, xElementName: level, isPathMatch: requestPath == currentPath);
-                            _onBeforeAdd?.Invoke(this, e);
-                            if (!e.Handled)
-                            {
-                                _xTraverse.Add(e.Xel);
-                            }
-                            _onAfterAdd?.Invoke(this, e);
                             _xTraverse = e.Xel;
                             Placed++;
                             break;
@@ -420,22 +352,6 @@ namespace IVSoftware.Portable.Xml.Linq
         public bool Handled { get; set; }
         public int? InsertIndex { get; set; }
     }
-
-#if false
-
-	public delegate void ObjectChangingEventHandler(Object sender, ObjectChangingEventArgs e);
-	public class ObjectChangingEventArgs : EventArgs
-	{
-		public ObjectChangingEventArgs(object oldObject, object newObject)
-		{
-			OldObject = oldObject;
-			NewObject = newObject;
-		}
-		public object OldObject { get; }
-		public object NewObject { get; }
-		public bool Cancel { get; set; }
-	}
-#endif
     static partial class Extensions
     {
         public static bool IsCreated(this XElement source, string path, out XElement xel, string name = null, object value = null, Enum id = null)
