@@ -284,7 +284,6 @@ namespace IVSoftware.Portable.Xml.Linq
     }
     public delegate void AddEventHandler(Object sender, AddEventArgs e);
     public delegate void IterateEventHandler(Object sender, IterateEventArgs e);
-    public delegate XElement Creator();
     public class AddEventArgs : EventArgs
     {
         public AddEventArgs(XElement parent, string path, string xElementName, bool isPathMatch)
