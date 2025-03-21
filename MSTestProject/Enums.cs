@@ -36,4 +36,5 @@ namespace MSTestProject
             Selected,
         }
     }
+    enum NodeType { drive, folder, file, }
 }

@@ -231,6 +231,15 @@ Settings.Apply.Selected";
                 "Expecting identical result."
             );
         }
+
+        [TestMethod]
+        public void Test_TryGetAttributeValue()
+        {
+            var xel = new XElement("tmp");
+            xel.SetAttributeValue(NodeType.folder);
+            if(xel.TryGetAttributeValue(out NodeType result))
+            { }
+        }
     }
     interface IClickable
     {

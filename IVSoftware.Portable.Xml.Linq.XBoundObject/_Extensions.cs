@@ -51,8 +51,19 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         /// </remarks>
         public static T To<T>(this XElement xel, bool @throw = false)
         {
-            xel.TryGetSingleBoundAttributeByType(out T attr, @throw);
-            return attr;
+            if (xel.TryGetSingleBoundAttributeByType(out T result, @throw))
+            {
+                return result;
+            }
+            else
+            {
+                if (@throw) throw new InvalidOperationException();
+                else if (typeof(T).IsEnum)
+                {
+                    throw new InvalidOperationException();
+                }
+                else return default(T);
+            }
         }
 
         /// <summary>
