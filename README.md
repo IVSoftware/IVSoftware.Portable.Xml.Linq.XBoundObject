@@ -30,9 +30,9 @@ This release introduces a new feature and an important enhancement to improve yo
 An instance of Placer class allows for efficient dynamic path-based XML element placement. For example, it would be ideal for projecting a flat list of file names to a two-dimensional runtime XML structure. Options include useful values like `FindOrReplace` and the placement reports status including whether the element pre-existed. A placer instance can be invoke with inline lambda event handlers for before and after element additions, to gain real-time control over each step of the XML path traversal. Specifically, this is often an optimal hook for `SetBoundAttributeValue()` initializations.
 
 ### Enhancement: Working with `Enum` and `enum` Attribute Values
-This release provides a needed improvement to how a named enum value is retrieved from an XBoundAttribute, closing the gap of unintentional use of default enum values in edge cases as detailed in the code below.
+This release significantly improves how named enum values are retrieved from an XBoundAttribute, addressing an important issue where a default enum value was used unintentionally in a specific edge case, as detailed in the code below. Both code blocks aim to retrieve an `enum` value for `NamedEnumType`:
 
-When there is only one such attribute bound to a given `XElement`, it suffices to cast it to `Enum`. This remains a safe pattern to use even if no such attribute can be found.
+1. When there is only one such attribute bound to a given `XElement`, it suffices to cast it to `Enum`. This remains a safe pattern to use even if no such attribute can be found.
 
 ```csharp
 if(xel.To<Enum>() is NamedEnumType enumValue) 
@@ -41,15 +41,15 @@ if(xel.To<Enum>() is NamedEnumType enumValue)
 }
 ```
 
-However, when the possibility of multiple enum attributes exists, a disambiguating pattern might be used instead.
+2. When the possibility of multiple enum attributes exists, a disambiguating pattern might be used instead.
 
 if(xel.To<NamedEnumType>() is NamedEnumType enumValue) 
 {
     // Code Based on enum NamedEnumType.Value
 }
 
-In previous releases, this second pattern is considered unsafe when no bound attribute of type `NamedEnumType` is present. It has been shown that in this case:
-- This boolean cause incorrectly evaluates to `true` even when no such attribute exists
+In previous releases, this second pattern has been shown to be unsafe when no bound attribute of type `NamedEnumType` can be located. In this specific case:
+- The boolean cause incorrectly evaluates to `true` even when no such attribute exists
 - The `enumValue` will be set to default value for the `enum` potentially causing spurious failures.
 ___
 
