@@ -83,15 +83,23 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                     // NOW throw if necessary.
                     if (@throw || type.IsEnum)
                     {
-                        throw new InvalidOperationException(InvalidOperationNotFoundMessage<T>());
+                        if(!@throw && type.IsEnum)
+                        {
+                            if(Equals(Version1_4_ErrorReporting, Version1_4_ErrorReportingOption.Assert))
+                            {
+                                Debug.Fail(InvalidOperationNotFoundMessage<T>());
+                            }
+                        }
+                        else throw new InvalidOperationException(InvalidOperationNotFoundMessage<T>());
                     }
-                    else return default;
+                    // Fall through
+                    return default;
                 };
             }
             bool localTryGetParsedEnum(out T parsedEnum)
             {
                 Type nullableSafeType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
-                if (AllowEnumParsing && nullableSafeType.IsEnum)
+                if (Equals(EnumParsing, EnumParsingOption.AllowEnumParsing) && nullableSafeType.IsEnum)
                 {
                     // The attribute name is expected to be the same as the enum type's name but in lowercase, 
                     // and the value is stored as a case-sensitive string. This approach is used typically when 
@@ -125,7 +133,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         }
         internal static string InvalidOperationNotFoundMessage<T>() => $"No valid {typeof(T).Name} found. To handle cases where an enum attribute might not exist, use a nullable version: To<{typeof(T).Name}?>() or check @this.Has<{typeof(T).Name}>() first.";
         internal static string InvalidOperationMultipleFoundMessage<T>() => $@"Multiple valid {typeof(T).Name} found. To disambiguate them, obtain the attribute by name: Attributes().OfType<XBoundAttribute>().Single(_=>_.name=""targetName""";
-        public static bool AllowEnumParsing { get; set; } = true;
+        public static EnumParsingOption EnumParsing { get; set; } = EnumParsingOption.AllowEnumParsing;
+        public static Version1_4_ErrorReportingOption Version1_4_ErrorReporting { get; set; } = Version1_4_ErrorReportingOption.Assert;
 
         /// <summary>
         /// Return true if xel has any attribute of type T"/>
@@ -176,6 +185,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             }
             else
             {
+                var type = typeof(T);
                 var candidates =
                     xel
                     .Attributes()
@@ -185,12 +195,28 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                 {
                     case 0:
                         o = default;
+                        if (type.IsEnum)
+                        {
+                            if (Equals(Version1_4_ErrorReporting, Version1_4_ErrorReportingOption.Assert))
+                            {
+                                Debug.Fail(InvalidOperationNotFoundMessage<T>());
+                                // But to avoid crashing pre-1.4 apps, return a value that we know is probably wrong!
+                            }
+                            else throw new InvalidOperationException(InvalidOperationNotFoundMessage<T>());
+                        }
                         return false;
                     case 1:
                         o = (T)candidates.First().Tag;
                         return true;
                     default:
-                        throw new InvalidOperationException(InvalidOperationMultipleFoundMessage<T>());
+                        if (Equals(Version1_4_ErrorReporting, Version1_4_ErrorReportingOption.Assert))
+                        {
+                            Debug.Fail(InvalidOperationNotFoundMessage<T>());
+                            // But to avoid crashing pre-1.4 apps, return a value that we know is probably wrong!
+                            o = (T)candidates.First().Tag;
+                            return false;
+                        }
+                        else throw new InvalidOperationException(InvalidOperationMultipleFoundMessage<T>());
                 }
             }
         }

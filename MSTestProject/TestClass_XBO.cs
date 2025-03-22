@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections;
-using System.Xml.Linq;
-using IVSoftware.Portable.Xml.Linq;
+﻿using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.WinOS.MSTest.Extensions;
+using System.Xml.Linq;
+using static IVSoftware.Portable.Xml.Linq.XBoundObject.Extensions;
 
 namespace MSTestProject
 {
@@ -274,22 +273,36 @@ Settings.Apply.Selected";
 
                 Assert.IsTrue(
                     xel.To<NodeType>() is NodeType result2,
-                    $"Expecting parsed enum fallback success based on {nameof(IVSoftware.Portable.Xml.Linq.XBoundObject.Extensions.AllowEnumParsing)}");
+                    $"Expecting parsed enum fallback success based on {nameof(EnumParsingOption.AllowEnumParsing)}");
 
                 try
                 {
-                    IVSoftware.Portable.Xml.Linq.XBoundObject.Extensions.AllowEnumParsing = false;
+                    EnumParsing = EnumParsingOption.RequireEnumIsType;
                     _ = xel.To<NodeType>();
                     Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
                 }
                 catch(InvalidOperationException ex)
                 {
+                    Assert.AreEqual(
+                        Version1_4_ErrorReporting, 
+                        Version1_4_ErrorReportingOption.Throw);
                     Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NodeType>());
+                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                }
+                catch (Exception ex)
+                {
+                    Assert.AreEqual(
+                        Version1_4_ErrorReporting,
+                        Version1_4_ErrorReportingOption.Assert);
+
+                    Assert.AreEqual(
+                        ex.GetType().Name,
+                        "DebugAssertException");
                     // Pass! This exception SHOULD BE THROWN. It's what we're testing.
                 }
                 finally
                 {
-                    IVSoftware.Portable.Xml.Linq.XBoundObject.Extensions.AllowEnumParsing = true;
+                    EnumParsing = EnumParsingOption.AllowEnumParsing;
                 }
 
                 Assert.AreEqual(
@@ -329,7 +342,21 @@ Settings.Apply.Selected";
                 }
                 catch (InvalidOperationException ex)
                 {
-                    Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NotFoundTypeForTest>());
+                    Assert.AreEqual(
+                        Version1_4_ErrorReporting,
+                        Version1_4_ErrorReportingOption.Throw);
+                    Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NodeType>());
+                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                }
+                catch (Exception ex)
+                {
+                    Assert.AreEqual(
+                        Version1_4_ErrorReporting,
+                        Version1_4_ErrorReportingOption.Assert);
+
+                    Assert.AreEqual(
+                        ex.GetType().Name,
+                        "DebugAssertException");
                     // Pass! This exception SHOULD BE THROWN. It's what we're testing.
                 }
 
@@ -338,10 +365,58 @@ Settings.Apply.Selected";
                     _ = xel.To<NotFoundTypeForTest>();
                     Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
                 }
-                catch (InvalidOperationException ex)
+                catch (Exception ex)
                 {
-                    Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NotFoundTypeForTest>());
+                    Assert.AreEqual(
+                        Version1_4_ErrorReporting,
+                        Version1_4_ErrorReportingOption.Assert);
+
+                    Assert.AreEqual(
+                        ex.GetType().Name,
+                        "DebugAssertException");
                     // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                }
+                // CHANGE: Error Reporting Type
+                try
+                {
+                    Version1_4_ErrorReporting = Version1_4_ErrorReportingOption.Throw;
+                    try
+                    {
+                        _ = xel.To<NotFoundTypeForTest>(@throw: false);
+                        Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        Assert.IsTrue(
+                            Version1_4_ErrorReporting.HasFlag(Version1_4_ErrorReportingOption.Throw));
+                        Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NotFoundTypeForTest>());
+                        // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                    }
+                    try
+                    {
+                        _ = xel.To<NotFoundTypeForTest>();
+                        Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NotFoundTypeForTest>());
+                        // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                    }
+                    catch (Exception ex)
+                    {
+                        Assert.AreEqual(
+                            Version1_4_ErrorReporting,
+                            Version1_4_ErrorReportingOption.Assert);
+
+                        Assert.AreEqual(
+                            ex.GetType().Name,
+                            "DebugAssertException");
+                        // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                    }
+                }
+                finally
+                {
+                    Version1_4_ErrorReporting = Version1_4_ErrorReportingOption.Assert;
                 }
             }
 
