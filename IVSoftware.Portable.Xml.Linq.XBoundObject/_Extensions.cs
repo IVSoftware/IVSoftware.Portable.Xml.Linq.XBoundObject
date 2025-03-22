@@ -83,7 +83,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                     // NOW throw if necessary.
                     if (@throw || type.IsEnum)
                     {
-                        throw new InvalidOperationException(InvalidOperationExceptionMessage<T>());
+                        throw new InvalidOperationException(InvalidOperationNotFoundMessage<T>());
                     }
                     else return default;
                 };
@@ -123,7 +123,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                 }
             }
         }
-        internal static string InvalidOperationExceptionMessage<T>() => $"No valid {typeof(T).Name} found. To handle cases where an enum attribute might not exist, use a nullable version: To<{typeof(T).Name}?>() or check @this.Has<{typeof(T).Name}>() first.";
+        internal static string InvalidOperationNotFoundMessage<T>() => $"No valid {typeof(T).Name} found. To handle cases where an enum attribute might not exist, use a nullable version: To<{typeof(T).Name}?>() or check @this.Has<{typeof(T).Name}>() first.";
+        internal static string InvalidOperationMultipleFoundMessage<T>() => $@"Multiple valid {typeof(T).Name} found. To disambiguate them, obtain the attribute by name: Attributes().OfType<XBoundAttribute>().Single(_=>_.name=""targetName""";
         public static bool AllowEnumParsing { get; set; } = true;
 
         /// <summary>
@@ -135,28 +136,42 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             .Any(_ => (_ is XBoundAttribute) && (((XBoundAttribute)_).Tag is T));
 
         /// <summary>
-        /// Try return Single or Default where type is T.
+        /// Tries to retrieve a single attribute of type T from the provided XElement, enforcing strict constraints based on the specified behavior.
+        /// This method targets attributes of type XBoundAttribute with a Tag property of type T, ensuring either the existence of exactly one such attribute (Single behavior),
+        /// or tolerating the absence of such attributes while ensuring no multiples exist (SingleOrDefault behavior).
         /// </summary>
+        /// <typeparam name="T">The expected type of the Tag property of the XBoundAttribute.</typeparam>
+        /// <param name="xel">The XElement from which to try and retrieve the attribute.</param>
+        /// <param name="o">The output parameter that will contain the value of the Tag if exactly one such attribute is found or none in case of SingleOrDefault behavior.</param>
+        /// <param name="throw">If true, operates in 'Single' mode where the absence or multiplicity of attribute results in an InvalidOperationException. If false, operates in 'SingleOrDefault' mode where only multiplicity results in an exception.</param>
+        /// <returns>True if exactly one attribute was found and successfully retrieved, otherwise false if no attributes are found and 'throw' is false.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when conditions for the selected mode ('Single' or 'SingleOrDefault') are not met:
+        /// 1. In 'Single' mode, if no attribute or multiple attributes of type T are found.
+        /// 2. In 'SingleOrDefault' mode, if multiple attributes of type T are found.</exception>
         /// <remarks>
-        /// By default, downgrades Single() exception to Debug.Fail and 
-        /// return false (but no assert) for null and true for single.
+        /// The 'throw' parameter determines the operational mode:
+        /// - 'Single': Requires exactly one matching attribute. An exception is thrown for no match or multiple matches.
+        /// - 'SingleOrDefault': Allows zero or one matching attribute. An exception is thrown only for multiple matches.
+        /// This ensures that the method name "TryGetSingleBoundAttributeByType" accurately reflects its functionality by clearly defining the outcome expectations based on the operational mode.
         /// </remarks>
+
         public static bool TryGetSingleBoundAttributeByType<T>(this XElement xel, out T o, bool @throw = false)
         {
-            XBoundAttribute xba;
             if (@throw)
             {
                 try
                 {
-                    xba =
-                        xel
+                    var single = xel
                         .Attributes()
                         .OfType<XBoundAttribute>()
                         .Single(_ => _.Tag is T);
+                    // And if this does not throw...
+                    o = (T)single.Tag;
+                    return true;
                 }
                 catch (InvalidOperationException)
                 {
-                    throw new InvalidOperationException(InvalidOperationExceptionMessage<T>());
+                    throw new InvalidOperationException(InvalidOperationNotFoundMessage<T>());
                 }
             }
             else
@@ -166,25 +181,17 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                     .Attributes()
                     .OfType<XBoundAttribute>()
                     .Where(_ => _.Tag is T);
-                if (candidates.Count() > 1)
+                switch (candidates.Count())
                 {
-                    Debug.Fail($"Multiple instances of type {typeof(T)} exist.");
-                    xba = default;
+                    case 0:
+                        o = default;
+                        return false;
+                    case 1:
+                        o = (T)candidates.First().Tag;
+                        return true;
+                    default:
+                        throw new InvalidOperationException(InvalidOperationMultipleFoundMessage<T>());
                 }
-                else
-                {
-                    xba = candidates.FirstOrDefault();
-                }
-            }
-            if (Equals(xba, default(XBoundAttribute)))
-            {
-                o = default;
-                return false;
-            }
-            else
-            {
-                o = (T)xba.Tag;
-                return true;
             }
         }
 

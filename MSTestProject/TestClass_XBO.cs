@@ -234,7 +234,21 @@ Settings.Apply.Selected";
                 "Expecting identical result."
             );
         }
-
+        /// <summary>
+        /// Tests the behavior of retrieving and converting an attribute value from an XElement with specific focus
+        /// on exception handling when the required attribute or enum type is not present.
+        /// The test is structured into multiple sub-tests:
+        /// 1. subtestWhereAttributeExists - Ensures that existing attributes are retrieved successfully.
+        /// 2. subtestDoNotThrowWhereEnumAttributeDoesNotExist - Tests the scenario where an attribute does not exist,
+        ///    and the method should handle it gracefully without throwing an exception.
+        /// 3. subtestThrowWhereEnumAttributeDoesNotExist - Tests the behavior when an attribute does not exist
+        ///    but the method is expected to throw an InvalidOperationException due to the explicit instruction
+        ///    to throw an exception in cases of missing attributes.
+        /// This method encompasses three internal sub-tests that specifically test the behavior of the
+        /// TryGetSingleBoundAttributeByType and To<T> methods under different conditions:
+        /// - Ensuring the system throws InvalidOperationException when attempting to forcefully retrieve or convert
+        ///   attributes that are marked as non-existent or when the conversion is not valid.
+        /// </summary>
         [TestMethod]
         public void Test_TryGetAttributeValue()
         {
