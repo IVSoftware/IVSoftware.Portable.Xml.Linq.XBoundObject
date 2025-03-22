@@ -146,11 +146,18 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             XBoundAttribute xba;
             if (@throw)
             {
-                xba =
-                    xel
-                    .Attributes()
-                    .OfType<XBoundAttribute>()
-                    .Single(_ => _.Tag is T);
+                try
+                {
+                    xba =
+                        xel
+                        .Attributes()
+                        .OfType<XBoundAttribute>()
+                        .Single(_ => _.Tag is T);
+                }
+                catch (InvalidOperationException)
+                {
+                    throw new InvalidOperationException(InvalidOperationExceptionMessage<T>());
+                }
             }
             else
             {
@@ -179,59 +186,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                 o = (T)xba.Tag;
                 return true;
             }
-#if false
-            Type safeType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
-            XBoundAttribute xba;
-            if (@throw)
-            {
-                try
-                {
-                    xba =
-                        xel
-                        .Attributes()
-                        .OfType<XBoundAttribute>()
-                        .Single(_=>Equals(_.Tag.GetType(), safeType));
-                }
-                catch (InvalidOperationException)
-                {
-                    throw new InvalidOperationException(InvalidOperationExceptionMessage<T>());
-                }
-            }
-            else
-            {
-                var candidates =
-                    Equals(safeType, typeof(Enum))
-                    ? xel
-                        .Attributes()
-                        .OfType<XBoundAttribute>()
-                        .Where(_ => _.Tag.GetType().IsEnum)
-                        .ToArray()
-                    : xel
-                        .Attributes()
-                        .OfType<XBoundAttribute>()
-                        .Where(_ => _.Tag.GetType().IsAssignableFrom(safeType))
-                        .ToArray();
-                if (candidates.Count() > 1)
-                {
-                    Debug.Fail($"Multiple instances of type {typeof(T)} exist.");
-                    xba = default;
-                }
-                else
-                {
-                    xba = candidates.FirstOrDefault();
-                }
-            }
-            if (Equals(xba, default(XBoundAttribute)))
-            {
-                o = default;
-                return false;
-            }
-            else
-            {
-                o = (T)xba.Tag;
-                return true;
-            }
-#endif
         }
 
         /// <summary>
