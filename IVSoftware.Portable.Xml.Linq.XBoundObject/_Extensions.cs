@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Xml.Linq;
-
 namespace IVSoftware.Portable.Xml.Linq.XBoundObject
 {
     public static partial class Extensions
@@ -43,28 +44,85 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                     options);
 
         /// <summary>
-        /// Return Single or Default where type is T. Null testing will be done by client.
+        /// Retrieves a single attribute of type T from an XElement and returns it. 
+        /// Null testing will be performed by the caller.
         /// </summary>
         /// <remarks>
-        /// By default, downgrades Single() exception to Debug.Fail and 
-        /// return false (but no assert) for null and true for single.
+        /// This method attempts to retrieve a single bound attribute by the specified type T.
+        /// If multiple attributes of the type are found or if no attributes of the type are found, 
+        /// the behavior of the method depends on the throw parameter:
+        /// - If @throw is true, an InvalidOperationException is thrown indicating that the operation
+        ///   is not valid given the object's current state. This is particularly relevant when the 
+        ///   expected single result is not achievable.
+        /// - If the type T is an Enum and no attribute is found, an InvalidOperationException is also thrown
+        ///   suggesting the use of nullable types for Enums to properly handle cases where an attribute is not found.
+        /// - If @throw is false, the method returns the default value of type T.
         /// </remarks>
+        /// <param name="xel">The XElement to search for the attribute.</param>
+        /// <param name="throw">Whether to throw an exception if the attribute is not found or if multiple are found.</param>
+        /// <returns>The attribute of type T if found and valid; otherwise, the default value of type T.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the retrieval of a single attribute of type T is not possible either due to multiple attributes of the type existing or none being found, and when @throw is true. For Enums, suggests using nullable types if an attribute cannot be returned.</exception>
         public static T To<T>(this XElement xel, bool @throw = false)
         {
-            if (xel.TryGetSingleBoundAttributeByType(out T result, @throw))
+            var type = typeof(T);
+            if (xel.TryGetSingleBoundAttributeByType(out T result, @throw: false))
             {
+                // Don't throw yet!
                 return result;
             }
             else
             {
-                if (@throw) throw new InvalidOperationException();
-                else if (typeof(T).IsEnum)
+                if (@throw) throw new InvalidOperationException($"typeof({typeof(T).Name})");
+                else if (localTryGetParsedEnum(out T parsedEnum))
                 {
-                    throw new InvalidOperationException();
+                    return parsedEnum;
                 }
-                else return default(T);
+                else
+                {
+                    if (@throw || type.IsEnum)
+                    {
+                        throw new InvalidOperationException(InvalidOperationExceptionMessage<T>());
+                    }
+                    else return default;
+                };
+                bool localTryGetParsedEnum(out T parsedEnum)
+                {
+                    Type nullableSafeType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+                    if (AllowEnumParsing && nullableSafeType.IsEnum)
+                    {
+                        // The attribute name is expected to be the same as the enum type's name but in lowercase, 
+                        // and the value is stored as a case-sensitive string. This approach is used typically when 
+                        // the attribute is set using SetEnumValue(EnumType.Value) which writes the enum as a string.
+                        if (xel
+                            .Attributes()
+                            .FirstOrDefault(_ => string.Equals(
+                                    _.Name.LocalName,
+                                    nullableSafeType.Name, StringComparison.OrdinalIgnoreCase
+                                )) is XAttribute attr)
+
+                        {
+                            foreach (var value in nullableSafeType.GetEnumValues())
+                            {
+                                if(string.Equals(value.ToString(), attr.Value))
+                                {
+                                    parsedEnum = (T)value;
+                                    return true;
+                                }
+                            }
+                        }
+                        parsedEnum = default;
+                        return false;
+                    }
+                    else
+                    {
+                        parsedEnum = default;
+                        return false;
+                    }
+                }
             }
         }
+        internal static string InvalidOperationExceptionMessage<T>() => $"No valid {typeof(T).Name} found. To handle cases where an enum attribute might not exist, use a nullable version: To<{typeof(T).Name}?>() or check @this.Has<{typeof(T).Name}>() first.";
+        public static bool AllowEnumParsing { get; set; } = true;
 
         /// <summary>
         /// Return true if xel has any attribute of type T"/>
@@ -83,19 +141,37 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         /// </remarks>
         public static bool TryGetSingleBoundAttributeByType<T>(this XElement xel, out T o, bool @throw = false)
         {
+            Type safeType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
             XBoundAttribute xba;
             if (@throw)
             {
-                xba =
-                    (XBoundAttribute)
-                    xel.Attributes()
-                    .Single(battr => (battr is XBoundAttribute) && (((XBoundAttribute)battr).Tag is T));
+                try
+                {
+                    xba =
+                        xel
+                        .Attributes()
+                        .OfType<XBoundAttribute>()
+                        .Single(_=>Equals(_.Tag.GetType(), safeType));
+                }
+                catch (InvalidOperationException)
+                {
+                    throw new InvalidOperationException(InvalidOperationExceptionMessage<T>());
+                }
             }
             else
             {
                 var candidates =
-                    xel.Attributes()
-                    .Where(battr => (battr is XBoundAttribute) && (((XBoundAttribute)battr).Tag is T));
+                    Equals(safeType, typeof(Enum))
+                    ? xel
+                        .Attributes()
+                        .OfType<XBoundAttribute>()
+                        .Where(_ => _.Tag.GetType().IsEnum)
+                        .ToArray()
+                    : xel
+                        .Attributes()
+                        .OfType<XBoundAttribute>()
+                        .Where(_ => _.Tag.GetType().IsAssignableFrom(safeType))
+                        .ToArray();
                 if (candidates.Count() > 1)
                 {
                     Debug.Fail($"Multiple instances of type {typeof(T)} exist.");
@@ -103,7 +179,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                 }
                 else
                 {
-                    xba = (XBoundAttribute)candidates.FirstOrDefault();
+                    xba = candidates.FirstOrDefault();
                 }
             }
             if (Equals(xba, default(XBoundAttribute)))
@@ -168,7 +244,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         /// otherwise, the default value of T.
         /// </param>
         /// <param name="stringComparison">
-        /// The string comparison method used for matching attribute names. Defaults to <see cref="StringComparison.OrdinalIgnoreCase"/>.
+        /// The string comparison method used for matching attribute names. Defaults to StringComparison.OrdinalIgnoreCase.
         /// </param>
         /// <returns>
         /// <c>true</c> if the attribute exists and was successfully parsed as an enum of type T; otherwise, <c>false</c>.
@@ -182,15 +258,16 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             var type = typeof(T);
             value = default;
 
-            if (@this.To<T>() is T found)
+            if (@this.TryGetSingleBoundAttributeByType(out T aspirant))
             {
-                // Stored as a unique T value
-                value = found;
+                value = aspirant;
                 return true;
             }
             else
             {
-                // Stored as a plain old string.
+                // The attribute name is expected to be the same as the enum type's name but in lowercase, 
+                // and the value is stored as a case-sensitive string. This approach is used typically when 
+                // the attribute is set using SetEnumValue(EnumType.Value) which writes the enum as a string.
                 var attribute = @this
                     .Attributes()
                     .FirstOrDefault(attr => string.Equals(attr.Name.LocalName, type.Name, stringComparison));

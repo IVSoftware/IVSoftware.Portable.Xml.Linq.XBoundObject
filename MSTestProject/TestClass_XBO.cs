@@ -135,6 +135,9 @@ Settings.Cancel";
             // Obtain the dictionary 
             var dict = xroot.To<DualKeyLookup>();
 
+            Assert.IsNotNull(dict[Scan.Barcode]);
+            Assert.IsNotNull(dict[Scan.Barcode].To<Button>());
+
             dict[Scan.Barcode]
                 .To<Button>()
                 .PerformClick();
@@ -237,9 +240,46 @@ Settings.Apply.Selected";
         {
             var xel = new XElement("tmp");
             xel.SetAttributeValue(NodeType.folder);
-            if(xel.TryGetAttributeValue(out NodeType result))
-            { }
-        }
+
+            subtestWhereAttributeExists();
+
+            subtestWhereAttributeDoesNotExist();
+            void subtestWhereAttributeDoesNotExist() { }
+            {
+                Assert.IsTrue(xel.To<NotFoundTypeForTest?>() is null, "Expecting nullable enum type to return null without throwing exception.");
+                Assert.IsFalse(xel.TryGetAttributeValue(out NotFoundTypeForTest doNotUse), "Expecting false without throwing exception");
+
+                try
+                {
+                    _ = xel.To<NotFoundTypeForTest>();
+                    Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NotFoundTypeForTest>());
+                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                }
+            }
+            #region S U B T E S T S
+            void subtestWhereAttributeExists()
+            {
+                Assert.IsTrue(xel.TryGetAttributeValue(out NodeType result1));
+                Assert.AreEqual(
+                    NodeType.folder, 
+                    result1, 
+                    "Expecting FIXED version 1.4.0-prerelease bug.");
+
+                Assert.IsTrue(xel.To<NodeType>() is NodeType result2);
+                Assert.AreEqual(
+                    NodeType.folder, 
+                    result2, 
+                    "Expecting new overload with allowEnumParsing to work.");
+
+                Assert.IsTrue(xel.To<NodeType?>() is NodeType, "Expecting nullable enum type to return valid T in this case.");
+            }
+            static string localInvalidOperationExceptionMessage<T>() => $"No valid {typeof(T).Name} found. To handle cases where an enum attribute might not exist, use a nullable version: To<{typeof(T).Name}?>() or check @this.Has<{typeof(T).Name}>() first.";
+        #endregion S U B T E S T S
+    }
     }
     interface IClickable
     {

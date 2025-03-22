@@ -37,4 +37,6 @@ namespace MSTestProject
         }
     }
     enum NodeType { drive, folder, file, }
+
+    enum NotFoundTypeForTest { na }
 }
