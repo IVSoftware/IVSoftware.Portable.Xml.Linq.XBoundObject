@@ -52,8 +52,9 @@ In previous releases, this second pattern has been shown to be unsafe when no bo
 - The boolean cause incorrectly evaluates to `true` even when no such attribute exists
 - The `enumValue` will be set to default value for the `enum` potentially causing spurious failures.
 ___
+## Extension Methods in this Package
 
-**XBound Object Extensions**
+### XBound Object Extensions
 
 ```
 /// <summary>
@@ -107,7 +108,7 @@ public static T AncestorOfType<T>(this XElement @this, bool includeSelf = false,
 ```
 ___
 
-**XElement Extensions**
+### XElement Extensions
 
 This package also includes extended functionality for System.Xml.Linq that is not directly tied to XBoundObject.
 
@@ -220,7 +221,7 @@ public static IEnumerable<XElement> SortAttributes(this IEnumerable<XElement> @t
 ```
 ___
 
-**Nested Enum Extensions**
+### Nested Enum Extensions
 
 ```
 /// <summary>
@@ -276,7 +277,7 @@ public static string ToFullIdPath(this Enum @this, DualKeyLookup dkl, char delim
 ```
 ___
 
-**Placer Class**
+## Placer Class
 
 ```
 /// <summary>
