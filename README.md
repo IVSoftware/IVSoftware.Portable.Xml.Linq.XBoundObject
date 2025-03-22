@@ -90,32 +90,54 @@ This package also includes extended functionality for System.Xml.Linq that is no
 /// <param name="useLowerCaseName">If true, the attribute name will be the Enum type name in lowercase; otherwise, it will use the exact type name.</param>
 public static void SetAttributeValue(this XElement @this, Enum value, bool useLowerCaseName = true){...}
 ```
-
 ___
 
 ```
 /// <summary>
-/// Retrieves an Enum value from an attribute on the given XElement. If the attribute is missing, 
-/// it either throws an exception or returns a fallback value (-1 cast to T or a provided default).
+/// Tries to retrieve a single attribute of type T from the provided XElement, enforcing strict constraints based on the specified behavior.
+/// This method targets attributes of type XBoundAttribute with a Tag property of type T, ensuring either the existence of exactly one such attribute (Single behavior),
+/// or tolerating the absence of such attributes while ensuring no multiples exist (SingleOrDefault behavior).
 /// </summary>
-/// <typeparam name="T">The Enum type to retrieve.</typeparam>
+/// <typeparam name="T">The expected type of the Tag property of the XBoundAttribute.</typeparam>
+/// <param name="xel">The XElement from which to try and retrieve the attribute.</param>
+/// <param name="o">The output parameter that will contain the value of the Tag if exactly one such attribute is found or none in case of SingleOrDefault behavior.</param>
+/// <param name="throw">If true, operates in 'Single' mode where the absence or multiplicity of attribute results in an InvalidOperationException. If false, operates in 'SingleOrDefault' mode where only multiplicity results in an exception.</param>
+/// <returns>True if exactly one attribute was found and successfully retrieved, otherwise false if no attributes are found and 'throw' is false.</returns>
+/// <exception cref="InvalidOperationException">Thrown when conditions for the selected mode ('Single' or 'SingleOrDefault') are not met:
+/// 1. In 'Single' mode, if no attribute or multiple attributes of type T are found.
+/// 2. In 'SingleOrDefault' mode, if multiple attributes of type T are found.</exception>
+/// <remarks>
+/// The 'throw' parameter determines the operational mode:
+/// - 'Single': Requires exactly one matching attribute. An exception is thrown for no match or multiple matches.
+/// - 'SingleOrDefault': Allows zero or one matching attribute. An exception is thrown only for multiple matches.
+/// This ensures that the method name "TryGetSingleBoundAttributeByType" accurately reflects its functionality by clearly defining the outcome expectations based on the operational mode.
+/// </remarks>
+
+public static bool TryGetSingleBoundAttributeByType<T>(this XElement xel, out T o, bool @throw = false){...}
+```
+---
+
+```
+/// <summary>
+/// Attempts to retrieve an enum member from an Enum type T in the given XElement.
+/// </summary>
+/// <typeparam name="T">The enum type to parse.</typeparam>
 /// <param name="this">The XElement to retrieve the attribute from.</param>
-/// <param name="stringComparison">The string comparison method for matching attribute names.</param>
-/// <param name="defaultValue">
-/// Optional default value to return if the attribute is not found. 
-/// This is not the same as default(T)! If null, -1 is used unless T already defines -1, 
-/// in which case an exception is thrown.
+/// <param name="value">
+/// When this method returns, contains the parsed enum value if the attribute exists and is valid; 
+/// otherwise, the default value of T.
 /// </param>
-/// <param name="throw">If true, throws an exception if the attribute is missing instead of returning a fallback value.</param>
-/// <returns>The parsed Enum value of type T.</returns>
-/// <exception cref="InvalidOperationException">Thrown if -1 is already a defined value in the Enum type T.</exception>
-/// <exception cref="FormatException">Thrown if parsing the attribute value fails.</exception>
-public static T GetAttributeValue<T>(
-    this XElement @this,
-    StringComparison stringComparison = StringComparison.OrdinalIgnoreCase,
-    T? defaultValue = null, // [Careful] This is not the same as default T !!
-    bool @throw = false)
-    where T : struct, Enum {...}
+/// <param name="stringComparison">
+/// The string comparison method used for matching attribute names. Defaults to StringComparison.OrdinalIgnoreCase.
+/// </param>
+/// <returns>
+/// <c>true</c> if the attribute exists and was successfully parsed as an enum of type T; otherwise, <c>false</c>.
+/// </returns>
+public static bool TryGetAttributeValue<T>(
+this XElement @this,
+out T value,
+StringComparison stringComparison = StringComparison.OrdinalIgnoreCase)
+where T : struct, Enum{...}
 ```
 ---
 

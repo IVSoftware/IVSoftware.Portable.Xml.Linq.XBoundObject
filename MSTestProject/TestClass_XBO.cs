@@ -257,46 +257,7 @@ Settings.Apply.Selected";
 
             subtestWhereAttributeExists();
             subtestDoNotThrowWhereEnumAttributeDoesNotExist();
-
             subtestThrowWhereEnumAttributeDoesNotExist();
-            void subtestThrowWhereEnumAttributeDoesNotExist() { }
-            {
-                try
-                {
-                    _ = xel.TryGetSingleBoundAttributeByType(out NotFoundTypeForTest na, @throw: true);
-                    Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
-                }
-                catch (InvalidOperationException ex)
-                {
-                    Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NotFoundTypeForTest>());
-                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
-                }
-
-                // Even though @throw is EXPLICITLY set to false, we need to override it. 
-                // IT'S AN EMERGENCY!
-                // The returned value is simply not valid in this case.
-                try
-                {
-                    _ = xel.To<NotFoundTypeForTest>(@throw: false);
-                    Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
-                }
-                catch (InvalidOperationException ex)
-                {
-                    Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NotFoundTypeForTest>());
-                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
-                }
-
-                try
-                {
-                    _ = xel.To<NotFoundTypeForTest>();
-                    Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
-                }
-                catch (InvalidOperationException ex)
-                {
-                    Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NotFoundTypeForTest>());
-                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
-                }
-            }
 
             #region S U B T E S T S
             void subtestWhereAttributeExists()
@@ -343,6 +304,46 @@ Settings.Apply.Selected";
                 Assert.IsTrue(xel.To<NotFoundTypeForTest?>() is null, "Expecting nullable enum type to return null without throwing exception.");
                 Assert.IsFalse(xel.TryGetAttributeValue(out NotFoundTypeForTest doNotUse), "Expecting false without throwing exception");
             }
+
+            void subtestThrowWhereEnumAttributeDoesNotExist()
+            {
+                try
+                {
+                    _ = xel.TryGetSingleBoundAttributeByType(out NotFoundTypeForTest na, @throw: true);
+                    Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NotFoundTypeForTest>());
+                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                }
+
+                // Even though @throw is EXPLICITLY set to false, we need to override it. 
+                // IT'S AN EMERGENCY!
+                // The returned value is simply not valid in this case.
+                try
+                {
+                    _ = xel.To<NotFoundTypeForTest>(@throw: false);
+                    Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NotFoundTypeForTest>());
+                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                }
+
+                try
+                {
+                    _ = xel.To<NotFoundTypeForTest>();
+                    Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NotFoundTypeForTest>());
+                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                }
+            }
+
             static string localInvalidOperationExceptionMessage<T>() => $"No valid {typeof(T).Name} found. To handle cases where an enum attribute might not exist, use a nullable version: To<{typeof(T).Name}?>() or check @this.Has<{typeof(T).Name}>() first.";
         #endregion S U B T E S T S
     }
