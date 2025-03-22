@@ -67,15 +67,16 @@ namespace IVSoftware.Portable.Xml.Linq
         /// </summary>
         BoundEnumTypeOnly,
     }
-
+    /// <summary>
+    /// Enum to specify how errors are reported when retrieving Enum values that might default.
+    /// </summary>
     public enum EnumErrorReportOption
     {
         /// <summary>
         /// Skip error reporting.
         /// </summary>
         /// <remarks>
-        /// Intended for internal use where client method is
-        /// responsible for high-level error reporting.
+        /// Intended for internal use where the calling method handles error reporting at a higher level.
         /// </remarks>
         None,
 
@@ -89,23 +90,37 @@ namespace IVSoftware.Portable.Xml.Linq
         Assert = 1,
 
         /// <summary>
-        /// Throws exception when a default enum value might be inadvertently returned.
+        /// Throws an exception when a default enum value might be inadvertently returned.
         /// </summary>
         /// <remarks>
-        /// - RECOMMENDED
+        /// - Recommended: Actively prevents errors by throwing exceptions where defaults might otherwise silently pass.
+        /// - Note: Transitioning from older versions? This change could impact existing implementations, as it introduces
+        ///  exceptions where there were previously only assertions. Rigorous testing is advised to ensure compatibility.
         /// </remarks>
         Throw = 2,
 
         /// <summary>
-        /// Uses compatibility setting
+        /// Use the current value of Compatibility.DefaultErrorReportOption
         /// </summary>
-        /// <remarks>
-        /// - RECOMMENDED but YOU MUST EXPLICITLY SET THIS!
-        /// </remarks>
         Default = int.MinValue,
     }
+    /// <summary>
+    /// Manages default settings for error reporting options across the application.
+    /// </summary>
     public static class Compatibility
     {
+        /// <summary>
+        /// Gets or sets the default error reporting option used throughout the application.
+        /// </summary>
+        /// <remarks>
+        /// This setting determines the behavior of enum error handling when no explicit choice is made in method calls.
+        /// Changing this from the default 'Assert' to 'Throw' can lead to exceptions where previously there were assertions, 
+        /// potentially affecting existing code. This change should be treated as a breaking change, 
+        /// and rigorous testing is advised to ensure compatibility with older versions of the application.
+        /// 
+        /// Upon first access, if the option is still set to 'Assert', a warning is issued to recommend setting it to 'Throw'
+        /// for more robust error handling.
+        /// </remarks>
         public static EnumErrorReportOption DefaultErrorReportOption
         {
             get
@@ -117,7 +132,8 @@ namespace IVSoftware.Portable.Xml.Linq
                     {
                         Debug.WriteLine(string.Join(Environment.NewLine, Enumerable.Repeat("*", 5)));
                         Debug.WriteLine(
-                            $"ADVISORY: It is recommended that you initialize {nameof(Compatibility)}.{nameof(DefaultErrorReportOption)} option to {EnumErrorReportOption.Throw.ToFullKey()}");
+                            $"ADVISORY: It is recommended to initialize the {nameof(Compatibility)}.{nameof(DefaultErrorReportOption)} option to {EnumErrorReportOption.Throw.ToFullKey()}");
+                        Debug.WriteLine(string.Join(Environment.NewLine, Enumerable.Repeat("*", 5)));
                     }
                 }
                 return _defaultErrorReportOption;

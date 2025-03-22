@@ -84,17 +84,13 @@ public static void SetBoundAttributeValue(
 ___
 
 ```
-/// <summary>
-/// Return Single or Default where type is T. Null testing will be done by client.
-/// </summary>
-public static T To<T>(this XElement xel, bool @throw = false){...}
 ```
 
 ___
 
 ```
 /// <summary>
-/// Return true if xel has any attribute of type T"/>
+/// Return true if xel has any bound attribute of type T"/>
 /// </summary>
 public static bool Has<T>(this XElement xel){...}
 ```
@@ -114,8 +110,8 @@ This package also includes extended functionality for System.Xml.Linq that is no
 
 ```
 /// <summary>
-/// Sets an attribute on the given XElement using the name of the Enum type as the attribute name 
-/// and the Enum value as the attribute value.
+/// Sets an attribute on the given XElement using the name of the Enum type 
+/// as the attribute name and the Enum value as the attribute value.
 /// </summary>
 /// <param name="this">The XElement to set the attribute on.</param>
 /// <param name="value">The Enum value to store as an attribute.</param>
@@ -123,6 +119,23 @@ This package also includes extended functionality for System.Xml.Linq that is no
 public static void SetAttributeValue(this XElement @this, Enum value, bool useLowerCaseName = true){...}
 ```
 ___
+
+```
+/// <summary>
+/// Tries to retrieve a single attribute of the specified type T from an XElement and assigns it to the out parameter.
+/// </summary>
+/// <remarks>
+/// This method delegates error handling strategy to the <see cref="EnumErrorReportOption"/> specified by the caller.
+/// For complete behavior details and error handling strategies, refer to the forwarded method documentation.
+/// </remarks>
+/// <param name="xel">The XElement to retrieve the attribute from.</param>
+/// <param name="o">Out parameter to hold the result if successful.</param>
+/// <param name="throw">If true, uses <see cref="EnumErrorReportOption.Throw"/> to enforce throwing an exception on failure. Otherwise, defaults to <see cref="EnumErrorReportOption.Default"/>, which follows the system-wide configuration set in <see cref="Compatibility.DefaultErrorReportOption"/>.</param>
+/// <returns>True if the attribute was successfully retrieved; otherwise, false.</returns>
+public static bool TryGetSingleBoundAttributeByType<T>(this XElement xel, out T o, bool @throw = false){...}}
+
+```
+---
 
 ```
 /// <summary>
@@ -144,32 +157,35 @@ ___
 /// - 'SingleOrDefault': Allows zero or one matching attribute. An exception is thrown only for multiple matches.
 /// This ensures that the method name "TryGetSingleBoundAttributeByType" accurately reflects its functionality by clearly defining the outcome expectations based on the operational mode.
 /// </remarks>
-
 public static bool TryGetSingleBoundAttributeByType<T>(this XElement xel, out T o, bool @throw = false){...}
 ```
 ---
 
 ```
 /// <summary>
-/// Attempts to retrieve an enum member from an Enum type T in the given XElement.
+/// Tries to retrieve a single attribute of type T from the provided XElement, applying strict constraints based on the specified behavior.
+/// This method is enhanced to allow configurable error reporting through the <see cref="EnumErrorReportOption"/> enumeration, reflecting a more granular control over how missing or multiple attributes are handled. It is particularly useful for applications transitioning from versions prior to 1.4, as it helps manage changes in error handling behaviors.
 /// </summary>
-/// <typeparam name="T">The enum type to parse.</typeparam>
-/// <param name="this">The XElement to retrieve the attribute from.</param>
-/// <param name="value">
-/// When this method returns, contains the parsed enum value if the attribute exists and is valid; 
-/// otherwise, the default value of T.
-/// </param>
-/// <param name="stringComparison">
-/// The string comparison method used for matching attribute names. Defaults to StringComparison.OrdinalIgnoreCase.
-/// </param>
-/// <returns>
-/// <c>true</c> if the attribute exists and was successfully parsed as an enum of type T; otherwise, <c>false</c>.
-/// </returns>
+/// <typeparam name="T">The expected type of the Tag property of the XBoundAttribute.</typeparam>
+/// <param name="xel">The XElement from which to try and retrieve the attribute.</param>
+/// <param name="o">The output parameter that will contain the value of the Tag if exactly one such attribute is found or none in case of SingleOrDefault behavior.</param>
+/// <param name="enumErrorReporting">Specifies the error reporting strategy, affecting behavior when the target attribute is not found or multiple are encountered.</param>
+/// <param name="caller">[Optional] The name of the calling method, used internally for debugging and logging purposes.</param>
+/// <returns>True if exactly one attribute was found and successfully retrieved, otherwise false.</returns>
+/// <exception cref="InvalidOperationException">Thrown when conditions specified by the <paramref name="enumErrorReporting"/> are not met.</exception>
+/// <remarks>
+/// The <paramref name="enumErrorReporting"/> parameter determines the operational mode:
+/// - <see cref="EnumErrorReportOption.None"/>: Used internally when the calling method handles higher-level error reporting.
+/// - <see cref="EnumErrorReportOption.Assert"/>: Provides an assertion failure for debugging purposes if a default value might be returned. Use cautiously as it allows silent failures in production.
+/// - <see cref="EnumErrorReportOption.Throw"/>: Throws an exception if a default enum value might be inadvertently returned, ensuring robust error handling.
+/// - <see cref="EnumErrorReportOption.Default"/>: Applies the default setting from <see cref="Compatibility.DefaultErrorReportOption"/>, allowing centralized control over error handling behavior. This is particularly important for transitioning existing applications from pre-1.4 versions, facilitating adjustments to the new error handling paradigm without extensive code modifications.
+/// This method enforces strict attribute retrieval rules, distinguishing clearly between single and multiple attribute scenarios to maintain data integrity and prevent erroneous data usage.
+/// </remarks>
 public static bool TryGetAttributeValue<T>(
-this XElement @this,
-out T value,
-StringComparison stringComparison = StringComparison.OrdinalIgnoreCase)
-where T : struct, Enum{...}
+    this XElement @this, 
+    out T value, 
+    StringComparison stringComparison = StringComparison.OrdinalIgnoreCase)
+    where T : struct, Enum{...}
 ```
 ---
 
