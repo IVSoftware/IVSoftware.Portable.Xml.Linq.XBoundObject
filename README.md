@@ -21,14 +21,18 @@ A lightweight extension for `System.Xml.Linq` that provides a `Tag` property for
 XBoundAttribute bridges the gap between XML structures and runtime logic, making XML more powerful and adaptive in modern applications.
 
 ___
+
 ## New in Release 1.4
 
-This version contains one new major feature and one bugfix.
+This release introduces a new feature and an important enhancement to improve your experience.
 
 ### New Feature: Placer
+An instance of Placer class allows for efficient dynamic path-based XML element placement. For example, it would be ideal for projecting a flat list of file names to a two-dimensional runtime XML structure. Options include useful values like `FindOrReplace` and the placement reports status including whether the element pre-existed. A placer instance can be invoke with inline lambda event handlers for before and after element additions, to gain real-time control over each step of the XML path traversal. Specifically, this is often an optimal hook for `SetBoundAttributeValue()` initializations.
 
-### Working with `Enum` and `enum` Attribute Values
-This version fixes a potential edge case when working with `Enum` and `enum` values from XML attributes. Let's start with what _hasn't_ changed. The following pattern worked before and has _not_ been altered:
+### Enhancement: Working with `Enum` and `enum` Attribute Values
+This release provides a needed improvement to how a named enum value is retrieved from an XBoundAttribute, closing the gap of unintentional use of default enum values in edge cases as detailed in the code below.
+
+When there is only one such attribute bound to a given `XElement`, it suffices to cast it to `Enum`. This remains a safe pattern to use even if no such attribute can be found.
 
 ```csharp
 if(xel.To<Enum>() is NamedEnumType enumValue) 
@@ -36,14 +40,17 @@ if(xel.To<Enum>() is NamedEnumType enumValue)
     // Code Based on enum NamedEnumType.Value
 }
 ```
-When a bound attribute of `NamedEnumType` existed, it was also safe to use this dismbiguating pattern.
+
+However, when the possibility of multiple enum attributes exists, a disambiguating pattern might be used instead.
 
 if(xel.To<NamedEnumType>() is NamedEnumType enumValue) 
 {
     // Code Based on enum NamedEnumType.Value
 }
 
-However, this second pattern was unsafe in previous releases when `xel.Has<NamedEnumType>()` was false, i.e. an attribute of that bound type was exist altogether nonexistent. In this case, the second boolean claus incorrecty returned `true` with the `enumValue` set to the default value for the `enum`.
+In previous releases, this second pattern is considered unsafe when no bound attribute of type `NamedEnumType` is present. It has been shown that in this case:
+- This boolean cause incorrectly evaluates to `true` even when no such attribute exists
+- The `enumValue` will be set to default value for the `enum` potentially causing spurious failures.
 ___
 
 **XBound Object Extensions**
