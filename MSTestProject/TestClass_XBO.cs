@@ -244,11 +244,51 @@ Settings.Apply.Selected";
             subtestWhereAttributeExists();
 
             subtestWhereAttributeDoesNotExist();
-            void subtestWhereAttributeDoesNotExist() { }
+            #region S U B T E S T S
+            void subtestWhereAttributeExists()
+            {
+                Assert.IsTrue(
+                    xel.TryGetAttributeValue(out NodeType result1),
+                    $"Expecting TryGetAttributeValueByType returns false but parsed enum succeds.");
+
+                Assert.AreEqual(
+                    NodeType.folder, 
+                    result1, 
+                    "Expecting FIXED version 1.4.0-prerelease bug.");
+
+                Assert.IsTrue(
+                    xel.To<NodeType>() is NodeType result2,
+                    $"Expecting parsed enum fallback success based on {nameof(IVSoftware.Portable.Xml.Linq.XBoundObject.Extensions.AllowEnumParsing)}");
+
+                try
+                {
+                    IVSoftware.Portable.Xml.Linq.XBoundObject.Extensions.AllowEnumParsing = false;
+                    _ = xel.To<NodeType>();
+                    Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
+                }
+                catch(Exception ex)
+                {
+                    Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NodeType>());
+                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                }
+                finally
+                {
+                    IVSoftware.Portable.Xml.Linq.XBoundObject.Extensions.AllowEnumParsing = true;
+                }
+
+
+                Assert.AreEqual(
+                    NodeType.folder, 
+                    result2, 
+                    "Expecting new overload with allowEnumParsing to work.");
+
+                Assert.IsTrue(xel.To<NodeType?>() is NodeType, "Expecting nullable enum type to return valid T in this case.");
+            }
+
+            void subtestWhereAttributeDoesNotExist()
             {
                 Assert.IsTrue(xel.To<NotFoundTypeForTest?>() is null, "Expecting nullable enum type to return null without throwing exception.");
                 Assert.IsFalse(xel.TryGetAttributeValue(out NotFoundTypeForTest doNotUse), "Expecting false without throwing exception");
-
                 try
                 {
                     _ = xel.To<NotFoundTypeForTest>();
@@ -259,23 +299,6 @@ Settings.Apply.Selected";
                     Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NotFoundTypeForTest>());
                     // Pass! This exception SHOULD BE THROWN. It's what we're testing.
                 }
-            }
-            #region S U B T E S T S
-            void subtestWhereAttributeExists()
-            {
-                Assert.IsTrue(xel.TryGetAttributeValue(out NodeType result1));
-                Assert.AreEqual(
-                    NodeType.folder, 
-                    result1, 
-                    "Expecting FIXED version 1.4.0-prerelease bug.");
-
-                Assert.IsTrue(xel.To<NodeType>() is NodeType result2);
-                Assert.AreEqual(
-                    NodeType.folder, 
-                    result2, 
-                    "Expecting new overload with allowEnumParsing to work.");
-
-                Assert.IsTrue(xel.To<NodeType?>() is NodeType, "Expecting nullable enum type to return valid T in this case.");
             }
             static string localInvalidOperationExceptionMessage<T>() => $"No valid {typeof(T).Name} found. To handle cases where an enum attribute might not exist, use a nullable version: To<{typeof(T).Name}?>() or check @this.Has<{typeof(T).Name}>() first.";
         #endregion S U B T E S T S

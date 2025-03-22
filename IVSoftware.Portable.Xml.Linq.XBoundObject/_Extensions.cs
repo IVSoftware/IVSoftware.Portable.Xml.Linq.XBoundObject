@@ -65,59 +65,61 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         public static T To<T>(this XElement xel, bool @throw = false)
         {
             var type = typeof(T);
+
+            // Try, but don't throw yet!
             if (xel.TryGetSingleBoundAttributeByType(out T result, @throw: false))
             {
-                // Don't throw yet!
                 return result;
             }
             else
             {
-                if (@throw) throw new InvalidOperationException($"typeof({typeof(T).Name})");
-                else if (localTryGetParsedEnum(out T parsedEnum))
+                // Try the Enum special-case fallback.
+                if (localTryGetParsedEnum(out T parsedEnum))
                 {
                     return parsedEnum;
                 }
                 else
                 {
+                    // NOW throw if necessary.
                     if (@throw || type.IsEnum)
                     {
                         throw new InvalidOperationException(InvalidOperationExceptionMessage<T>());
                     }
                     else return default;
                 };
-                bool localTryGetParsedEnum(out T parsedEnum)
+            }
+            bool localTryGetParsedEnum(out T parsedEnum)
+            {
+                Type nullableSafeType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+                if (AllowEnumParsing && nullableSafeType.IsEnum)
                 {
-                    Type nullableSafeType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
-                    if (AllowEnumParsing && nullableSafeType.IsEnum)
-                    {
-                        // The attribute name is expected to be the same as the enum type's name but in lowercase, 
-                        // and the value is stored as a case-sensitive string. This approach is used typically when 
-                        // the attribute is set using SetEnumValue(EnumType.Value) which writes the enum as a string.
-                        if (xel
-                            .Attributes()
-                            .FirstOrDefault(_ => string.Equals(
-                                    _.Name.LocalName,
-                                    nullableSafeType.Name, StringComparison.OrdinalIgnoreCase
-                                )) is XAttribute attr)
+                    // The attribute name is expected to be the same as the enum type's name but in lowercase, 
+                    // and the value is stored as a case-sensitive string. This approach is used typically when 
+                    // the attribute is set using SetEnumValue(EnumType.Value) which writes the enum as a string.
+                    if (xel
+                        .Attributes()
+                        .FirstOrDefault(_ => string.Equals(
+                                _.Name.LocalName,
+                                nullableSafeType.Name, StringComparison.OrdinalIgnoreCase
+                            )) is XAttribute attr)
 
+                    {
+                        foreach (var value in nullableSafeType.GetEnumValues())
                         {
-                            foreach (var value in nullableSafeType.GetEnumValues())
+                            if (string.Equals(value.ToString(), attr.Value))
                             {
-                                if(string.Equals(value.ToString(), attr.Value))
-                                {
-                                    parsedEnum = (T)value;
-                                    return true;
-                                }
+                                parsedEnum = (T)value;
+                                return true;
                             }
                         }
-                        parsedEnum = default;
-                        return false;
                     }
-                    else
-                    {
-                        parsedEnum = default;
-                        return false;
-                    }
+                    parsedEnum = default;
+                    return false;
+                }
+                else
+                {
+                    parsedEnum = default;
+                    return false;
                 }
             }
         }
@@ -141,6 +143,43 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         /// </remarks>
         public static bool TryGetSingleBoundAttributeByType<T>(this XElement xel, out T o, bool @throw = false)
         {
+            XBoundAttribute xba;
+            if (@throw)
+            {
+                xba =
+                    xel
+                    .Attributes()
+                    .OfType<XBoundAttribute>()
+                    .Single(_ => _.Tag is T);
+            }
+            else
+            {
+                var candidates =
+                    xel
+                    .Attributes()
+                    .OfType<XBoundAttribute>()
+                    .Where(_ => _.Tag is T);
+                if (candidates.Count() > 1)
+                {
+                    Debug.Fail($"Multiple instances of type {typeof(T)} exist.");
+                    xba = default;
+                }
+                else
+                {
+                    xba = candidates.FirstOrDefault();
+                }
+            }
+            if (Equals(xba, default(XBoundAttribute)))
+            {
+                o = default;
+                return false;
+            }
+            else
+            {
+                o = (T)xba.Tag;
+                return true;
+            }
+#if false
             Type safeType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
             XBoundAttribute xba;
             if (@throw)
@@ -192,6 +231,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                 o = (T)xba.Tag;
                 return true;
             }
+#endif
         }
 
         /// <summary>
