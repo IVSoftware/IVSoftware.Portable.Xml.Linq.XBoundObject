@@ -258,6 +258,7 @@ Settings.Apply.Selected";
             subtestWhereAttributeExists();
             subtestDoNotThrowWhereEnumAttributeDoesNotExist();
             subtestThrowWhereEnumAttributeDoesNotExist();
+            subtestMultiples();
 
             #region S U B T E S T S
             void subtestWhereAttributeExists()
@@ -281,7 +282,7 @@ Settings.Apply.Selected";
                     _ = xel.To<NodeType>();
                     Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
                 }
-                catch(Exception ex)
+                catch(InvalidOperationException ex)
                 {
                     Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NodeType>());
                     // Pass! This exception SHOULD BE THROWN. It's what we're testing.
@@ -344,7 +345,27 @@ Settings.Apply.Selected";
                 }
             }
 
+            void subtestMultiples()
+            {
+                xel.RemoveAttributes();
+                xel.SetBoundAttributeValue(SortOrder.Ascending);
+                xel.SetBoundAttributeValue(NodeType.folder);
+
+                try
+                {
+                    _ = xel.To<Enum>();
+                    Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Assert.AreEqual(ex.Message, localInvalidOperationMultipleFoundMessage<Enum>());
+                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                }
+            }
+
             static string localInvalidOperationExceptionMessage<T>() => $"No valid {typeof(T).Name} found. To handle cases where an enum attribute might not exist, use a nullable version: To<{typeof(T).Name}?>() or check @this.Has<{typeof(T).Name}>() first.";
+
+            static string localInvalidOperationMultipleFoundMessage<T>() => $@"Multiple valid {typeof(T).Name} found. To disambiguate them, obtain the attribute by name: Attributes().OfType<XBoundAttribute>().Single(_=>_.name=""targetName""";
         #endregion S U B T E S T S
     }
     }

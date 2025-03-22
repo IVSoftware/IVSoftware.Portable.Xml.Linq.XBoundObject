@@ -21,6 +21,30 @@ A lightweight extension for `System.Xml.Linq` that provides a `Tag` property for
 XBoundAttribute bridges the gap between XML structures and runtime logic, making XML more powerful and adaptive in modern applications.
 
 ___
+## New in Release 1.4
+
+This version contains one new major feature and one bugfix.
+
+### New Feature: Placer
+
+### Working with `Enum` and `enum` Attribute Values
+This version fixes a potential edge case when working with `Enum` and `enum` values from XML attributes. Let's start with what _hasn't_ changed. The following pattern worked before and has _not_ been altered:
+
+```csharp
+if(xel.To<Enum>() is NamedEnumType enumValue) 
+{
+    // Code Based on enum NamedEnumType.Value
+}
+```
+When a bound attribute of `NamedEnumType` existed, it was also safe to use this dismbiguating pattern.
+
+if(xel.To<NamedEnumType>() is NamedEnumType enumValue) 
+{
+    // Code Based on enum NamedEnumType.Value
+}
+
+However, this second pattern was unsafe in previous releases when `xel.Has<NamedEnumType>()` was false, i.e. an attribute of that bound type was exist altogether nonexistent. In this case, the second boolean claus incorrecty returned `true` with the `enumValue` set to the default value for the `enum`.
+___
 
 **XBound Object Extensions**
 
