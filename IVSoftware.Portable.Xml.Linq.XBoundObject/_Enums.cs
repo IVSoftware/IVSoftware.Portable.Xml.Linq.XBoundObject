@@ -1,6 +1,9 @@
-﻿using System;
+﻿using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
 using System.Text;
 
 namespace IVSoftware.Portable.Xml.Linq
@@ -62,27 +65,73 @@ namespace IVSoftware.Portable.Xml.Linq
         /// This option retrieves an Enum value only when bound
         /// as a typed XBoundAttribute on the XElement node.
         /// </summary>
-        RequireEnumIsType,
+        BoundEnumTypeOnly,
     }
 
-    [Flags]
-    public enum Version1_4_ErrorReportingOption
+    public enum EnumErrorReportOption
     {
+        /// <summary>
+        /// Skip error reporting.
+        /// </summary>
+        /// <remarks>
+        /// Intended for internal use where client method is
+        /// responsible for high-level error reporting.
+        /// </remarks>
+        None,
+
         /// <summary>
         /// Assert only when a default enum value might be inadvertently returned.
         /// </summary>
         /// <remarks>
-        /// - DEFAULT VALUE but USE WITH CAUTION!
+        /// - USE WITH CAUTION!
         /// - The tradeoff is that this allows the silent failure but avoids crashing your app.
         /// </remarks>
-        Assert = 0x0,
+        Assert = 1,
 
         /// <summary>
         /// Throws exception when a default enum value might be inadvertently returned.
         /// </summary>
         /// <remarks>
+        /// - RECOMMENDED
+        /// </remarks>
+        Throw = 2,
+
+        /// <summary>
+        /// Uses compatibility setting
+        /// </summary>
+        /// <remarks>
         /// - RECOMMENDED but YOU MUST EXPLICITLY SET THIS!
         /// </remarks>
-        Throw = 0x1,
+        Default = int.MinValue,
+    }
+    public static class Compatibility
+    {
+        public static EnumErrorReportOption DefaultErrorReportOption
+        {
+            get
+            {
+                if(_warnAssert)
+                { 
+                    _warnAssert = false;    // One time warning;
+                    if(Equals(_defaultErrorReportOption, EnumErrorReportOption.Assert))
+                    {
+                        Debug.WriteLine(string.Join(Environment.NewLine, Enumerable.Repeat("*", 5)));
+                        Debug.WriteLine(
+                            $"ADVISORY: It is recommended that you initialize {nameof(Compatibility)}.{nameof(DefaultErrorReportOption)} option to {EnumErrorReportOption.Throw.ToFullKey()}");
+                    }
+                }
+                return _defaultErrorReportOption;
+            }
+            set
+            {
+                if (!Equals(_defaultErrorReportOption, value))
+                {
+                    _defaultErrorReportOption = value;
+                }
+                _warnAssert = false;
+            }
+        }
+        private static EnumErrorReportOption _defaultErrorReportOption = EnumErrorReportOption.Assert;
+        private static bool _warnAssert = true;
     }
 }

@@ -264,7 +264,7 @@ Settings.Apply.Selected";
             {
                 Assert.IsTrue(
                     xel.TryGetAttributeValue(out NodeType result1),
-                    $"Expecting TryGetAttributeValueByType returns false but parsed enum succeds.");
+                    $"Expecting nested TryGetAttributeValueByType call returns false but parsed enum succeds.");
 
                 Assert.AreEqual(
                     NodeType.folder, 
@@ -277,32 +277,19 @@ Settings.Apply.Selected";
 
                 try
                 {
-                    EnumParsing = EnumParsingOption.RequireEnumIsType;
-                    _ = xel.To<NodeType>();
+                    _ = xel.To<NodeType>(enumParsing: EnumParsingOption.BoundEnumTypeOnly);
                     Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
-                }
-                catch(InvalidOperationException ex)
-                {
-                    Assert.AreEqual(
-                        Version1_4_ErrorReporting, 
-                        Version1_4_ErrorReportingOption.Throw);
-                    Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NodeType>());
-                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
                 }
                 catch (Exception ex)
                 {
                     Assert.AreEqual(
-                        Version1_4_ErrorReporting,
-                        Version1_4_ErrorReportingOption.Assert);
+                        EnumErrorReportOption.Assert,
+                        Compatibility.DefaultErrorReportOption);
 
                     Assert.AreEqual(
-                        ex.GetType().Name,
-                        "DebugAssertException");
+                        "DebugAssertException",
+                        ex.GetType().Name);
                     // Pass! This exception SHOULD BE THROWN. It's what we're testing.
-                }
-                finally
-                {
-                    EnumParsing = EnumParsingOption.AllowEnumParsing;
                 }
 
                 Assert.AreEqual(
@@ -328,8 +315,8 @@ Settings.Apply.Selected";
                 }
                 catch (InvalidOperationException ex)
                 {
-                    Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NotFoundTypeForTest>());
                     // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                    Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NotFoundTypeForTest>());
                 }
 
                 // Even though @throw is EXPLICITLY set to false, we need to override it. 
@@ -340,24 +327,16 @@ Settings.Apply.Selected";
                     _ = xel.To<NotFoundTypeForTest>(@throw: false);
                     Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
                 }
-                catch (InvalidOperationException ex)
-                {
-                    Assert.AreEqual(
-                        Version1_4_ErrorReporting,
-                        Version1_4_ErrorReportingOption.Throw);
-                    Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NodeType>());
-                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
-                }
                 catch (Exception ex)
                 {
+                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
                     Assert.AreEqual(
-                        Version1_4_ErrorReporting,
-                        Version1_4_ErrorReportingOption.Assert);
+                        EnumErrorReportOption.Assert,
+                        Compatibility.DefaultErrorReportOption);
 
                     Assert.AreEqual(
                         ex.GetType().Name,
                         "DebugAssertException");
-                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
                 }
 
                 try
@@ -367,56 +346,24 @@ Settings.Apply.Selected";
                 }
                 catch (Exception ex)
                 {
+                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
                     Assert.AreEqual(
-                        Version1_4_ErrorReporting,
-                        Version1_4_ErrorReportingOption.Assert);
+                        EnumErrorReportOption.Assert,
+                        Compatibility.DefaultErrorReportOption);
 
                     Assert.AreEqual(
                         ex.GetType().Name,
                         "DebugAssertException");
-                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
                 }
-                // CHANGE: Error Reporting Type
                 try
                 {
-                    Version1_4_ErrorReporting = Version1_4_ErrorReportingOption.Throw;
-                    try
-                    {
-                        _ = xel.To<NotFoundTypeForTest>(@throw: false);
-                        Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        Assert.IsTrue(
-                            Version1_4_ErrorReporting.HasFlag(Version1_4_ErrorReportingOption.Throw));
-                        Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NotFoundTypeForTest>());
-                        // Pass! This exception SHOULD BE THROWN. It's what we're testing.
-                    }
-                    try
-                    {
-                        _ = xel.To<NotFoundTypeForTest>();
-                        Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NotFoundTypeForTest>());
-                        // Pass! This exception SHOULD BE THROWN. It's what we're testing.
-                    }
-                    catch (Exception ex)
-                    {
-                        Assert.AreEqual(
-                            Version1_4_ErrorReporting,
-                            Version1_4_ErrorReportingOption.Assert);
-
-                        Assert.AreEqual(
-                            ex.GetType().Name,
-                            "DebugAssertException");
-                        // Pass! This exception SHOULD BE THROWN. It's what we're testing.
-                    }
+                    _ = xel.To<NotFoundTypeForTest>(@throw: true);
+                    Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
                 }
-                finally
+                catch (InvalidOperationException ex)
                 {
-                    Version1_4_ErrorReporting = Version1_4_ErrorReportingOption.Assert;
+                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                    Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NotFoundTypeForTest>());
                 }
             }
 
