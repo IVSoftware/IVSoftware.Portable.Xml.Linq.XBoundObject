@@ -2,6 +2,7 @@ using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using IVSoftware.WinOS.MSTest.Extensions;
+using System.Diagnostics;
 using System.Xml.Linq;
 
 namespace XBoundObjectMSTest;
@@ -60,14 +61,16 @@ public class TestClass_Placer
     [Placement(EnumPlacement.UseXAttribute, "xattr")]
     private enum LocalXAttrEnum
     {
-        na,
+        Default,
+        NonDefault,
     }
 
 
     [Placement(EnumPlacement.UseXBoundAttribute, "xba")]
     private enum LocalXBAEnum
     {
-        na,
+        Default,
+        NonDefault,
     }
 
 
@@ -77,7 +80,10 @@ public class TestClass_Placer
         string actual, expected;
 
         var path = Path.Combine("C:", "Child Folder", "Leaf Folder");
-        var xroot = new XElement("root");
+        XElement
+            xroot = new XElement("root");
+        XElement?
+            xelnew = null;
         PlacerResult result;
         subtestHandleNotFound();
         subtestPlacerKeysDictionary();
@@ -89,24 +95,31 @@ public class TestClass_Placer
             xroot.RemoveAll();
             result = xroot.Place(
                 path,
-                LocalXAttrEnum.na,
-                LocalXBAEnum.na
+                out xelnew,
+                LocalXAttrEnum.NonDefault,
+                LocalXBAEnum.NonDefault
             );
             actual = xroot.SortAttributes<LocalNodeOrder>().ToString();
             expected = @" 
 <root>
   <xnode text=""C:"">
     <xnode text=""Child Folder"">
-      <xnode text=""Leaf Folder"" xattr=""na"" xba=""[LocalXBAEnum.na]"" />
+      <xnode text=""Leaf Folder"" xattr=""NonDefault"" xba=""[LocalXBAEnum.NonDefault]"" />
     </xnode>
   </xnode>
 </root>";
-
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting values to match."
+                "Expecting xattr is XAttribute and xba is XBoundAttrubute."
             );
+            Assert.IsTrue(xelnew?.Has<Enum>(), $"Expecting Single {nameof(Enum)}.");
+            // This was going to get found regardless.
+            Assert.IsTrue(xelnew?.Has<LocalXBAEnum>(), $"Expecting Single {nameof(LocalXBAEnum)}.");
+            // This, because of the attribute, will use the string fallback.
+            Assert.IsTrue(xelnew?.Has<LocalXAttrEnum>(), $"Expecting Single {nameof(LocalXBAEnum)}.");
+
+
         }
 
         #region S U B T E S T S

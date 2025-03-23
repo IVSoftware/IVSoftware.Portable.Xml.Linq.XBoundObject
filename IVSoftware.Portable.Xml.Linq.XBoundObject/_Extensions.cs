@@ -1,7 +1,9 @@
-﻿using System;
+﻿using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 
@@ -183,11 +185,24 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         /// <summary>
         /// Return true if xel has any attribute of type T"/>
         /// </summary>
-        public static bool Has<T>(this XElement xel) =>
-            xel
+        public static bool Has<T>(this XElement xel)
+        {
+            if(xel
             .Attributes()
-            .Any(_ => (_ is XBoundAttribute) && (((XBoundAttribute)_).Tag is T));
-
+            .Any(_ => (_ is XBoundAttribute) && (((XBoundAttribute)_).Tag is T)))
+            {
+                return true;
+            }
+            var type = typeof(T);
+            if( type.GetCustomAttribute<PlacementAttribute>() is PlacementAttribute pattr)
+            {
+                var name = pattr.Name ?? type.Name.ToLower();
+                return
+                    xel.Attribute(name)?.Value is string value &&
+                    type.GetEnumNames().Any(_=>string.Equals(_, value));
+            }
+            return false;
+        }
 
         /// <summary>
         /// Tries to retrieve a single attribute of type T from the provided XElement, enforcing strict constraints based on the specified behavior.
