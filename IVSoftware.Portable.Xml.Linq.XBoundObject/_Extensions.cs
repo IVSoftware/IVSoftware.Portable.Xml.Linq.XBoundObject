@@ -185,8 +185,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         /// <summary>
         /// Determines whether the XElement has an attribute representing type T.
         /// - Returns true if a matching XBoundAttribute exists.
-        /// - Returns true if T is an enum decorated with [Placement(EnumPlacement.UseXAttribute)] and 
-        ///   the string attribute can be successfully parsed as a defined enum value.
+        /// - Returns true if T (or its underlying type, if nullable) is an enum decorated with [Placement(EnumPlacement.UseXAttribute)],
+        ///   and the string attribute can be successfully parsed as a defined enum value.
         /// </summary>
         public static bool Has<T>(this XElement xel)
         {
@@ -196,8 +196,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             {
                 return true;
             }
-            var type = typeof(T);
-            if( type.GetCustomAttribute<PlacementAttribute>() is PlacementAttribute pattr &&
+            var type = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+            if ( type.GetCustomAttribute<PlacementAttribute>() is PlacementAttribute pattr &&
                 pattr.Placement == EnumPlacement.UseXAttribute)
             {
                 var name = pattr.Name ?? type.Name.ToLower();
