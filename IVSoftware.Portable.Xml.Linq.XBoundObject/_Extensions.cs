@@ -183,7 +183,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         internal static string InvalidOperationMultipleFoundMessage<T>() => $@"Multiple valid {typeof(T).Name} found. To disambiguate them, obtain the attribute by name: Attributes().OfType<XBoundAttribute>().Single(_=>_.name=""targetName""";
 
         /// <summary>
-        /// Return true if xel has any attribute of type T"/>
+        /// Determines whether the XElement has an attribute representing type T.
+        /// - Returns true if a matching XBoundAttribute exists.
+        /// - Returns true if T is an enum decorated with [Placement(EnumPlacement.UseXAttribute)] and 
+        ///   the string attribute can be successfully parsed as a defined enum value.
         /// </summary>
         public static bool Has<T>(this XElement xel)
         {
@@ -194,7 +197,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                 return true;
             }
             var type = typeof(T);
-            if( type.GetCustomAttribute<PlacementAttribute>() is PlacementAttribute pattr)
+            if( type.GetCustomAttribute<PlacementAttribute>() is PlacementAttribute pattr &&
+                pattr.Placement == EnumPlacement.UseXAttribute)
             {
                 var name = pattr.Name ?? type.Name.ToLower();
                 return
@@ -359,45 +363,51 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         }
 
         /// <summary>
-        /// Sets an attribute on the given XElement using the name of the Enum type 
-        /// as the attribute name and the Enum value as the attribute value.
+        /// Sets an attribute using the enum's type name or a custom name specified via [PlacementAttribute] as the attribute name,
+        /// and the enum value as the attribute value. Uses XBoundAttribute if [Placement] specifies UseXBoundAttribute.
         /// </summary>
-        /// <param name="this">The XElement to set the attribute on.</param>
-        /// <param name="value">The Enum value to store as an attribute.</param>
-        /// <param name="useLowerCaseName">If true, the attribute name will be the Enum type name in lowercase; otherwise, it will use the exact type name.</param>
         public static void SetAttributeValue(this XElement @this, Enum value, bool useLowerCaseName = true)
-            => @this
-            .SetAttributeValue(
-                useLowerCaseName
-                ? value.GetType().Name.ToLower()
-                : value.GetType().Name,
-                $"{value}");
+        {
+            var type = value.GetType();
+            if (@type.GetCustomAttribute<PlacementAttribute>() is PlacementAttribute pattr &&
+                pattr.Placement == EnumPlacement.UseXBoundAttribute)
+            {
+                @this
+                .SetBoundAttributeValue(
+                    useLowerCaseName
+                    ? pattr.Name?.ToLower() ?? type.Name.ToLower()
+                    : pattr.Name ?? type.Name,
+                    $"{value}");
+            }
+            else
+            {
+                @this
+                .SetAttributeValue(
+                    useLowerCaseName
+                    ? type.Name.ToLower()
+                    : type.Name,
+                    $"{value}");
+            }
+        }
 
-
-        /// <summary>
-        /// Attempts to retrieve an enum member from an Enum type T in the given XElement.
-        /// </summary>
-        /// <typeparam name="T">The enum type to parse.</typeparam>
-        /// <param name="this">The XElement to retrieve the attribute from.</param>
-        /// <param name="value">
-        /// When this method returns, contains the parsed enum value if the attribute exists and is valid; 
-        /// otherwise, the default value of T.
-        /// </param>
-        /// <param name="stringComparison">
-        /// The string comparison method used for matching attribute names. Defaults to StringComparison.OrdinalIgnoreCase.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if the attribute exists and was successfully parsed as an enum of type T; otherwise, <c>false</c>.
-        /// </returns>
         public static bool TryGetAttributeValue<T>(
             this XElement @this,
             out T value,
             StringComparison stringComparison = StringComparison.OrdinalIgnoreCase,
-            EnumParsingOption enumParsing = EnumParsingOption.AllowEnumParsing,
             EnumErrorReportOption errorReporting = EnumErrorReportOption.Default)
         where T : struct, Enum
         {
             var type = typeof(T);
+
+            if (type.GetCustomAttribute<PlacementAttribute>() is PlacementAttribute pattr)
+            {
+                //var name = pattr.Name ?? type.Name.ToLower();
+                //return
+                //    xel.Attribute(name)?.Value is string value &&
+                //    type.GetEnumNames().Any(_ => string.Equals(_, value));
+            }
+
+
             value = default;
 
             if (@this.TryGetSingleBoundAttributeByType(

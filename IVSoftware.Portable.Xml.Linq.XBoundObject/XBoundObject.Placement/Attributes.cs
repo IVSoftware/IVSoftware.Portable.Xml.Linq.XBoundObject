@@ -16,7 +16,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public PlacementAttribute(EnumPlacement placement, string name = null)
         {
             Placement = placement;
-            Name = name;
+            Name = 
+                string.IsNullOrWhiteSpace(name)
+                ? null  // Downgrade whitespace to null
+                : name;
         }
         public EnumPlacement Placement { get; }
         public string Name { get; }
