@@ -111,8 +111,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                 enumErrorReporting = Compatibility.DefaultErrorReportOption;
             }
             var type = typeof(T);
-            // Try, but don't throw yet!
-            if (xel.TryGetSingleBoundAttributeByType(out T result, enumErrorReporting: EnumErrorReportOptionDisabled))
+
+            if (xel.TryGetSingleBoundAttributeByType(out T result))
             {
                 return result;
             }
@@ -213,64 +213,40 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         }
 
         /// <summary>
-        /// Tries to retrieve a single attribute of type T from the provided XElement, enforcing strict constraints based on the specified behavior.
-        /// This method targets attributes of type XBoundAttribute with a Tag property of type T, ensuring either the existence of exactly one such attribute (Single behavior),
-        /// or tolerating the absence of such attributes while ensuring no multiples exist (SingleOrDefault behavior).
+        /// Attempts to retrieve a single bound attribute of type T from the specified XElement without providing detailed status of the result.
+        /// This overload simplifies the interface for scenarios where only the presence of a single attribute is of concern, returning a boolean indicating success. It is suited for situations where detailed result enumeration is not required, streamlining attribute retrieval while still leveraging the robust handling and precision control of the primary method.
         /// </summary>
         /// <typeparam name="T">The expected type of the Tag property of the XBoundAttribute.</typeparam>
         /// <param name="xel">The XElement from which to try and retrieve the attribute.</param>
-        /// <param name="o">The output parameter that will contain the value of the Tag if exactly one such attribute is found or none in case of SingleOrDefault behavior.</param>
-        /// <param name="throw">If true, operates in 'Single' mode where the absence or multiplicity of attribute results in an InvalidOperationException. If false, operates in 'SingleOrDefault' mode where only multiplicity results in an exception.</param>
-        /// <returns>True if exactly one attribute was found and successfully retrieved, otherwise false if no attributes are found and 'throw' is false.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when conditions for the selected mode ('Single' or 'SingleOrDefault') are not met:
-        /// 1. In 'Single' mode, if no attribute or multiple attributes of type T are found.
-        /// 2. In 'SingleOrDefault' mode, if multiple attributes of type T are found.</exception>
+        /// <param name="o">The output parameter that will contain the value of the Tag if one attribute is found; otherwise, it will be default.</param>
+        /// <returns>True if exactly one attribute was found and successfully retrieved; otherwise, false.</returns>
         /// <remarks>
-        /// The 'throw' parameter determines the operational mode:
-        /// - 'Single': Requires exactly one matching attribute. An exception is thrown for no match or multiple matches.
-        /// - 'SingleOrDefault': Allows zero or one matching attribute. An exception is thrown only for multiple matches.
-        /// This ensures that the method name "TryGetSingleBoundAttributeByType" accurately reflects its functionality by clearly defining the outcome expectations based on the operational mode.
+        /// This method calls the more detailed overload, discarding the status result, to provide a simplified interface with reduced complexity for clients not requiring detailed status feedback.
         /// </remarks>
-        public static bool TryGetSingleBoundAttributeByType<T>(this XElement xel, out T o, bool @throw = false)
-            => TryGetSingleBoundAttributeByType<T>(
-                xel, 
-                out o,
-                enumErrorReporting: @throw
-                ? EnumErrorReportOption.Throw
-                : EnumErrorReportOption.Default
-        );
+        public static bool TryGetSingleBoundAttributeByType<T>(
+                this XElement xel,
+                out T o,
+                [CallerMemberName] string caller = null
+            ) => TryGetSingleBoundAttributeByType<T>(xel, out o, out TrySingleStatus _);
 
         /// <summary>
-        /// Tries to retrieve a single attribute of type T from the provided XElement, applying strict constraints based on the specified behavior.
-        /// This method is enhanced to allow configurable error reporting through the <see cref="EnumErrorReportOption"/> enumeration, reflecting a more granular control over how missing or multiple attributes are handled. It is particularly useful for applications transitioning from versions prior to 1.4, as it helps manage changes in error handling behaviors.
+        /// Attempts to retrieve a single bound attribute of type T from the specified XElement, encapsulating the result's status in a structured manner.
+        /// This method improves handling scenarios where the attribute may not be found or multiple matches may occur, returning a boolean indicating success and an enumeration for detailed status. It is designed to support robust error handling and precise control over attribute retrieval outcomes, facilitating migration and compatibility with different application versions.
         /// </summary>
         /// <typeparam name="T">The expected type of the Tag property of the XBoundAttribute.</typeparam>
         /// <param name="xel">The XElement from which to try and retrieve the attribute.</param>
-        /// <param name="o">The output parameter that will contain the value of the Tag if exactly one such attribute is found or none in case of SingleOrDefault behavior.</param>
-        /// <param name="enumErrorReporting">Specifies the error reporting strategy, affecting behavior when the target attribute is not found or multiple are encountered.</param>
-        /// <param name="caller">[Optional] The name of the calling method, used internally for debugging and logging purposes.</param>
-        /// <returns>True if exactly one attribute was found and successfully retrieved, otherwise false.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when conditions specified by the <paramref name="enumErrorReporting"/> are not met.</exception>
+        /// <param name="o">The output parameter that will contain the value of the Tag if one attribute is found; otherwise, it will be default.</param>
+        /// <param name="result">An output parameter indicating the result of the attempt, such as FoundOne, FoundNone, or FoundMany, providing clear feedback on the operation's outcome.</param>
+        /// <returns>True if exactly one attribute was found and successfully retrieved; otherwise, false.</returns>
         /// <remarks>
-        /// The <paramref name="enumErrorReporting"/> parameter determines the operational mode:
-        /// - <see cref="EnumErrorReportOption.None"/>: Used internally when the calling method handles higher-level error reporting.
-        /// - <see cref="EnumErrorReportOption.Assert"/>: Provides an assertion failure for debugging purposes if a default value might be returned. Use cautiously as it allows silent failures in production.
-        /// - <see cref="EnumErrorReportOption.Throw"/>: Throws an exception if a default enum value might be inadvertently returned, ensuring robust error handling.
-        /// - <see cref="EnumErrorReportOption.Default"/>: Applies the default setting from <see cref="Compatibility.DefaultErrorReportOption"/>, allowing centralized control over error handling behavior. This is particularly important for transitioning existing applications from pre-1.4 versions, facilitating adjustments to the new error handling paradigm without extensive code modifications.
-        /// This method enforces strict attribute retrieval rules, distinguishing clearly between single and multiple attribute scenarios to maintain data integrity and prevent erroneous data usage.
+        /// The method enforces strict rules for attribute retrieval and differentiates clearly between scenarios of single and multiple attribute occurrences to maintain data integrity and prevent erroneous usage. The use of the TrySingleStatus enumeration provides additional clarity on the operation outcome, enhancing error handling and debugging capabilities.
         /// </remarks>
         public static bool TryGetSingleBoundAttributeByType<T>(
                 this XElement xel, 
                 out T o,
-                EnumErrorReportOption enumErrorReporting,
-                [CallerMemberName] string caller = null
+                out TrySingleStatus result
             )
         {
-            if (Equals(enumErrorReporting, EnumErrorReportOption.Default))
-            {
-                enumErrorReporting = Compatibility.DefaultErrorReportOption;
-            }
-
             var xbas = xel
                .Attributes()
                .OfType<XBoundAttribute>()
@@ -279,41 +255,22 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             if (xbas.SingleOrDefault(_ => _.Tag is T) is XBoundAttribute xba)
             {
                 o = (T)xba.Tag;
+                result = TrySingleStatus.FoundOne;
                 return true;
             }
             else 
             {
-                if(xbas.Length > 1)
+                if (xbas.Length > 1)
                 {
-                    switch (enumErrorReporting)
-                    {
-                        case 0:
-                            switch (caller)
-                            {
-                                // Onl certain callers are 
-                                case nameof(To):
-                                case nameof(TryGetAttributeValue):
-                                    // Expected!
-                                    break;
-                                default:
-                                    Debug.Fail(
-                                        $"ADVISORY: Unexpected call from: '{caller}'. {nameof(EnumErrorReportOptionDisabled)} is intended for internal use only.");
-                                    break;
-                            }
-                            break;
-                        case EnumErrorReportOption.Assert:
-                            break;
-                        case EnumErrorReportOption.Throw:
-                            break;
-                        default:
-                            Debug.Fail("Unexpected");
-                            break;
-                    }
+                    result = TrySingleStatus.FoundMany;
+                    o = default;
+                    return false;
                 }
             }
             var type = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
 
-            // This option provides for enum parsing from string.
+            // - This option strictly requires [Placement(EnumPlacement.EnumUseXAttribute)]
+            // - If enabled, provides for enum parsing from string.
             if (type.GetCustomAttribute<PlacementAttribute>() is PlacementAttribute pattr &&
                 pattr.Placement == EnumPlacement.UseXAttribute)
             {
@@ -324,112 +281,25 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                     {
                         foreach (var enumValue in type.GetEnumValues())
                         {
-                            if(string.Equals(stringValue, enumValue.ToString()))
+                            // Allow for splitting a FullKey JUST IN CASE we decide to allow this.
+                            if(string.Equals(stringValue.Split('.').Last(), enumValue.ToString()))
                             {
                                 o = (T)enumValue;
+                                result = TrySingleStatus.FoundOne;
                                 return true;
                             }
                         }
                     }
                 }
             }
+
+            // Under no circumstances is this even considered a failure condition!
+            // - The returned boolean is false. This is correct.
+            // - Yes, its true that a non-nullable enum will hold its default
+            //   value. But you're supposed to check the bool. That's the point.
             o = default;
+            result = TrySingleStatus.FoundNone;
             return false;
-#if false 
-            var type = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
-         if(xel
-            .Attributes()
-            .OfType<XBoundAttribute>()
-            .Any(_ => _.Tag is T))
-            {
-                return true;
-            }
-            if ( type.GetCustomAttribute<PlacementAttribute>() is PlacementAttribute pattr &&
-                pattr.Placement == EnumPlacement.UseXAttribute)
-            {
-                var name = pattr.Name ?? type.Name.ToLower();
-                return
-                    xel.Attribute(name)?.Value is string value &&
-                    type.GetEnumNames().Any(_=>string.Equals(_, value));
-            }
-            return false;
-#endif
-
-
-
-
-            if (Equals(enumErrorReporting, EnumErrorReportOption.Default))
-            {
-                enumErrorReporting = Compatibility.DefaultErrorReportOption;
-            }
-            if (Equals(enumErrorReporting, EnumErrorReportOption.Throw))
-            {
-                try
-                {
-                    var single = xel
-                        .Attributes()
-                        .OfType<XBoundAttribute>()
-                        .Single(_ => _.Tag is T);
-                    // And if this does not throw...
-                    o = (T)single.Tag;
-                    return true;
-                }
-                catch (InvalidOperationException)
-                {
-                    throw new InvalidOperationException(InvalidOperationNotFoundMessage<T>());
-                }
-            }
-            else
-            {
-                var candidates =
-                    xel
-                    .Attributes()
-                    .OfType<XBoundAttribute>()
-                    .Where(_ => _.Tag is T);
-                switch (candidates.Count())
-                {
-                    case 0:
-                        o = default;
-                        if (type.IsEnum)
-                        {
-                            switch (enumErrorReporting)
-                            {
-                                case 0:
-                                    switch (caller)
-                                    {
-                                        case nameof(To):
-                                        case nameof(TryGetAttributeValue):
-                                            // Expected!
-                                            break;
-                                        default:
-                                            Debug.Fail(
-                                                $"ADVISORY: Unexpected call from: '{caller}'. {nameof(EnumErrorReportOptionDisabled)} is intended for internal use only.");
-                                            break;
-                                    }
-                                    break;
-                                case EnumErrorReportOption.Assert:
-                                    Debug.Fail(InvalidOperationNotFoundMessage<T>());
-                                    // But to avoid crashing pre-1.4 apps, return a value that we know is probably wrong!
-                                    break;
-                                case EnumErrorReportOption.Throw:
-                                    throw new InvalidOperationException(InvalidOperationNotFoundMessage<T>());
-                            }
-                        }
-                        return false;
-                    case 1:
-                        o = (T)candidates.First().Tag;
-                        return true;
-                    default:
-                        if (Equals(enumErrorReporting, EnumErrorReportOption.Assert))
-                        {
-                            Debug.Fail(InvalidOperationNotFoundMessage<T>());
-                            // But to avoid crashing pre-1.4 apps, return a value that we know is probably wrong!
-                            o = (T)candidates.First().Tag;
-                            return false;
-                        }
-                        else throw new InvalidOperationException(InvalidOperationMultipleFoundMessage<T>());
-                }
-            }
         }
 
         /// <summary>
@@ -473,16 +343,26 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                     name: useLowerCaseName
                         ? pattr.Name?.ToLower() ?? type.Name.ToLower()
                         : pattr.Name ?? type.Name,
-                    text: $"[{value.ToFullKey()}]"); // XBAs use FullKey for this.
+                    text: $"[{value.ToFullKey()}]"); // XBAs always use FullKey for this.
             }
             else
             {
+                // There is an option to use FullKey for the value.
+                string attrValue;
+                if (pattr is null) attrValue = value.ToString();
+                else
+                {
+                    attrValue = 
+                        pattr.AlwaysUseFullKey
+                        ? value.ToFullKey()
+                        : value.ToString();
+                }
                 @this
                 .SetAttributeValue(
                     useLowerCaseName
                     ? pattr?.Name?.ToLower() ?? type.Name.ToLower()
                     : pattr?.Name ?? type.Name,
-                    $"{value}");                    // Din't  
+                    attrValue);                   
             }
         }
 
@@ -490,31 +370,23 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             this XElement @this,
             out T value,
             StringComparison stringComparison = StringComparison.OrdinalIgnoreCase,
-            EnumErrorReportOption errorReporting = EnumErrorReportOption.Default)
+            EnumErrorReportOption errorReporting = EnumErrorReportOption.Default,
+            bool useStrictEnumParsing = false)
         where T : struct, Enum
         {
-            throw new NotImplementedException();
             var type = typeof(T);
-
-            if (type.GetCustomAttribute<PlacementAttribute>() is PlacementAttribute pattr)
-            {
-                //var name = pattr.Name ?? type.Name.ToLower();
-                //return
-                //    xel.Attribute(name)?.Value is string value &&
-                //    type.GetEnumNames().Any(_ => string.Equals(_, value));
-            }
-
 
             value = default;
 
+            // Uses strict enum parsing by default
             if (@this.TryGetSingleBoundAttributeByType(
                 out T aspirant,
-                enumErrorReporting: EnumErrorReportOptionDisabled))
+                out TrySingleStatus status))
             {
                 value = aspirant;
                 return true;
             }
-            else
+            else if(!useStrictEnumParsing)
             {
                 // The attribute name is expected to be the same as the enum type's name but in lowercase, 
                 // and the value is stored as a case-sensitive string. This approach is used typically when 
