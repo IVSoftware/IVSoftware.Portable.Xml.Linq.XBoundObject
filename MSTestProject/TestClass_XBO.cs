@@ -1,5 +1,6 @@
 ﻿using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using IVSoftware.WinOS.MSTest.Extensions;
 using System.Xml.Linq;
 using static IVSoftware.Portable.Xml.Linq.XBoundObject.Extensions;
@@ -204,7 +205,7 @@ Clicked: QRCode";
 
             var xroot =
                 typeof(DiscoveryDemo).BuildNestedEnum(DiscoveryScope.ConstrainToAssembly);
-            var dkl = 
+            var dkl =
                 xroot.To<DualKeyLookup>(@throw: true);
 
             var node = dkl[Deep.Apply.Selected];
@@ -233,6 +234,8 @@ Settings.Apply.Selected";
                 "Expecting identical result."
             );
         }
+
+
         /// <summary>
         /// Tests the behavior of retrieving and converting an attribute value from an XElement with specific focus
         /// on exception handling when the required attribute or enum type is not present.
@@ -267,8 +270,8 @@ Settings.Apply.Selected";
                     $"Expecting nested TryGetAttributeValueByType call returns false but parsed enum succeds.");
 
                 Assert.AreEqual(
-                    NodeType.folder, 
-                    result1, 
+                    NodeType.folder,
+                    result1,
                     "Expecting FIXED version 1.4.0-prerelease bug.");
 
                 Assert.IsTrue(
@@ -299,8 +302,8 @@ Settings.Apply.Selected";
                 }
 
                 Assert.AreEqual(
-                    NodeType.folder, 
-                    result2, 
+                    NodeType.folder,
+                    result2,
                     "Expecting new overload with allowEnumParsing to work.");
 
                 Assert.IsTrue(xel.To<NodeType?>() is NodeType, "Expecting nullable enum type to return valid T in this case.");
@@ -408,8 +411,92 @@ Settings.Apply.Selected";
             static string localInvalidOperationExceptionMessage<T>() => $"No valid {typeof(T).Name} found. To handle cases where an enum attribute might not exist, use a nullable version: To<{typeof(T).Name}?>() or check @this.Has<{typeof(T).Name}>() first.";
 
             static string localInvalidOperationMultipleFoundMessage<T>() => $@"Multiple valid {typeof(T).Name} found. To disambiguate them, obtain the attribute by name: Attributes().OfType<XBoundAttribute>().Single(_=>_.name=""targetName""";
-        #endregion S U B T E S T S
-    }
+            #endregion S U B T E S T S
+        }
+
+        [Placement(EnumPlacement.UseXAttribute, "xattr")]
+        private enum LocalXAttrEnum
+        {
+            Default,
+            NonDefault,
+        }
+
+
+        [Placement(EnumPlacement.UseXBoundAttribute, "xba")]
+        private enum LocalXBAEnum
+        {
+            Default,
+            NonDefault,
+        }
+
+        private enum LocalSortAttributeOrder
+        {
+            text,
+        }
+        class LocalClass() { }
+
+        [TestMethod]
+        public void Test_TryGetSingleBoundAttributeByType()
+        {
+            string actual, expected;
+            XElement xel = new XElement("xel");
+
+            // struct
+            Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out LocalXAttrEnum a));
+            Assert.AreEqual(LocalXAttrEnum.Default, a, "Expecting default because the call does not use nullable");
+
+            Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out LocalXBAEnum b));
+            Assert.AreEqual(LocalXBAEnum.Default, b, "Expecting default because the call does not use nullable");
+
+            // Nullable
+            Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out LocalXAttrEnum? c));
+            Assert.IsNull(c, "Expecting null because the call uses nullable");
+
+            Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out LocalXBAEnum? d));
+            Assert.IsNull(d, "Expecting null because the call uses nullable");
+
+            // Class and Nullable Class
+            Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out LocalClass e));
+            Assert.IsNull(e, "Expecting null because default(T) is null");
+
+            Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out LocalClass? f));
+            Assert.IsNull(f, "Expecting null because default(T) is null");
+
+            xel.SetAttributeValue(LocalXAttrEnum.NonDefault);
+            xel.SetAttributeValue(LocalXBAEnum.NonDefault);
+            xel.SetBoundAttributeValue(new LocalClass());
+
+            actual = xel.SortAttributes<LocalSortAttributeOrder>().ToString();
+            expected = @" 
+<xel xattr=""NonDefault"" xba=""[LocalXBAEnum.NonDefault]"" localclass=""[LocalClass]"" />";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting XAttribute x 1 and XBoundAttribute x 2 with custom names for enums."
+            );
+
+            // struct
+            Assert.IsTrue(xel.TryGetSingleBoundAttributeByType(out LocalXAttrEnum aa));
+            Assert.AreEqual(LocalXAttrEnum.NonDefault, aa);
+
+            Assert.IsTrue(xel.TryGetSingleBoundAttributeByType(out LocalXBAEnum bb));
+            Assert.AreEqual(LocalXBAEnum.NonDefault, bb);
+
+            // Nullable
+            Assert.IsTrue(xel.TryGetSingleBoundAttributeByType(out LocalXAttrEnum? cc));
+            Assert.AreEqual(LocalXAttrEnum.NonDefault, cc);
+
+            Assert.IsTrue(xel.TryGetSingleBoundAttributeByType(out LocalXBAEnum? dd));
+            Assert.AreEqual(LocalXBAEnum.NonDefault, dd);
+
+            // Class and Nullable Class
+            Assert.IsTrue(xel.TryGetSingleBoundAttributeByType(out LocalClass ee));
+            Assert.IsTrue(ee is LocalClass, "Expecting non-null correctly typed instance." );
+
+            Assert.IsTrue(xel.TryGetSingleBoundAttributeByType(out LocalClass? ff));
+            Assert.IsTrue(ff is LocalClass, "Expecting non-null correctly typed instance." );
+        }
     }
     interface IClickable
     {

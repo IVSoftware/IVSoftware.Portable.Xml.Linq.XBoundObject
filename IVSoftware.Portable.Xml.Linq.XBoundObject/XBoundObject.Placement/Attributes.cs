@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
@@ -11,17 +12,25 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     }
 
     [AttributeUsage(AttributeTargets.Enum, Inherited = false, AllowMultiple = false)]
+    [DebuggerDisplay("{Placement} {DisplayName} FullKey={AlwaysUseFullKey}")]
     public class PlacementAttribute : Attribute 
     {
-        public PlacementAttribute(EnumPlacement placement, string name = null)
+        public PlacementAttribute(EnumPlacement placement, string name = null, bool alwaysUseFullKey = false)
         {
             Placement = placement;
             Name = 
                 string.IsNullOrWhiteSpace(name)
                 ? null  // Downgrade whitespace to null
                 : name;
+            AlwaysUseFullKey = alwaysUseFullKey;
         }
         public EnumPlacement Placement { get; }
+        public bool AlwaysUseFullKey { get; } = false;
         public string Name { get; }
+
+        internal string DisplayName =>
+            string.IsNullOrWhiteSpace(Name)
+            ? Name
+            : $"Name='{Name}'";
     }
 }
