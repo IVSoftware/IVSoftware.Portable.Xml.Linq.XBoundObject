@@ -146,4 +146,10 @@ namespace IVSoftware.Portable.Xml.Linq
         private static EnumErrorReportOption _defaultErrorReportOption = EnumErrorReportOption.Assert;
         private static bool _warnAssert = true;
     }
+    public enum TrySingleStatus
+    {
+        FoundOne,
+        FoundNone,
+        FoundMany,
+    }
 }

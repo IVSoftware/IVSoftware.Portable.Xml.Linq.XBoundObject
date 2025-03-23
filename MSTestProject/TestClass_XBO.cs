@@ -317,16 +317,16 @@ Settings.Apply.Selected";
 
             void subtestThrowWhereEnumAttributeDoesNotExist()
             {
-                try
-                {
-                    _ = xel.TryGetSingleBoundAttributeByType(out NotFoundTypeForTest na, @throw: true);
-                    Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
-                }
-                catch (InvalidOperationException ex)
-                {
-                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
-                    Assert.AreEqual(ex.Message, localInvalidOperationExceptionMessage<NotFoundTypeForTest>());
-                }
+                Assert.IsFalse(
+                     _ = xel.TryGetSingleBoundAttributeByType(
+                         out NotFoundTypeForTest na,
+                         out TrySingleStatus status),
+                     $"Expecting returns false and doesn't throw");
+
+                Assert.AreEqual(
+                    TrySingleStatus.FoundNone, 
+                    status,
+                    "Expecting correct status reporting.");
 
                 // Even though @throw is EXPLICITLY set to false, we need to override it. 
                 // IT'S AN EMERGENCY!
@@ -429,6 +429,13 @@ Settings.Apply.Selected";
             NonDefault,
         }
 
+        [Placement(EnumPlacement.UseXAttribute, alwaysUseFullKey: true )]
+        private enum LocalFullKeyEnum
+        {
+            Default,
+            NonDefault,
+        }
+
         private enum LocalSortAttributeOrder
         {
             text,
@@ -496,6 +503,21 @@ Settings.Apply.Selected";
 
             Assert.IsTrue(xel.TryGetSingleBoundAttributeByType(out LocalClass? ff));
             Assert.IsTrue(ff is LocalClass, "Expecting non-null correctly typed instance." );
+
+            // There's just one more thing...
+            xel.RemoveAttributes();
+            xel.SetAttributeValue(LocalFullKeyEnum.NonDefault);
+
+
+            actual = xel.SortAttributes<LocalSortAttributeOrder>().ToString();
+            expected = @" 
+<xel localfullkeyenum=""LocalFullKeyEnum.NonDefault"" />";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting FullKeyAttribute is properly formatted."
+            );
         }
     }
     interface IClickable
