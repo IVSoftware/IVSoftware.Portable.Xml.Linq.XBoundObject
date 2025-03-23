@@ -154,6 +154,10 @@ namespace IVSoftware.Portable.Xml.Linq
                         )
                     {
                         // Detected a benign explicit match for path attribute set on root (not recommended).
+                        Debug.WriteLine(string.Join(Environment.NewLine, Enumerable.Repeat("*", 5)));
+                        Debug.WriteLine(
+                            $"ADVISORY: Setting path attribute on root is 'not' recommended.");
+                        Debug.WriteLine(string.Join(Environment.NewLine, Enumerable.Repeat("*", 5)));
                         @try = _xTraverse;
                     }
                     else
@@ -313,15 +317,19 @@ namespace IVSoftware.Portable.Xml.Linq
     public delegate void IterateEventHandler(Object sender, IterateEventArgs e);
     public class AddEventArgs : EventArgs
     {
-        public AddEventArgs(XElement parent, string path, string xElementName, bool isPathMatch)
+        public AddEventArgs(XElement parent, string path, string newXElementName, bool isPathMatch)
         {
+            newXElementName =
+                string.IsNullOrWhiteSpace(newXElementName)
+                ? Placer.DefaultNewXElementName
+                : newXElementName;
             Parent = parent;
             Path = path;
-            Xel = new XElement(xElementName);
+            Xel = new XElement(newXElementName);
             IsPathMatch = isPathMatch;
         }
         public AddEventArgs(XElement parent, string path, bool isPathMatch)
-            : this(parent, path, Placer.DefaultNewXElementName, isPathMatch) { }
+            : this(parent, path, null, isPathMatch) { }
 
         /// <summary>
         /// The current partial or full path of the traverse.
@@ -378,7 +386,7 @@ namespace IVSoftware.Portable.Xml.Linq
         public bool Handled { get; set; }
         public int? InsertIndex { get; set; }
     }
-    public enum StdPlaceKeys
+    public enum StdPlacerKeys
     {
         NewXElementName,
         PathAttributeName,
@@ -405,15 +413,15 @@ namespace IVSoftware.Portable.Xml.Linq
                     case PlacerMode _:
                         mode = (PlacerMode)arg;
                         break;
-                    case Dictionary<StdPlaceKeys, string> dict:
+                    case Dictionary<StdPlacerKeys, string> dict:
                         foreach (var key in dict.Keys)
                         {
                             switch (key)
                             {
-                                case StdPlaceKeys.NewXElementName:
+                                case StdPlacerKeys.NewXElementName:
                                     newXElementName = dict[key];
                                     break;
-                                case StdPlaceKeys.PathAttributeName:
+                                case StdPlacerKeys.PathAttributeName:
                                     pathAttributeName = dict[key];
                                     break;
                                 default: throw new NotImplementedException();
@@ -438,9 +446,9 @@ namespace IVSoftware.Portable.Xml.Linq
                 path,
                 onBeforeAdd: (sender, e) =>
                 {
+                    e.Xel.Name = newXElementName;
                     if (e.IsPathMatch)
                     {
-                        e.Xel.Name = newXElementName;
                         if (attrs.Any()) e.Xel.Add(attrs);
                         if (value != null) e.Xel.Add(value);
                     }
