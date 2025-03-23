@@ -1,5 +1,6 @@
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.WinOS.MSTest.Extensions;
 using System.Diagnostics;
 using System.Xml.Linq;
@@ -52,6 +53,10 @@ public class TestClass_Placer
             $"Expecting {PlacerResult.Created.ToFullKey()}");
     }
 
+    private enum LocalNodeOrder
+    {
+        text,
+    }
     [TestMethod]
     public void Test_PlaceExtensionWithArgs()
     {
@@ -60,40 +65,36 @@ public class TestClass_Placer
         var path = Path.Combine("C:", "Child Folder", "Leaf Folder");
         var xroot = new XElement("root");
         PlacerResult result;
-
-
         subtestHandleNotFound();
-        xroot.RemoveAll();
-        result = xroot.Place(
-            path, 
-            PlacerMode.FindOrCreate,
-            new PlacerKeysDictionary
-            {
-                { StdPlacerKeys.NewXElementName, "xel" },
-                { StdPlacerKeys.PathAttributeName, "label" }, 
-            });
+        subtestPlacerKeysDictionary();
 
-        Assert.AreEqual(
-            PlacerResult.Created,
-            result,
-            $"Expecting {PlacerResult.Created.ToFullKey()}");
+        subtestPlaceXObjects();
+        void subtestPlaceXObjects() { }
+        {
+            xroot.RemoveAll();
+            result = xroot.Place(
+                path,
+                new XAttribute("xattr", "XAttribute"),
+                new XBoundAttribute(nameof(SortOrder), SortOrder.None),
+                "This is a value"
+            );
 
-
-        actual = xroot.ToString();
-        expected = @" 
+            actual = xroot.SortAttributes<LocalNodeOrder>().ToString();
+            expected = @" 
 <root>
-  <xel label=""C:"">
-    <xel label=""Child Folder"">
-      <xel label=""Leaf Folder"" />
-    </xel>
-  </xel>
+  <xnode text=""C:"">
+    <xnode text=""Child Folder"">
+      <xnode text=""Leaf Folder"" xattr=""XAttribute"" sortorder=""[SortOrder.None]"">This is a value</xnode>
+    </xnode>
+  </xnode>
 </root>";
 
-        Assert.AreEqual(
-            expected.NormalizeResult(),
-            actual.NormalizeResult(),
-            "Expecting values to match."
-        );
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting values to match."
+            );
+        }
 
         #region S U B T E S T S
         void subtestHandleNotFound()
@@ -133,6 +134,40 @@ public class TestClass_Placer
                 // Pass! This exception SHOULD BE THROWN. It's what we're testing.
             }
         }
+
+        void subtestPlacerKeysDictionary()
+        {
+            xroot.RemoveAll();
+            result = xroot.Place(
+                path,
+                new PlacerKeysDictionary
+                {
+                    { StdPlacerKeys.NewXElementName, "xel" },
+                    { StdPlacerKeys.PathAttributeName, "label" },
+                });
+
+            Assert.AreEqual(
+                PlacerResult.Created,
+                result,
+                $"Expecting {PlacerResult.Created.ToFullKey()}");
+
+            actual = xroot.ToString();
+            expected = @" 
+<root>
+  <xel label=""C:"">
+    <xel label=""Child Folder"">
+      <xel label=""Leaf Folder"" />
+    </xel>
+  </xel>
+</root>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting values to match."
+            );
+        }
+
 
         #endregion S U B T E S T S
     }
