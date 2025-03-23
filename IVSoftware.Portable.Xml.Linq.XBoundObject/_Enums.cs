@@ -67,19 +67,15 @@ namespace IVSoftware.Portable.Xml.Linq
         /// </summary>
         BoundEnumTypeOnly,
     }
+
     /// <summary>
     /// Enum to specify how errors are reported when retrieving Enum values that might default.
     /// </summary>
+    /// <remarks>
+    /// Value of 0 is RESERVED for internal use.
+    /// </remarks>
     public enum EnumErrorReportOption
     {
-        /// <summary>
-        /// Skip error reporting.
-        /// </summary>
-        /// <remarks>
-        /// Intended for internal use where the calling method handles error reporting at a higher level.
-        /// </remarks>
-        None,
-
         /// <summary>
         /// Assert only when a default enum value might be inadvertently returned.
         /// </summary>

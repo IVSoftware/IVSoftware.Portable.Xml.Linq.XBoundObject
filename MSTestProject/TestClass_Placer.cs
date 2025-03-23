@@ -53,7 +53,7 @@ public class TestClass_Placer
             $"Expecting {PlacerResult.Created.ToFullKey()}");
     }
 
-    private enum LocalNodeOrder
+    private enum LocalSortAttributeOrder
     {
         text,
     }
@@ -80,10 +80,8 @@ public class TestClass_Placer
         string actual, expected;
 
         var path = Path.Combine("C:", "Child Folder", "Leaf Folder");
-        XElement
-            xroot = new XElement("root");
-        XElement?
-            xelnew = null;
+        XElement xroot = new XElement("root");
+        XElement? xelnew = null;
         PlacerResult result;
         subtestHandleNotFound();
         subtestPlacerKeysDictionary();
@@ -99,7 +97,7 @@ public class TestClass_Placer
                 LocalXAttrEnum.NonDefault,
                 LocalXBAEnum.NonDefault
             );
-            actual = xroot.SortAttributes<LocalNodeOrder>().ToString();
+            actual = xroot.SortAttributes<LocalSortAttributeOrder>().ToString();
             expected = @" 
 <root>
   <xnode text=""C:"">
@@ -119,7 +117,12 @@ public class TestClass_Placer
             // This, because of the attribute, will use the string fallback.
             Assert.IsTrue(xelnew?.Has<LocalXAttrEnum>(), $"Expecting Single {nameof(LocalXBAEnum)}.");
 
-
+            // Same test, using nullable T? 
+            Assert.IsTrue(xelnew?.Has<Enum?>(), $"Expecting Single {nameof(Enum)}.");
+            // This was going to get found regardless.
+            Assert.IsTrue(xelnew?.Has<LocalXBAEnum?>(), $"Expecting Single {nameof(LocalXBAEnum)}.");
+            // This, because of the attribute, will use the string fallback.
+            Assert.IsTrue(xelnew?.Has<LocalXAttrEnum?>(), $"Expecting Single {nameof(LocalXBAEnum)}.");
         }
 
         #region S U B T E S T S
@@ -203,7 +206,7 @@ public class TestClass_Placer
                 "This is a value"
             );
 
-            actual = xroot.SortAttributes<LocalNodeOrder>().ToString();
+            actual = xroot.SortAttributes<LocalSortAttributeOrder>().ToString();
             expected = @" 
 <root>
   <xnode text=""C:"">

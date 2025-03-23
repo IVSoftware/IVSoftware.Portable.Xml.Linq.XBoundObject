@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
@@ -11,6 +12,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
 {
     public static partial class Extensions
     {
+        internal static EnumErrorReportOption EnumErrorReportOptionDisabled { get; } = 0;
+
         /// <summary>
         /// Fully qualified XBoundAttribute Setter
         /// </summary>
@@ -109,7 +112,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             }
             var type = typeof(T);
             // Try, but don't throw yet!
-            if (xel.TryGetSingleBoundAttributeByType(out T result, enumErrorReporting: EnumErrorReportOption.None))
+            if (xel.TryGetSingleBoundAttributeByType(out T result, enumErrorReporting: EnumErrorReportOptionDisabled))
             {
                 return result;
             }
@@ -155,7 +158,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                     {
                         switch (enumErrorReporting)
                         {
-                            case EnumErrorReportOption.None:
+                            case 0:
                                 break;
                             case EnumErrorReportOption.Assert:
                                 // This IS going to return an unintended default enum value.
@@ -192,7 +195,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         {
             if(xel
             .Attributes()
-            .Any(_ => (_ is XBoundAttribute) && (((XBoundAttribute)_).Tag is T)))
+            .OfType<XBoundAttribute>()
+            .Any(_ => _.Tag is T))
             {
                 return true;
             }
@@ -266,6 +270,98 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             {
                 enumErrorReporting = Compatibility.DefaultErrorReportOption;
             }
+
+            var xbas = xel
+               .Attributes()
+               .OfType<XBoundAttribute>()
+               .Where(_ => _.Tag is T)
+               .ToArray();
+            if (xbas.SingleOrDefault(_ => _.Tag is T) is XBoundAttribute xba)
+            {
+                o = (T)xba.Tag;
+                return true;
+            }
+            else 
+            {
+                if(xbas.Length > 1)
+                {
+                    switch (enumErrorReporting)
+                    {
+                        case 0:
+                            switch (caller)
+                            {
+                                // Onl certain callers are 
+                                case nameof(To):
+                                case nameof(TryGetAttributeValue):
+                                    // Expected!
+                                    break;
+                                default:
+                                    Debug.Fail(
+                                        $"ADVISORY: Unexpected call from: '{caller}'. {nameof(EnumErrorReportOptionDisabled)} is intended for internal use only.");
+                                    break;
+                            }
+                            break;
+                        case EnumErrorReportOption.Assert:
+                            break;
+                        case EnumErrorReportOption.Throw:
+                            break;
+                        default:
+                            Debug.Fail("Unexpected");
+                            break;
+                    }
+                }
+            }
+            var type = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+
+            // This option provides for enum parsing from string.
+            if (type.GetCustomAttribute<PlacementAttribute>() is PlacementAttribute pattr &&
+                pattr.Placement == EnumPlacement.UseXAttribute)
+            {
+                var name = pattr.Name ?? type.Name.ToLower();
+                if(xel.Attribute(name) is XAttribute xattr)
+                {
+                    if(xattr.Value is string stringValue)
+                    {
+                        foreach (var enumValue in type.GetEnumValues())
+                        {
+                            if(string.Equals(stringValue, enumValue.ToString()))
+                            {
+                                o = (T)enumValue;
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            o = default;
+            return false;
+#if false 
+            var type = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+         if(xel
+            .Attributes()
+            .OfType<XBoundAttribute>()
+            .Any(_ => _.Tag is T))
+            {
+                return true;
+            }
+            if ( type.GetCustomAttribute<PlacementAttribute>() is PlacementAttribute pattr &&
+                pattr.Placement == EnumPlacement.UseXAttribute)
+            {
+                var name = pattr.Name ?? type.Name.ToLower();
+                return
+                    xel.Attribute(name)?.Value is string value &&
+                    type.GetEnumNames().Any(_=>string.Equals(_, value));
+            }
+            return false;
+#endif
+
+
+
+
+            if (Equals(enumErrorReporting, EnumErrorReportOption.Default))
+            {
+                enumErrorReporting = Compatibility.DefaultErrorReportOption;
+            }
             if (Equals(enumErrorReporting, EnumErrorReportOption.Throw))
             {
                 try
@@ -285,7 +381,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             }
             else
             {
-                var type = typeof(T);
                 var candidates =
                     xel
                     .Attributes()
@@ -299,7 +394,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                         {
                             switch (enumErrorReporting)
                             {
-                                case EnumErrorReportOption.None:
+                                case 0:
                                     switch (caller)
                                     {
                                         case nameof(To):
@@ -308,7 +403,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                                             break;
                                         default:
                                             Debug.Fail(
-                                                $"ADVISORY: Unexpected call from: '{caller}'. {EnumErrorReportOption.None.ToFullKey()} is intended for internal use only.");
+                                                $"ADVISORY: Unexpected call from: '{caller}'. {nameof(EnumErrorReportOptionDisabled)} is intended for internal use only.");
                                             break;
                                     }
                                     break;
@@ -369,24 +464,25 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         public static void SetAttributeValue(this XElement @this, Enum value, bool useLowerCaseName = true)
         {
             var type = value.GetType();
-            if (@type.GetCustomAttribute<PlacementAttribute>() is PlacementAttribute pattr &&
-                pattr.Placement == EnumPlacement.UseXBoundAttribute)
+            PlacementAttribute pattr = @type.GetCustomAttribute<PlacementAttribute>();
+            if (pattr != null && pattr.Placement == EnumPlacement.UseXBoundAttribute) 
             {
                 @this
                 .SetBoundAttributeValue(
-                    useLowerCaseName
-                    ? pattr.Name?.ToLower() ?? type.Name.ToLower()
-                    : pattr.Name ?? type.Name,
-                    $"{value}");
+                    tag: value,
+                    name: useLowerCaseName
+                        ? pattr.Name?.ToLower() ?? type.Name.ToLower()
+                        : pattr.Name ?? type.Name,
+                    text: $"[{value.ToFullKey()}]"); // XBAs use FullKey for this.
             }
             else
             {
                 @this
                 .SetAttributeValue(
                     useLowerCaseName
-                    ? type.Name.ToLower()
-                    : type.Name,
-                    $"{value}");
+                    ? pattr?.Name?.ToLower() ?? type.Name.ToLower()
+                    : pattr?.Name ?? type.Name,
+                    $"{value}");                    // Din't  
             }
         }
 
@@ -397,6 +493,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             EnumErrorReportOption errorReporting = EnumErrorReportOption.Default)
         where T : struct, Enum
         {
+            throw new NotImplementedException();
             var type = typeof(T);
 
             if (type.GetCustomAttribute<PlacementAttribute>() is PlacementAttribute pattr)
@@ -412,7 +509,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
 
             if (@this.TryGetSingleBoundAttributeByType(
                 out T aspirant,
-                enumErrorReporting: EnumErrorReportOption.None))
+                enumErrorReporting: EnumErrorReportOptionDisabled))
             {
                 value = aspirant;
                 return true;
