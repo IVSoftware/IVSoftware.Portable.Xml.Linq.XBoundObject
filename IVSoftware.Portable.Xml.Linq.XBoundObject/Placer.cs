@@ -105,14 +105,15 @@ namespace IVSoftware.Portable.Xml.Linq
         /// </param>
         public Placer(
             XElement xSource,
-            string[] parse, // Array of strings (decoupled from any set delimiter) 
+            string[] parse, // Array of strings (decoupled from any predetermined delimiter) 
             AddEventHandler onBeforeAdd = null,
             AddEventHandler onAfterAdd = null,
             IterateEventHandler onIterate = null,
             PlacerMode mode = PlacerMode.FindOrCreate,
-            string pathAttributeName = "text"
+            string pathAttributeName = null
         )
         {
+            pathAttributeName = pathAttributeName ?? DefaultPathAttributeName;
             _xSource = _xTraverse = xSource;
             _onBeforeAdd = onBeforeAdd;
             _onAfterAdd = onAfterAdd;
@@ -280,6 +281,32 @@ namespace IVSoftware.Portable.Xml.Linq
 
         #region P R O P E R T I E S
         public PlacerResult PlacerResult { get; private set; } = (PlacerResult)(-1);
+        public static string DefaultNewXElementName
+        {
+            get => _defaultNewXElementName;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value)) return;
+                if (Equals(_defaultNewXElementName, value)) return;
+                _defaultNewXElementName = value;
+            }
+        }
+        static string _defaultNewXElementName = "xel";
+
+        public static string DefaultPathAttributeName
+        {
+            get => _defaultPathAttributeName;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value)) return;
+                if (Equals(_defaultPathAttributeName, value)) return;
+                _defaultPathAttributeName = value;
+            }
+        }
+        static string _defaultPathAttributeName = "text";
+
+
+
         #endregion P R O P E R T I E S
     }
     public delegate void AddEventHandler(Object sender, AddEventArgs e);
@@ -351,8 +378,93 @@ namespace IVSoftware.Portable.Xml.Linq
         public bool Handled { get; set; }
         public int? InsertIndex { get; set; }
     }
-    static partial class Extensions
+    public enum StdPlaceKeys
     {
+        NewXElementName,
+        PathAttributeName,
+    }
+    public static partial class Extensions
+    {
+        public static PlacerResult Place(
+            this XElement source,
+            string path,
+            out XElement xel,
+            params object[] args)
+        {
+            PlacerMode mode = PlacerMode.FindOrCreate;
+            string
+                newXElementName = Placer.DefaultNewXElementName,
+                pathAttributeName = Placer.DefaultPathAttributeName;
+            var attrs = new List<XAttribute>();
+            object value = null;
+
+            foreach (var arg in args)
+            {
+                switch (arg)
+                {
+                    case PlacerMode _:
+                        mode = (PlacerMode)arg;
+                        break;
+                    case Dictionary<StdPlaceKeys, string> dict:
+                        foreach (var key in dict.Keys)
+                        {
+                            switch (key)
+                            {
+                                case StdPlaceKeys.NewXElementName:
+                                    newXElementName = dict[key];
+                                    break;
+                                case StdPlaceKeys.PathAttributeName:
+                                    pathAttributeName = dict[key];
+                                    break;
+                                default: throw new NotImplementedException();
+                            }
+                        }
+                        break;
+                    case XBoundAttribute _:
+                    case XAttribute _:
+                        attrs.Add((XAttribute)arg);
+                        break;
+                    default:
+                        if (value is null)
+                        {
+                            value = arg;
+                        }
+                        else throw new InvalidOperationException("Sequence contains more than one value element");
+                        break;
+                }
+            }
+            var pp = new Placer(
+                source,
+                path,
+                onBeforeAdd: (sender, e) =>
+                {
+                    if (e.IsPathMatch)
+                    {
+                        e.Xel.Name = newXElementName;
+                        if (attrs.Any()) e.Xel.Add(attrs);
+                        if (value != null) e.Xel.Add(value);
+                    }
+                },
+                mode: mode,
+                pathAttributeName: pathAttributeName);
+            xel = pp.XResult;
+            return pp.PlacerResult;
+        }
+        public static PlacerResult Place(
+            this XElement source,
+            string path,
+            params object[] args)
+            => source.Place(path, out XElement _, args);
+    }
+    static partial class ExtensionsInternal
+    {
+        public static string GetValid(this string @this)
+        {
+            if (string.IsNullOrWhiteSpace(@this))
+                throw new FormatException("Empty string not allowed.");
+            return @this;
+        }
+        [Obsolete]
         public static bool IsCreated(this XElement source, string path, out XElement xel, string name = null, object value = null, Enum id = null)
         {
             var pp = new Placer(source, path, onBeforeAdd: (sender, e) =>
@@ -376,11 +488,11 @@ namespace IVSoftware.Portable.Xml.Linq
             xel = pp.XResult;
             return pp.PlacerResult == PlacerResult.Created;
         }
-        public static string GetValid(this string @this)
-        {
-            if (string.IsNullOrWhiteSpace(@this))
-                throw new FormatException("Empty string not allowed.");
-            return @this;
-        }
+    }
+    public class PlacerArgs
+    {
+        public PlacerArgs(params object[] valuesToAdd) => Payload = valuesToAdd;
+
+        public object[] Payload { get; }
     }
 }
