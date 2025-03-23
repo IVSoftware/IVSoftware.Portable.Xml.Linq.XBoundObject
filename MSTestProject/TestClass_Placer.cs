@@ -1,8 +1,7 @@
 using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
-using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using IVSoftware.WinOS.MSTest.Extensions;
-using System.Diagnostics;
 using System.Xml.Linq;
 
 namespace XBoundObjectMSTest;
@@ -57,6 +56,21 @@ public class TestClass_Placer
     {
         text,
     }
+
+    [Placement(EnumPlacement.UseXAttribute, "xattr")]
+    private enum LocalXAttrEnum
+    {
+        na,
+    }
+
+
+    [Placement(EnumPlacement.UseXBoundAttribute, "xba")]
+    private enum LocalXBAEnum
+    {
+        na,
+    }
+
+
     [TestMethod]
     public void Test_PlaceExtensionWithArgs()
     {
@@ -67,24 +81,23 @@ public class TestClass_Placer
         PlacerResult result;
         subtestHandleNotFound();
         subtestPlacerKeysDictionary();
-
         subtestPlaceXObjects();
-        void subtestPlaceXObjects() { }
+
+        subtestPlaceEnums();
+        void subtestPlaceEnums() { }
         {
             xroot.RemoveAll();
             result = xroot.Place(
                 path,
-                new XAttribute("xattr", "XAttribute"),
-                new XBoundAttribute(nameof(SortOrder), SortOrder.None),
-                "This is a value"
+                LocalXAttrEnum.na,
+                LocalXBAEnum.na
             );
-
             actual = xroot.SortAttributes<LocalNodeOrder>().ToString();
             expected = @" 
 <root>
   <xnode text=""C:"">
     <xnode text=""Child Folder"">
-      <xnode text=""Leaf Folder"" xattr=""XAttribute"" sortorder=""[SortOrder.None]"">This is a value</xnode>
+      <xnode text=""Leaf Folder"" xattr=""na"" xba=""[LocalXBAEnum.na]"" />
     </xnode>
   </xnode>
 </root>";
@@ -98,8 +111,7 @@ public class TestClass_Placer
 
         #region S U B T E S T S
         void subtestHandleNotFound()
-        {//Development block that (unlike a local function) allows edit and continue.
-
+        {
             result = xroot.Place(
                 path,
                 PlacerMode.FindOrPartial);
@@ -127,7 +139,7 @@ public class TestClass_Placer
                 result = xroot.Place(
                     path,
                     PlacerMode.FindOrThrow);
-                Debug.Fail($"Expecting {nameof(KeyNotFoundException)} to be thrown. You shouldn't be here.");
+                Assert.Fail($"Expecting {nameof(KeyNotFoundException)} to be thrown. You shouldn't be here.");
             }
             catch (KeyNotFoundException ex)
             {
@@ -166,6 +178,52 @@ public class TestClass_Placer
                 actual.NormalizeResult(),
                 "Expecting values to match."
             );
+        }
+
+        void subtestPlaceXObjects()
+        {
+            xroot.RemoveAll();
+            result = xroot.Place(
+                path,
+                new XAttribute("xattr", "XAttribute"),
+                new XBoundAttribute(nameof(SortOrder), SortOrder.None),
+                "This is a value"
+            );
+
+            actual = xroot.SortAttributes<LocalNodeOrder>().ToString();
+            expected = @" 
+<root>
+  <xnode text=""C:"">
+    <xnode text=""Child Folder"">
+      <xnode text=""Leaf Folder"" xattr=""XAttribute"" sortorder=""[SortOrder.None]"">This is a value</xnode>
+    </xnode>
+  </xnode>
+</root>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting values to match."
+            );
+            try
+            {
+                xroot.RemoveAll();
+                result = xroot.Place(
+                    path,
+                    new XAttribute("xattr", "XAttribute"),
+                    new XBoundAttribute(nameof(SortOrder), SortOrder.None),
+                    "This is a legal first value",
+                    "This is an illegal second value"
+                );
+                Assert.Fail($"Expecting {nameof(InvalidOperationException)} to be thrown. You shouldn't be here.");
+            }
+            catch (Exception ex)
+            {
+                Assert.AreEqual(
+                    typeof(InvalidOperationException),
+                    ex.GetType(),
+                    $"Expecting {nameof(InvalidOperationException)}");
+            }
         }
 
 

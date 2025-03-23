@@ -4,9 +4,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Xml.Linq;
 
-namespace IVSoftware.Portable.Xml.Linq
+namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 {
     public enum PlacerMode
     {
@@ -148,9 +149,9 @@ namespace IVSoftware.Portable.Xml.Linq
                 try
                 {
                     if (
-                            (i == 0) &&
+                            i == 0 &&
                             _xTraverse.Attribute(pathAttributeName)?.Value is string value1 &&
-                            (value1 == level)
+                            value1 == level
                         )
                     {
                         // Detected a benign explicit match for path attribute set on root (not recommended).
@@ -210,7 +211,7 @@ namespace IVSoftware.Portable.Xml.Linq
                     case PlacerMode.FindOrPartial:
                         XResult = _xTraverse;
                         PlacerResult =
-                            (XResult == null) ?
+                            XResult == null ?
                                 PlacerResult.NotFound :
                                 PlacerResult.Partial;
                         return;
@@ -246,7 +247,7 @@ namespace IVSoftware.Portable.Xml.Linq
                             if (!e.Handled)
                             {
                                 var existing = _xTraverse.Elements().ToArray();
-                                if ((e.InsertIndex == null) || ((int)e.InsertIndex >= existing.Length))
+                                if (e.InsertIndex == null || (int)e.InsertIndex >= existing.Length)
                                 {
                                     _xTraverse.Add(e.Xel);
                                 }
@@ -313,8 +314,8 @@ namespace IVSoftware.Portable.Xml.Linq
 
         #endregion P R O P E R T I E S
     }
-    public delegate void AddEventHandler(Object sender, AddEventArgs e);
-    public delegate void IterateEventHandler(Object sender, IterateEventArgs e);
+    public delegate void AddEventHandler(object sender, AddEventArgs e);
+    public delegate void IterateEventHandler(object sender, IterateEventArgs e);
     public class AddEventArgs : EventArgs
     {
         public AddEventArgs(XElement parent, string path, string newXElementName, bool isPathMatch)
@@ -431,6 +432,24 @@ namespace IVSoftware.Portable.Xml.Linq
                     case XBoundAttribute _:
                     case XAttribute _:
                         attrs.Add((XAttribute)arg);
+                        break;
+                    case Enum enumVal:
+                        var enumType = enumVal.GetType();
+                        var pattr = enumType.GetCustomAttribute<PlacementAttribute>();
+                        var placement = pattr?.Placement ?? EnumPlacement.UseXAttribute;
+                        var name = pattr?.Name;
+                        if(string.IsNullOrWhiteSpace(name)) name = enumType.Name.ToLower();
+                        switch (placement)
+                        {
+                            case EnumPlacement.UseXAttribute:
+                                attrs.Add(new XAttribute(name, enumVal));
+                                break;
+                            case EnumPlacement.UseXBoundAttribute:
+                                attrs.Add(new XBoundAttribute(name, enumVal));
+                                break;
+                            default:
+                                break;
+                        }
                         break;
                     default:
                         if (value is null)
