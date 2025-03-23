@@ -291,7 +291,7 @@ namespace IVSoftware.Portable.Xml.Linq
                 _defaultNewXElementName = value;
             }
         }
-        static string _defaultNewXElementName = "xel";
+        static string _defaultNewXElementName = "xnode";
 
         public static string DefaultPathAttributeName
         {
@@ -321,7 +321,7 @@ namespace IVSoftware.Portable.Xml.Linq
             IsPathMatch = isPathMatch;
         }
         public AddEventArgs(XElement parent, string path, bool isPathMatch)
-            : this(parent, path, "xnode", isPathMatch) { }
+            : this(parent, path, Placer.DefaultNewXElementName, isPathMatch) { }
 
         /// <summary>
         /// The current partial or full path of the traverse.
