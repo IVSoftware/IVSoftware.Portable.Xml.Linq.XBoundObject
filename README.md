@@ -27,37 +27,56 @@ ___
 This release introduces a new feature and an important enhancement to improve your experience.
 
 ### New Feature: Placer
-An instance of the Placer class allows for efficient dynamic path-based XML element placement. One example would be projecting a flat list of file names to a two-dimensional runtime XML structure. Options include useful values like `FindOrReplace` and the placement reports status including whether the element pre-existed. A placer instance can be invoked with inline lambda event handlers for before and after element additions, to gain real-time control over each step of the XML path traversal. Specifically, this is often an optimal hook for `SetBoundAttributeValue()` initializations.
 
-### Enhancement: Working with `Enum` and `enum` Attribute Values
+An instance of the Placer microclass allows for a single flat path to be efficiently placed in an XML runtime document. One example would be projecting a flat list of file names to a two-dimensional runtime XML structure. Options include useful values like `FindOrReplace` and the placement reports status including whether the element pre-existed. A placer instance can be invoked with inline lambda event handlers for before and after element additions, to gain real-time control over each step of the XML path traversal. Specifically, this is often an optimal hook for `SetBoundAttributeValue()` initializations.
 
-Version 1.4 introduces a safety feature specifically for non-nullable named enum types, designed to detect incorrect default enum values when a valid T cannot be established. This feature, activated by setting `EnumErrorReportOption.Throw`, is _disabled_ by default to avoid disrupting existing clients with unexpected exceptions. Existing implementations might encounter silent failures in the specific edge case where T is a named enum value and @throw is false. 
+### Enhancements: Working with `Enum` and `enum` Attribute Values
 
-For example, both code blocks aim to retrieve an `enum` value for `NamedEnumType`:
+Named enum values are often used in conjuction with `XBoundObject`. They can, for example, be the `Key` members of a flat `Dictionary` to access the 2-dimensional runtime XML document. To complete the example, a button might hold the enum key as its ID, and clicking the button uses the ID to look up an `XElement`, and bound to it is an instance of a `View` class. Enumc can be the glue that holds everything together, so thay take on a certain importance in the framework.
 
-1. When there is only one such attribute bound to a given `XElement`, it suffices to cast it to `Enum`. This remains a safe pattern to use even if no such attribute can be found.
+#### Nullable Enums
 
-```csharp
-if(xel.To<Enum>() is NamedEnumType enumValue) 
+When a single named enum is bound to an `XElement` e.g. by `xel.SetBoundAttributeValue(MyColors.Aqua)` it can be detected by `xel.Has<Enum>()` because it's the only one. It also works to use `xel.Has<MyColors>()`. But there is a critical distinction: the `Enum` class is nullable, so it's fine to use what we might call the "implicit try" of the `To<Enum>()` method because there's a default argument involved making the effective call `To<Enum>(@throw=false)`. In C# 9+ we might use this shortcut to test whether it exists:
+
+```
+if(xel.To<Enum>() is { } myColor)
 {
-    // Code based on enum NamedEnumType.Value
+    Debug.WriteLine(myColor.ToString());
+}
+```
+We can do the same thing with named enum `MyColors` but one must be careful to make the request as nullable:
+
+```
+// Correctly returns null if not exists
+if(xel.To<MyColors?>() is { } myColor)
+{
+    Debug.WriteLine(myColor.ToString());
 }
 ```
 
-2. When the possibility of multiple enum attributes exists, a disambiguating pattern might be used instead.
+If one sticks to these two patterns, everything is going to be fine. If one chooses, named enum values of `MyEnumA.Value` and `MyEnumB.Value` can coexist and be unambiguously retrieved using the second pattern.
+
+#### Safety Enhancement
+
+In previous versions, what was _not_ fine is to invoke the second pattern without indicating that the named enum is nullable. The problem is that `To<T>()` returns `default(T)`. For a named enum type, since `T` isn't nullable, this expression returned `true` (because by definition it _cannot_ return `null`) while at the same time the value (if `@throw` is `false`) might be an unintended default value. 
 
 ```
-if(xel.To<NamedEnumType>() is NamedEnumType enumValue) 
+// Pathological case
+if(xel.To<MyColors>() is { } myColor)
 {
-    // Code based on enum NamedEnumType.Value
+    Debug.WriteLine(myColor.ToString());
 }
 ```
 
-In previous releases, this second pattern has been shown to be unsafe when no bound attribute of type `NamedEnumType` can be located. In this specific case:
-- The boolean cause incorrectly evaluates to `true` even when no such attribute exists
-- The `enumValue` will be set to default value for the `enum` potentially causing spurious failures.
+Version 1.4 introduces a safety feature that prevents this from ever occurring. The fix is simple: for any type that `IsEnum`, the `@throw` argument can automatically be elevated to `true`. This feature, activated by setting `EnumErrorReportOption.Throw`, is _disabled_ by default to avoid disrupting existing clients with unexpected exceptions. The tradeoff of this default setting is that occurences in code of the "pathological edge case" shown above will remain undetected. Existing implementations might encounter silent failures in the specific edge condition where T is a named enum value and @throw is false. 
 
-To opt into this more robust error handling, set the global `Compatibility.DefaultEnumErrorReportOption` to 'Throw', thus enabling the feature across your application. Please ensure that your application can handle these new exceptions appropriately.
+### Recommendations
+
+- Opt into this more robust error handling by setting the global `Compatibility.DefaultEnumErrorReportOption` to 'Throw'
+- Always use the nullable operator with named enum values, e.g. `if(xel.To<MyColors?>() is { } myColor){...}` which avoids the issue altogether.
+
+####
+
 ___
 ## Extension Methods in this Package
 
