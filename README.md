@@ -36,7 +36,7 @@ Named enum values are often used in conjuction with `XBoundObject`. They can, fo
 
 #### Nullable Enums
 
-When a single named enum is bound to an `XElement` e.g. by `xel.SetBoundAttributeValue(MyColors.Aqua)` it can be detected by `xel.Has<Enum>()` because it's the only one. It also works to use `xel.Has<MyColors>()`. But there is a critical distinction: the `Enum` class is nullable, so it's fine to use what we might call the "implicit try" of the `To<Enum>()` method because there's a default argument involved making the effective call `To<Enum>(@throw=false)`. In C# 9+ we might use this shortcut to test whether it exists:
+When a single named enum is bound to an `XElement` e.g. by `xel.SetBoundAttributeValue(MyColors.Aqua)` it can be detected by `xel.Has<Enum>()` because it's the only one. It also works to use `xel.Has<MyColors>()`. But there is a critical distinction: the `Enum` class is nullable, so it's fine to use what we might call the "implicit try" of the `To<Enum>()` method because there's a default argument involved making the effective call `To<Enum>(@throw=false)`. In C# 9 and above we might use this shortcut to test whether it exists:
 
 ```
 if(xel.To<Enum>() is { } myColor)

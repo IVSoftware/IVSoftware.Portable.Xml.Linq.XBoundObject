@@ -286,10 +286,16 @@ Settings.Apply.Selected";
                         EnumErrorReportOption.Assert,
                         Compatibility.DefaultErrorReportOption);
 
-                    Assert.AreEqual(
-                        "DebugAssertException",
-                        ex.GetType().Name);
-                    // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                    switch (ex.GetType().Name)
+                    {
+                        // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                        case "AssertFailedException":   // Correct response in Release mode
+                        case "DebugAssertException":    // Correct response in Debug mode (but this is an MSTest internal class)
+                            break;
+                        default:
+                            Assert.Fail("Expecting a different exception here.");
+                            break;
+                    }
                 }
 
                 Assert.AreEqual(
@@ -334,9 +340,16 @@ Settings.Apply.Selected";
                         EnumErrorReportOption.Assert,
                         Compatibility.DefaultErrorReportOption);
 
-                    Assert.AreEqual(
-                        ex.GetType().Name,
-                        "DebugAssertException");
+                    switch (ex.GetType().Name)
+                    {
+                        // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                        case "AssertFailedException":   // Correct response in Release mode
+                        case "DebugAssertException":    // Correct response in Debug mode (but this is an MSTest internal class)
+                            break;
+                        default:
+                            Assert.Fail("Expecting a different exception here.");
+                            break;
+                    }
                 }
 
                 try
@@ -351,9 +364,16 @@ Settings.Apply.Selected";
                         EnumErrorReportOption.Assert,
                         Compatibility.DefaultErrorReportOption);
 
-                    Assert.AreEqual(
-                        ex.GetType().Name,
-                        "DebugAssertException");
+                    switch (ex.GetType().Name)
+                    {
+                        // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                        case "AssertFailedException":   // Correct response in Release mode
+                        case "DebugAssertException":    // Correct response in Debug mode (but this is an MSTest internal class)
+                            break;
+                        default:
+                            Assert.Fail("Expecting a different exception here.");
+                            break;
+                    }
                 }
                 try
                 {
