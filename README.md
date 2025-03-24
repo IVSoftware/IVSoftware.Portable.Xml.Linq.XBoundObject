@@ -464,7 +464,7 @@ ___
 
 ### Optional Parameters
 
-Using the 'out' value, a newly created `XElement` can now be freely modified using standard `System.Xml.Linq` as well as `XBoundObject` methods. To streamline this process, the content can be supplied direcly in the `Place` call using any number of optional parameters suppied in any order:
+Using the 'out' value, the content of the newly created `XElement` can be modified using standard `System.Xml.Linq` as well as `XBoundObject` methods in the usual manner. Optional parameters can streamline this process however, by allowing the content can be supplied direcly in the `Place` call using any number of optional parameters suppied in any order:
 
 1. **PlacerMode**: This enum dictates the placement behavior, choosing between creating new elements if they do not exist or finding and returning existing ones.
 

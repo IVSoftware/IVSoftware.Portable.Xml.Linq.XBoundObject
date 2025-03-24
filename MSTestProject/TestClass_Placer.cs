@@ -65,14 +65,12 @@ public class TestClass_Placer
         NonDefault,
     }
 
-
     [Placement(EnumPlacement.UseXBoundAttribute, "xba")]
     private enum LocalXBAEnum
     {
         Default,
         NonDefault,
     }
-
 
     [TestMethod]
     public void Test_PlaceExtensionWithArgs()
@@ -81,49 +79,13 @@ public class TestClass_Placer
 
         var path = Path.Combine("C:", "Child Folder", "Leaf Folder");
         XElement xroot = new XElement("root");
-        XElement? xelnew = null;
+        XElement? xelsub = null;
         PlacerResult result;
         subtestHandleNotFound();
         subtestPlacerKeysDictionary();
         subtestPlaceXObjects();
-
         subtestPlaceEnums();
-        void subtestPlaceEnums() { }
-        {
-            xroot.RemoveAll();
-            result = xroot.Place(
-                path,
-                out xelnew,
-                LocalXAttrEnum.NonDefault,
-                LocalXBAEnum.NonDefault
-            );
-            actual = xroot.SortAttributes<LocalSortAttributeOrder>().ToString();
-            expected = @" 
-<root>
-  <xnode text=""C:"">
-    <xnode text=""Child Folder"">
-      <xnode text=""Leaf Folder"" xattr=""NonDefault"" xba=""[LocalXBAEnum.NonDefault]"" />
-    </xnode>
-  </xnode>
-</root>";
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting xattr is XAttribute and xba is XBoundAttrubute."
-            );
-            Assert.IsTrue(xelnew?.Has<Enum>(), $"Expecting Single {nameof(Enum)}.");
-            // This was going to get found regardless.
-            Assert.IsTrue(xelnew?.Has<LocalXBAEnum>(), $"Expecting Single {nameof(LocalXBAEnum)}.");
-            // This, because of the attribute, will use the string fallback.
-            Assert.IsTrue(xelnew?.Has<LocalXAttrEnum>(), $"Expecting Single {nameof(LocalXBAEnum)}.");
-
-            // Same test, using nullable T? 
-            Assert.IsTrue(xelnew?.Has<Enum?>(), $"Expecting Single {nameof(Enum)}.");
-            // This was going to get found regardless.
-            Assert.IsTrue(xelnew?.Has<LocalXBAEnum?>(), $"Expecting Single {nameof(LocalXBAEnum)}.");
-            // This, because of the attribute, will use the string fallback.
-            Assert.IsTrue(xelnew?.Has<LocalXAttrEnum?>(), $"Expecting Single {nameof(LocalXBAEnum)}.");
-        }
+        subtestSubstitute();
 
         #region S U B T E S T S
         void subtestHandleNotFound()
@@ -242,7 +204,92 @@ public class TestClass_Placer
             }
         }
 
+        void subtestPlaceEnums()
+        {
+            xroot.RemoveAll();
+            result = xroot.Place(
+                path,
+                out xelsub,
+                LocalXAttrEnum.NonDefault,
+                LocalXBAEnum.NonDefault
+            );
+            actual = xroot.SortAttributes<LocalSortAttributeOrder>().ToString();
+            expected = @" 
+<root>
+  <xnode text=""C:"">
+    <xnode text=""Child Folder"">
+      <xnode text=""Leaf Folder"" xattr=""NonDefault"" xba=""[LocalXBAEnum.NonDefault]"" />
+    </xnode>
+  </xnode>
+</root>";
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting xattr is XAttribute and xba is XBoundAttrubute."
+            );
+            Assert.IsTrue(xelsub?.Has<Enum>(), $"Expecting Single {nameof(Enum)}.");
+            // This was going to get found regardless.
+            Assert.IsTrue(xelsub?.Has<LocalXBAEnum>(), $"Expecting Single {nameof(LocalXBAEnum)}.");
+            // This, because of the attribute, will use the string fallback.
+            Assert.IsTrue(xelsub?.Has<LocalXAttrEnum>(), $"Expecting Single {nameof(LocalXBAEnum)}.");
 
+            // Same test, using nullable T? 
+            Assert.IsTrue(xelsub?.Has<Enum?>(), $"Expecting Single {nameof(Enum)}.");
+            // This was going to get found regardless.
+            Assert.IsTrue(xelsub?.Has<LocalXBAEnum?>(), $"Expecting Single {nameof(LocalXBAEnum)}.");
+            // This, because of the attribute, will use the string fallback.
+            Assert.IsTrue(xelsub?.Has<LocalXAttrEnum?>(), $"Expecting Single {nameof(LocalXBAEnum)}.");
+        }
+
+        void subtestSubstitute()
+        {
+            xroot.RemoveAll();
+
+            var substitute = new XElement("substitute");
+            substitute.SetAttributeValue("color", "Aqua");
+
+            result = xroot.Place(
+                path,
+                out xelsub,
+                substitute
+            );
+
+            actual = xroot.SortAttributes<LocalSortAttributeOrder>().ToString();
+
+            actual.ToClipboard();
+            expected = @" 
+<root>
+  <xnode text=""C:"">
+    <xnode text=""Child Folder"">
+      <substitute text=""Leaf Folder"" color=""Aqua"" />
+    </xnode>
+  </xnode>
+</root>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting substituted node with color attribute intact."
+            );
+
+            try
+            {
+                result = xroot.Place(
+                    path,
+                    out xelsub,
+                    substitute,
+                    PlacerMode.FindOrPartial
+                );
+                Assert.Fail($"Expecting {nameof(InvalidOperationException)}.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                Assert.AreEqual(
+                    "XElement substitution is only allowed for PlacerMode.FindOrCreate",
+                    ex.Message);
+            }
+        }
         #endregion S U B T E S T S
     }
 }

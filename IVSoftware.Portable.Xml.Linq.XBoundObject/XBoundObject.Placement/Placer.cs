@@ -410,7 +410,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 newXElementName = Placer.DefaultNewXElementName,
                 pathAttributeName = Placer.DefaultPathAttributeName;
             var attrs = new List<XAttribute>();
-            XElement? substitute = null;
+            XElement substitute = null;
             object value = null;
 
             foreach (var arg in args)
@@ -468,6 +468,11 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                         else throw new InvalidOperationException("Sequence contains more than one value element");
                         break;
                 }
+            }
+            if(substitute != null && mode != PlacerMode.FindOrCreate)
+            {
+                var msg = $"{nameof(XElement)} substitution is only allowed for {PlacerMode.FindOrCreate.ToFullKey()}";
+                throw new InvalidOperationException(msg);
             }
             var pp = new Placer(
                 source,
