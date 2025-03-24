@@ -112,15 +112,12 @@ if(xel.To<MyColors>() is { } myColor)
     Debug.WriteLine(myColor.ToString());
 }
 ```
+___
+### Recommendation
 
-Version 1.4 introduces a safety feature that prevents this from ever occurring. The fix is simple: for any type that `IsEnum`, the `@throw` argument can automatically be elevated to `true`. This feature, activated by setting `EnumErrorReportOption.Throw`, is _disabled_ by default to avoid disrupting existing clients with unexpected exceptions. The tradeoff of this default setting is that occurences in code of the "pathological edge case" shown above will remain undetected. Existing implementations might encounter silent failures in the specific edge condition where T is a named enum value and @throw is false. 
+_Always use the nullable operator with named enum values, e.g. `if(xel.To<MyColors?>() is { } myColor){...}` which avoids the issue altogether._
 
-### Recommendations
-
-- Opt into this more robust error handling by setting the global `Compatibility.DefaultEnumErrorReportOption` to 'Throw'
-- Always use the nullable operator with named enum values, e.g. `if(xel.To<MyColors?>() is { } myColor){...}` which avoids the issue altogether.
-
-####
+___
 
 ___
 ## Extension Methods in this Package
