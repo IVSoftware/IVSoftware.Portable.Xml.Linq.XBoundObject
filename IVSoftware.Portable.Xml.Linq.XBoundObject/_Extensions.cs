@@ -12,8 +12,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
 {
     public static partial class Extensions
     {
-        internal static EnumErrorReportOption EnumErrorReportOptionDisabled { get; } = 0;
-
         /// <summary>
         /// Fully qualified XBoundAttribute Setter
         /// </summary>

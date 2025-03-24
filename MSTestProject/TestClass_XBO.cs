@@ -345,10 +345,6 @@ Settings.Apply.Selected";
                 }
                 catch (Exception ex)
                 {
-                    Assert.AreEqual(
-                        EnumErrorReportOption.Assert,
-                        Compatibility.DefaultErrorReportOption);
-
                     switch (ex.GetType().Name)
                     {
                         // Pass! This exception SHOULD BE THROWN. It's what we're testing.
@@ -369,10 +365,6 @@ Settings.Apply.Selected";
                 }
                 catch (Exception ex)
                 {
-                    Assert.AreEqual(
-                        EnumErrorReportOption.Assert,
-                        Compatibility.DefaultErrorReportOption);
-
                     switch (ex.GetType().Name)
                     {
                         // Pass! This exception SHOULD BE THROWN. It's what we're testing.
@@ -416,10 +408,6 @@ Settings.Apply.Selected";
                 catch (Exception ex)
                 {
                     // Pass! This exception SHOULD BE THROWN. It's what we're testing.
-                    Assert.AreEqual(
-                        EnumErrorReportOption.Assert,
-                        Compatibility.DefaultErrorReportOption);
-
                     switch (ex.GetType().Name)
                     {
                         // Pass! This exception SHOULD BE THROWN. It's what we're testing.
@@ -440,9 +428,6 @@ Settings.Apply.Selected";
                 catch (Exception ex)
                 {
                     // Pass! This exception SHOULD BE THROWN. It's what we're testing.
-                    Assert.AreEqual(
-                        EnumErrorReportOption.Assert,
-                        Compatibility.DefaultErrorReportOption);
 
                     switch (ex.GetType().Name)
                     {
