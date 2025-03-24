@@ -86,6 +86,7 @@ ___
 /// <summary>
 /// Fully qualified XBoundAttribute Setter
 /// </summary>
+
 public static void SetBoundAttributeValue(
     this XElement xel,
     object tag,
@@ -99,6 +100,7 @@ ___
 /// <summary>
 /// Name supplied by user-defined standard enumerated names. 
 /// </summary>
+
 public static void SetBoundAttributeValue(
     this XElement xel,
     object tag,
@@ -126,10 +128,13 @@ ___
 /// of warning the developer using a debug assert when this edge case occurs. THE EASY FIX when using
 /// named enum types is to always request them as nullable T? i.e. T = "MyNamedEnumType?"
 /// </remarks>
+
 public static T To<T>(this XElement xel, bool @throw = false){...}
 ```
 
 ___
+
+#### New in version 1.4
 
 ```
 /// <summary>
@@ -151,15 +156,35 @@ ___
 /// otherwise the operation fails. If the rule is loose, the method attempts to locate a standard XAttribute using the 
 /// lower-case type as the attribute Name and if that is found uses the attribute value to parse the named enum value.
 /// </remarks>
+
 public static T To<T>(this XElement xel, EnumParsingOption enumParsingOption, bool @throw = false){...}
 ```
 ___
 
 ```
 /// <summary>
-/// Return true if xel has any bound attribute of type T"/>
+/// Determines whether the XElement has an attribute representing type T.
+/// - Returns true if a matching XBoundAttribute exists.
+/// - Returns true if T (or its underlying type, if nullable) is a named enum
+///   as determined using strict rules.
 /// </summary>
+
 public static bool Has<T>(this XElement xel){...}
+```
+___
+
+#### New in version 1.4
+
+```
+/// <summary>
+/// Determines whether the XElement has an attribute representing type T, with an option to
+/// This method also allows specifying an enum parsing strategy.
+/// - Returns true if a matching XBoundAttribute exists.
+/// - Returns true if T (or its underlying type, if nullable) is a named enum
+///   as determined using specified enumParsingOptions.
+/// </summary>
+
+public static bool Has<T>(this XElement xel, EnumParsingOption enumParsingOption){...}
 ```
 ___
 
@@ -167,6 +192,7 @@ ___
 /// <summary>
 /// Returns the first ancestor that Has XBoundAttribute of type T.
 /// </summary>
+
 public static T AncestorOfType<T>(this XElement @this, bool includeSelf = false, bool @throw = false)
 ```
 ___
@@ -183,75 +209,76 @@ This package also includes extended functionality for System.Xml.Linq that is no
 /// <param name="this">The XElement to set the attribute on.</param>
 /// <param name="value">The Enum value to store as an attribute.</param>
 /// <param name="useLowerCaseName">If true, the attribute name will be the Enum type name in lowercase; otherwise, it will use the exact type name.</param>
-public static void SetAttributeValue(this XElement @this, Enum value, bool useLowerCaseName = true){...}
+
+public static void SetAttributeValue(
+    this XElement @this,
+    Enum value,
+    bool useLowerCaseName = true){...}
 ```
 ___
 
 ```
 /// <summary>
-/// Tries to retrieve a single attribute of the specified type T from an XElement and assigns it to the out parameter.
+/// Attempts to retrieve a single bound attribute of type T from the specified XElement without providing detailed status of the result.
+/// This overload simplifies the interface for scenarios where only the presence of a single attribute is of concern, returning a boolean indicating success. It is suited for situations where detailed result enumeration is not required, streamlining attribute retrieval while still leveraging the robust handling and precision control of the primary method.
 /// </summary>
+/// <typeparam name="T">The expected type of the Tag property of the XBoundAttribute.</typeparam>
+/// <param name="xel">The XElement from which to try and retrieve the attribute.</param>
+/// <param name="o">The output parameter that will contain the value of the Tag if one attribute is found; otherwise, it will be default.</param>
+/// <returns>True if exactly one attribute was found and successfully retrieved; otherwise, false.</returns>
 /// <remarks>
-/// This method delegates error handling strategy to the <see cref="EnumErrorReportOption"/> specified by the caller.
-/// For complete behavior details and error handling strategies, refer to the forwarded method documentation.
+/// This method calls the more detailed overload, discarding the status result, to provide a simplified interface.
 /// </remarks>
-/// <param name="xel">The XElement to retrieve the attribute from.</param>
-/// <param name="o">Out parameter to hold the result if successful.</param>
-/// <param name="throw">If true, uses <see cref="EnumErrorReportOption.Throw"/> to enforce throwing an exception on failure. Otherwise, defaults to <see cref="EnumErrorReportOption.Default"/>, which follows the system-wide configuration set in <see cref="Compatibility.DefaultErrorReportOption"/>.</param>
-/// <returns>True if the attribute was successfully retrieved; otherwise, false.</returns>
-public static bool TryGetSingleBoundAttributeByType<T>(this XElement xel, out T o, bool @throw = false){...}}
 
+public static bool TryGetSingleBoundAttributeByType<T>(
+    this XElement xel, 
+    out T o){...}}
 ```
 ---
 
 ```
 /// <summary>
-/// Tries to retrieve a single attribute of type T from the provided XElement, enforcing strict constraints based on the specified behavior.
-/// This method targets attributes of type XBoundAttribute with a Tag property of type T, ensuring either the existence of exactly one such attribute (Single behavior),
-/// or tolerating the absence of such attributes while ensuring no multiples exist (SingleOrDefault behavior).
+/// Attempts to retrieve a single bound attribute of type T from the specified XElement, encapsulating the result's status in a structured manner.
+/// This method improves handling scenarios where the attribute may not be found or multiple matches may occur, returning a boolean indicating success and an enumeration for detailed status. It is designed to support robust error handling and precise control over attribute retrieval outcomes, facilitating migration and compatibility with different application versions.
 /// </summary>
 /// <typeparam name="T">The expected type of the Tag property of the XBoundAttribute.</typeparam>
 /// <param name="xel">The XElement from which to try and retrieve the attribute.</param>
-/// <param name="o">The output parameter that will contain the value of the Tag if exactly one such attribute is found or none in case of SingleOrDefault behavior.</param>
-/// <param name="throw">If true, operates in 'Single' mode where the absence or multiplicity of attribute results in an InvalidOperationException. If false, operates in 'SingleOrDefault' mode where only multiplicity results in an exception.</param>
-/// <returns>True if exactly one attribute was found and successfully retrieved, otherwise false if no attributes are found and 'throw' is false.</returns>
-/// <exception cref="InvalidOperationException">Thrown when conditions for the selected mode ('Single' or 'SingleOrDefault') are not met:
-/// 1. In 'Single' mode, if no attribute or multiple attributes of type T are found.
-/// 2. In 'SingleOrDefault' mode, if multiple attributes of type T are found.</exception>
+/// <param name="o">The output parameter that will contain the value of the Tag if one attribute is found; otherwise, it will be default.</param>
+/// <param name="result">An output parameter indicating the result of the attempt, such as FoundOne, FoundNone, or FoundMany, providing clear feedback on the operation's outcome.</param>
+/// <returns>True if exactly one attribute was found and successfully retrieved; otherwise, false.</returns>
 /// <remarks>
-/// The 'throw' parameter determines the operational mode:
-/// - 'Single': Requires exactly one matching attribute. An exception is thrown for no match or multiple matches.
-/// - 'SingleOrDefault': Allows zero or one matching attribute. An exception is thrown only for multiple matches.
-/// This ensures that the method name "TryGetSingleBoundAttributeByType" accurately reflects its functionality by clearly defining the outcome expectations based on the operational mode.
+/// The method enforces strict rules for attribute retrieval and differentiates clearly between scenarios of single and multiple attribute occurrences to maintain data integrity and prevent erroneous usage. The use of the TrySingleStatus enumeration provides additional clarity on the operation outcome, enhancing error handling and debugging capabilities.
 /// </remarks>
-public static bool TryGetSingleBoundAttributeByType<T>(this XElement xel, out T o, bool @throw = false){...}
+
+public static bool TryGetSingleBoundAttributeByType<T>(
+    this XElement xel, 
+    out T o, 
+    out TrySingleStatus result){...}
 ```
 ---
 
 ```
 /// <summary>
-/// Tries to retrieve a single attribute of type T from the provided XElement, applying strict constraints based on the specified behavior.
-/// This method is enhanced to allow configurable error reporting through the <see cref="EnumErrorReportOption"/> enumeration, reflecting a more granular control over how missing or multiple attributes are handled. It is particularly useful for applications transitioning from versions prior to 1.4, as it helps manage changes in error handling behaviors.
+/// Try get named enum value.
+/// - Priority is given to XBoundAttribute.
+/// - Falls back to strict [Placement] attribute rules.
 /// </summary>
-/// <typeparam name="T">The expected type of the Tag property of the XBoundAttribute.</typeparam>
-/// <param name="xel">The XElement from which to try and retrieve the attribute.</param>
-/// <param name="o">The output parameter that will contain the value of the Tag if exactly one such attribute is found or none in case of SingleOrDefault behavior.</param>
-/// <param name="enumErrorReporting">Specifies the error reporting strategy, affecting behavior when the target attribute is not found or multiple are encountered.</param>
-/// <param name="caller">[Optional] The name of the calling method, used internally for debugging and logging purposes.</param>
-/// <returns>True if exactly one attribute was found and successfully retrieved, otherwise false.</returns>
-/// <exception cref="InvalidOperationException">Thrown when conditions specified by the <paramref name="enumErrorReporting"/> are not met.</exception>
-/// <remarks>
-/// The <paramref name="enumErrorReporting"/> parameter determines the operational mode:
-/// - <see cref="EnumErrorReportOption.None"/>: Used internally when the calling method handles higher-level error reporting.
-/// - <see cref="EnumErrorReportOption.Assert"/>: Provides an assertion failure for debugging purposes if a default value might be returned. Use cautiously as it allows silent failures in production.
-/// - <see cref="EnumErrorReportOption.Throw"/>: Throws an exception if a default enum value might be inadvertently returned, ensuring robust error handling.
-/// - <see cref="EnumErrorReportOption.Default"/>: Applies the default setting from <see cref="Compatibility.DefaultErrorReportOption"/>, allowing centralized control over error handling behavior. This is particularly important for transitioning existing applications from pre-1.4 versions, facilitating adjustments to the new error handling paradigm without extensive code modifications.
-/// This method enforces strict attribute retrieval rules, distinguishing clearly between single and multiple attribute scenarios to maintain data integrity and prevent erroneous data usage.
-/// </remarks>
+
 public static bool TryGetAttributeValue<T>(
-    this XElement @this, 
-    out T value, 
-    StringComparison stringComparison = StringComparison.OrdinalIgnoreCase)
+    this XElement xel, out T enumValue)
+    where T : struct, Enum{...}
+```
+---
+
+```
+/// <summary>
+/// Try get named enum value.
+/// - Priority is given to XBoundAttribute.
+/// - Falls back to strict or loose enum parsing option as specified.
+/// </summary>
+public static bool TryGetAttributeValue<T>(
+    this XElement xel, out T enumValue,
+    EnumParsingOption enumParsingOption)
     where T : struct, Enum{...}
 ```
 ---
@@ -263,6 +290,7 @@ public static bool TryGetAttributeValue<T>(
 /// </summary>
 /// <param name="this">The XElement to copy.</param>
 /// <returns>A new XElement with the same name and attributes, but without child elements.</returns>
+
 public static XElement ToShallow(this XElement @this) {...}
 ```
 ---
@@ -275,6 +303,7 @@ public static XElement ToShallow(this XElement @this) {...}
 /// <param name="this">The XElement to filter.</param>
 /// <param name="names">The attribute names to keep.</param>
 /// <returns>A new XElement with only the specified attributes.</returns>
+
 public static XElement WithOnlyAttributes(this XElement @this, params string[] names {...}
 ```
 ---
@@ -287,6 +316,7 @@ public static XElement WithOnlyAttributes(this XElement @this, params string[] n
 /// <param name="this">The XElement to modify.</param>
 /// <param name="names">The attribute names to remove.</param>
 /// <returns>A new XElement without the specified attributes.</returns>
+
 public static XElement WithoutAttributes(this XElement @this, params string[] names) {...}
 ```
 ---
@@ -300,6 +330,7 @@ public static XElement WithoutAttributes(this XElement @this, params string[] na
 /// <typeparam name="T">An enum type whose names define the attribute order.</typeparam>
 /// <param name="this">The <see cref="XElement"/> whose attributes will be sorted.</param>
 /// <returns>The <see cref="XElement"/> with sorted attributes.</returns>
+
 public static IEnumerable<XElement> SortAttributes(this IEnumerable<XElement> @this, params string[] sortOrder) {...}
 ```
 ___
@@ -312,6 +343,7 @@ ___
 /// This method identifies hierarchical relationships among "flat" enum groups
 /// by searching for other enums that share names with the current enum values.
 /// </summary>
+
 public static IEnumerable<Enum> Descendants(
         this Type type,
         DiscoveryScope options = DiscoveryScope.ConstrainToAssembly | DiscoveryScope.ConstrainToNamespace){...}
@@ -323,6 +355,7 @@ ___
 /// Constructs a hierarchical XML representation of an enum and its related enums,
 /// effectively mapping "flat" enum structures into a nested format.
 /// </summary>
+
 public static XElement BuildNestedEnum(
         this Type type,
         DiscoveryScope options = DiscoveryScope.ConstrainToAssembly | DiscoveryScope.ConstrainToNamespace,
@@ -336,6 +369,7 @@ ___
 /// Generates a fully qualified string representation of an enum value,
 /// including its type name and value.
 /// </summary>
+
 public static string ToFullKey(this Enum @this){...}
 
 ```
@@ -346,6 +380,7 @@ ___
 /// Retrieve the concatenated ID member names from root to leaf.
 /// From any ID, the XElement can be retrieved from the DKL.
 /// </summary>
+
 public static string ToFullIdPath(this XElement @this, char delim = '.') 
 
 ```
@@ -356,94 +391,19 @@ ___
 /// Retrieve the concatenated ID member names from root to leaf.
 /// From any ID, the XElement can be retrieved from the DKL.
 /// </summary>
+
 public static string ToFullIdPath(this Enum @this, DualKeyLookup dkl, char delim = '.')){...}
 ```
 ___
 
-## Placer Class
+## Placer Extensions
 
 ```
-/// <summary>
-/// Manages XML element placement based on attribute-driven paths with configurable behavior 
-/// for node creation and existence checks. Supports event-driven notifications for node manipulation 
-/// and traversal, allowing for extensive customization and error handling in XML document modifications.
-/// </summary>
-/// <remarks>
-/// The 'fqpath' argument is always assumed to be relative to an implicit root. Avoid setting the path 
-/// attribute for this implicit root node, i.e. if the "text" attribute holds the label text for the
-/// level, than the root node should not have a value for the "text" attribute.
-/// </remarks>
-/// <param name="fqpath">
-/// Specifies the fully qualified path of the target XML element as a string. The path is used to navigate through the XML structure, 
-/// where each segment of the path represents an element identified by its attribute value. This path should be delimited by the 
-/// platform-specific `Path.DirectorySeparatorChar`, and is always assumed to be relative to the root element of the XML document.
-/// </param>
-/// <param name="onBeforeAdd">
-/// Optional. An event handler that is invoked before a new XML element is added. Provides a chance to customize the addition process.
-/// </param>
-/// <param name="onAfterAdd">
-/// Optional. An event handler that is invoked after a new XML element is added. Allows for actions to be taken immediately following the addition.
-/// </param>
-/// <param name="onIterate">
-/// Optional. An event handler that is invoked as each path segment is processed, providing real-time feedback and control over the traversal.
-/// </param>
-/// <param name="mode">
-/// Specifies the behavior of the Placer when path segments are not found. Default is PlacerMode.FindOrCreate.
-/// </param>
-/// <param name="pathAttributeName">
-/// The name of the attribute used to match each XML element during the path navigation. Default is "text".
-/// </param>
-public class Placer
-{
-    public Placer(
-        XElement xSource,
-        string fqpath,  // String delimited using platform Path.DirectorySeparatorChar
-        AddEventHandler onBeforeAdd = null,
-        AddEventHandler onAfterAdd = null,
-        IterateEventHandler onIterate = null,
-        PlacerMode mode = PlacerMode.FindOrCreate,
-        string pathAttributeName = "text"
-    ){...}
 ```
 
 ___
 
 ```
-    /// <summary>
-    /// Initializes a new instance of the Placer class, allowing XML element placement using a pre-defined array of path segments. 
-    /// This constructor is suited for scenarios where path segments are already determined and not bound to the platform's path delimiter.
-    /// </summary>
-    /// <param name="xSource">
-    /// The root XML element from which path traversal begins.
-    /// </param>
-    /// <param name="parse">
-    /// An array of strings representing the segments of the path to navigate through the XML structure. Each element of the array 
-    /// represents one segment of the path, corresponding to an element identified by its attribute value.
-    /// </param>
-    /// <param name="onBeforeAdd">
-    /// Optional. An event handler that is invoked before a new XML element is added. Provides a chance to customize the addition process.
-    /// </param>
-    /// <param name="onAfterAdd">
-    /// Optional. An event handler that is invoked after a new XML element is added. Allows for actions to be taken immediately following the addition.
-    /// </param>
-    /// <param name="onIterate">
-    /// Optional. An event handler that is invoked as each path segment is processed, providing real-time feedback and control over the traversal.
-    /// </param>
-    /// <param name="mode">
-    /// Specifies the behavior of the Placer when path segments are not found. Default is PlacerMode.FindOrCreate.
-    /// </param>
-    /// <param name="pathAttributeName">
-    /// The name of the attribute used to match each XML element during the path navigation. Default is "text".
-    /// </param>
-    public Placer(
-        XElement xSource,
-        string[] parse, // Array of strings (decoupled from any set delimiter) 
-        AddEventHandler onBeforeAdd = null,
-        AddEventHandler onAfterAdd = null,
-        IterateEventHandler onIterate = null,
-        PlacerMode mode = PlacerMode.FindOrCreate,
-        string pathAttributeName = "text"
-    ){...}
 ```
 ___
 

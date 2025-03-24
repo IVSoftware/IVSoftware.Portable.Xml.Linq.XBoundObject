@@ -201,8 +201,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         public static bool Has<T>(this XElement xel)
             => xel.TryGetSingleBoundAttributeByType<T>(out T _);
 
-
-
         /// <summary>
         /// Determines whether the XElement has an attribute representing type T, with an option to
         /// This method also allows specifying an enum parsing strategy.
@@ -264,7 +262,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         /// <param name="o">The output parameter that will contain the value of the Tag if one attribute is found; otherwise, it will be default.</param>
         /// <returns>True if exactly one attribute was found and successfully retrieved; otherwise, false.</returns>
         /// <remarks>
-        /// This method calls the more detailed overload, discarding the status result, to provide a simplified interface with reduced complexity for clients not requiring detailed status feedback.
+        /// This method calls the more detailed overload, discarding the status result, to provide a simplified interface.
         /// </remarks>
         public static bool TryGetSingleBoundAttributeByType<T>(
                 this XElement xel,
@@ -342,15 +340,20 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         }
 
         /// <summary>
-        /// Try get enum value using strict [Placement] attribute rules.
+        /// Try get named enum value.
+        /// - Priority is given to XBoundAttribute.
+        /// - Falls back to strict [Placement] attribute rules.
         /// </summary>
         public static bool TryGetAttributeValue<T>(
             this XElement xel, out T enumValue)
             where T : struct, Enum
             => xel.TryGetAttributeValue(out enumValue, EnumParsingOption.FindUsingLowerCaseNameThenParseValue);
 
+
         /// <summary>
-        /// Try get enum value with opt-ins for loose enum parsing rules.
+        /// Try get named enum value.
+        /// - Priority is given to XBoundAttribute.
+        /// - Falls back to strict or loose enum parsing option as specified.
         /// </summary>
         public static bool TryGetAttributeValue<T>(
             this XElement xel, out T enumValue,
