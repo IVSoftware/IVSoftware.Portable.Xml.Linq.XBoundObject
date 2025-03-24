@@ -49,7 +49,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                     options);
 
         /// <summary>
-        /// Converts an XElement to a specified type T, based on bound XML attributes with an option to
+        /// Converts an XElement to its corresponding type T, based on bound XML attributes with an option to
         /// throw an exception if the conversion fails. Otherwise, this method silently returns null if 
         /// the conversion fails and T is a reference type or if nullable T? is explicitly requested.
         /// </summary>
@@ -194,29 +194,11 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         /// <summary>
         /// Determines whether the XElement has an attribute representing type T.
         /// - Returns true if a matching XBoundAttribute exists.
-        /// - Returns true if T (or its underlying type, if nullable) is an enum decorated with [Placement(EnumPlacement.UseXAttribute)],
-        ///   and the string attribute can be successfully parsed as a defined enum value.
+        /// - Returns true if T (or its underlying type, if nullable) is a named enum
+        ///   as determined using strict rules.
         /// </summary>
         public static bool Has<T>(this XElement xel)
-        {
-            if(xel
-            .Attributes()
-            .OfType<XBoundAttribute>()
-            .Any(_ => _.Tag is T))
-            {
-                return true;
-            }
-            var type = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
-            if ( type.GetCustomAttribute<PlacementAttribute>() is PlacementAttribute pattr &&
-                pattr.Placement == EnumPlacement.UseXAttribute)
-            {
-                var name = pattr.Name ?? type.Name.ToLower();
-                return
-                    xel.Attribute(name)?.Value is string value &&
-                    type.GetEnumNames().Any(_=>string.Equals(_, value));
-            }
-            return false;
-        }
+            => xel.TryGetSingleBoundAttributeByType(out T _);
 
         /// <summary>
         /// Attempts to retrieve a single bound attribute of type T from the specified XElement without providing detailed status of the result.
@@ -231,8 +213,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         /// </remarks>
         public static bool TryGetSingleBoundAttributeByType<T>(
                 this XElement xel,
-                out T o,
-                [CallerMemberName] string caller = null
+                out T o
             ) => TryGetSingleBoundAttributeByType<T>(xel, out o, out TrySingleStatus _);
 
         /// <summary>

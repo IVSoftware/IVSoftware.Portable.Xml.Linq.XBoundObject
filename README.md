@@ -111,15 +111,20 @@ ___
 
 ```
 /// <summary>
-/// Converts an XElement attribute to its corresponding type T.
+/// Converts an XElement to its corresponding type T, based on bound XML attributes with an option to
+/// throw an exception if the conversion fails. Otherwise, this method silently returns null if 
+/// the conversion fails and T is a reference type or if nullable T? is explicitly requested.
 /// </summary>
-/// <typeparam name="T">The type to which the attribute should be converted. When T represents Enum or enum types, additional parsing features are available.</typeparam>
-/// <param name="xel">The XElement from which to retrieve and convert the attribute.</param>
-/// <param name="@throw">When true, enables more robust fault detection by throwing InvalidOperationException when T cannot be assigned.</param>
-/// <returns>The converted attribute of type T if successful, based on the specified Enum parsing option.</returns>
+/// <typeparam name="T">The type to which the XElement is to be converted.</typeparam>
+/// <param name="xel">The XElement to convert.</param>
+/// <param name="throw">Optional. If true, throws an exception when conversion is not successful. Defaults to false.</param>
+/// <returns>The converted object of type T, or default of T if unsuccessful and throw is false.</returns>
 /// <remarks>
-/// This method first attempts to retrieve and convert an attribute of type T that is bound as an XBoundAttribute. For Enum values, if no suitable XBoundAttribute is found, the method then attempts to parse the attribute from a standard XAttribute. In this case, the lower-case type is the attribute Name, and the method attempts to parse the case sensitive value.
-/// If `throw` is set to true and neither conversion succeeds, an exception is thrown. If `throw` is set to false, the method returns the default value of T, allowing silent handling of the absence or incorrect format of the expected attribute. For the special case of named enum types which are not nullable, version 1.4 brings new capabilities to avoid the inadvertent use of an incorrect default enum value when @throw is set to false. The preferred error handling when T is Enum or enum is EnumErrorReportOption.Throw (which will have priority over @throw=false when T is Enum or enum) but since this carries side-effects for pre-1.4 versions, to take advantage of this new safety feature change the `Compatibility.DefaultEnumErrorReportOption` from its default value of Assert to the more robust setting of Throw.
+/// Version 1.4 adds a safety feature for when T is a named enum type and the attribute is not found.
+/// The issue arises because default(T) is returned in this case, giving the impression that the
+/// operation succeeded (attribute was found). This release takes the minimally invasive approach
+/// of warning the developer using a debug assert when this edge case occurs. THE EASY FIX when using
+/// named enum types is to always request them as nullable T? i.e. T = "MyNamedEnumType?"
 /// </remarks>
 public static T To<T>(this XElement xel, bool @throw = false){...}
 ```
@@ -127,48 +132,26 @@ public static T To<T>(this XElement xel, bool @throw = false){...}
 ___
 
 ```
-
 /// <summary>
-/// Converts an XElement attribute to its corresponding type T.
+/// Converts an XElement to a specified type T, based on bound XML attributes with an option to
+/// throw an exception if the conversion fails. For enum types, this method also allows specifying
+/// an enum parsing strategy. Otherwise, this method silently returns null if the conversion fails and
+/// T is a reference type or if nullable T? is explicitly requested.
 /// </summary>
-/// <typeparam name="T">The type to which the attribute should be converted. When T represents Enum or enum types, additional parsing features are available.</typeparam>
-/// <param name="xel">The XElement from which to retrieve and convert the attribute.</param>
-/// <param name="enumParsing">Adds a non-default option to disable the fallback to string-based parsing for Enums when no XBoundAttribute is found.</param>
-/// <returns>The converted attribute of type T if successful, based on the specified Enum parsing option.</returns>
+/// <typeparam name="T">The type to which the XElement is to be converted.</typeparam>
+/// <param name="xel">The XElement to convert.</param>
+/// <param name="enumParsingOption">Specifies the parsing strategy for enum types, ignored if T is not an enum.
+/// See <see cref="EnumParsingOption"/> for details on how each option modifies the parsing behavior.</param>
+/// <param name="throw">Optional. If true, throws an exception when conversion is not successful. Defaults to false.</param>
+/// <returns>The converted object of type T, or default of T if unsuccessful and throw is false.</returns>
 /// <remarks>
-/// This method first attempts to retrieve and convert an attribute of type T that is bound as an XBoundAttribute. For Enum values, if no suitable XBoundAttribute is found, the method then attempts to parse the attribute from a standard XAttribute. In this case, the lower-case type is the attribute Name, and the method attempts to parse the case sensitive value.
-/// For the special case of named enum types which are not nullable, version 1.4 brings new capabilities to avoid the inadvertent use of an incorrect default enum value when a valid T value cannot be determined. This error reporting for enums in this overload defaults to `EnumErrorReportOption.Default` which is linked to `Compatibility.DefaultEnumErrorReportOption`. The preferred error handling when T is Enum or enum is EnumErrorReportOption.Throw (which will have priority over @throw=false when T is Enum or enum) but since this carries side-effects for pre-1.4 versions, to take advantage of this new safety feature change the `Compatibility.DefaultEnumErrorReportOption` from its default value of Assert to the more robust setting of Throw.
+/// For named enum values, this method first attempts to retrieve and convert an unambiguously matching XBoundAttribute. 
+/// If one is not found, the method then attempts to parse the attribute from a standard XAttribute using the specified
+/// rules. If the rule is strict, the custom enum type requires <see cref="IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacementAttribute"/>
+/// otherwise the operation fails. If the rule is loose, the method attempts to locate a standard XAttribute using the 
+/// lower-case type as the attribute Name and if that is found uses the attribute value to parse the named enum value.
 /// </remarks>
-public static T To<T>(
-    this XElement xel,
-    EnumParsingOption enumParsing){...}
-```
-
-___
-
-```
-/// <summary>
-/// Converts an XElement attribute to its corresponding type T, with comprehensive options for handling enums.
-/// </summary>
-/// <typeparam name="T">The type to which the attribute should be converted. Special handling is provided for Enum or enum types.</typeparam>
-/// <param name="xel">The XElement from which to retrieve and convert the attribute.</param><param name="enumErrorReporting">Designed specifically for named enum types, this parameter addresses unreported silent failures by enabling an option to throw exceptions when enums are set to default values because they are not nullable.</param>
-/// <param name="enumParsing">Specifies the parsing strategy for enums, allowing the disabling of fallback to string-based parsing when no XBoundAttribute is found. Defaults to allowing enum parsing.</param>
-/// <returns>The converted attribute of type T, successful based on the specified parsing and error reporting options.</returns>
-/// <remarks>
-/// This method first attempts to convert an attribute of type T from an XBoundAttribute within the XElement. If no suitable XBoundAttribute is found, particularly for Enum values, it defaults to parsing from a standard XAttribute using the attribute name as the key. 
-/// For the special case of named enum types which are not nullable, version 1.4 brings new capabilities to avoid the inadvertent use of an incorrect default enum value when a valid T value cannot be determined.  The preferred error handling when T is Enum or enum is EnumErrorReportOption.Throw but carries the potential of side-effects for existing pre-1.4 version clients. To manage this this new safety feature globally, change the `Compatibility.DefaultEnumErrorReportOption` from its default value of Assert to the more robust setting of Throw, and use EnumErrorReportOption.Default as the argument to this method.
-/// Version 1.4 introduces a safety feature specifically for non-nullable named enum types, designed to detect incorrect default enum values when a valid T cannot be established. This feature, activated by setting `EnumErrorReportOption.Throw`, is not enabled by default to avoid disrupting existing clients with unexpected exceptions. Existing implementations might encounter silent failures in the specific edge case where T is a named enum value and @throw is false. To opt into this more robust error handling, set the global `Compatibility.DefaultEnumErrorReportOption` to 'Throw', thus enabling the feature across your application. Ensure that your application can handle these new exceptions appropriately.
-/// </remarks>
-public static T To<T>(
-        this XElement xel,
-        EnumErrorReportOption enumErrorReporting,
-        EnumParsingOption enumParsing = EnumParsingOption.AllowEnumParsing
-    ){...}
-```
-
-___
-
-```
+public static T To<T>(this XElement xel, EnumParsingOption enumParsingOption, bool @throw = false){...}
 ```
 ___
 
