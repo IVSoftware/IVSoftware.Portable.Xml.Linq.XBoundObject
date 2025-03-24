@@ -276,11 +276,11 @@ Settings.Apply.Selected";
 
                 Assert.IsTrue(
                     xel.To<NodeType>() is NodeType result2,
-                    $"Expecting parsed enum fallback success based on {nameof(EnumParsingOption.AllowEnumParsing)}");
+                    $"Expecting parsed enum fallback success based on {nameof(EnumParsingOption.UseLowerCaseNameToParseValue)}");
 
                 try
                 {
-                    _ = xel.To<NodeType>(enumParsing: EnumParsingOption.BoundEnumTypeOnly);
+                    _ = xel.To<NodeType>(enumParsingOption: EnumParsingOption.UseStrictRules);
                     Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
                 }
                 catch (Exception ex)

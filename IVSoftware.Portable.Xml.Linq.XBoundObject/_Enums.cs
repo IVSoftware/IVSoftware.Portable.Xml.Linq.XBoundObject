@@ -59,13 +59,21 @@ namespace IVSoftware.Portable.Xml.Linq
         /// It parses the attribute name as the EnumType lower case,
         /// and the value as a case-sensitive string.
         /// </summary>
-        AllowEnumParsing,
+        UseLowerCaseNameToParseValue,
+
+        /// <summary>
+        /// This option attempts to infer an Enum value that 
+        /// is stored as a string value on an ordinary XAttribute.
+        /// It parses the attribute name as the EnumType lower case,
+        /// and the value as a case-sensitive string.
+        /// </summary>
+        UseLowerCaseNameToParseValueIgnoreCase,
 
         /// <summary>
         /// This option retrieves an Enum value only when bound
         /// as a typed XBoundAttribute on the XElement node.
         /// </summary>
-        BoundEnumTypeOnly,
+        UseStrictRules,
     }
 
     /// <summary>
