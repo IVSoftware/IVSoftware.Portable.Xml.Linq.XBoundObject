@@ -175,6 +175,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                     }
                 }
             }
+            // Fall through
             var msg = InvalidOperationNotFoundMessage<T>();
             if (@throw)
             {
@@ -198,7 +199,61 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         ///   as determined using strict rules.
         /// </summary>
         public static bool Has<T>(this XElement xel)
-            => xel.TryGetSingleBoundAttributeByType(out T _);
+            => xel.TryGetSingleBoundAttributeByType<T>(out T _);
+
+
+
+        /// <summary>
+        /// Determines whether the XElement has an attribute representing type T, with an option to
+        /// This method also allows specifying an enum parsing strategy.
+        /// - Returns true if a matching XBoundAttribute exists.
+        /// - Returns true if T (or its underlying type, if nullable) is a named enum
+        ///   as determined using specified enumParsingOptions.
+        /// </summary>
+        public static bool Has<T>(this XElement xel, EnumParsingOption enumParsingOption)
+        {
+            var type = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+            if (!type.IsEnum)
+            {
+                Debug.WriteLine($"ADVISORY: Ignoring {nameof(EnumParsingOption)} for non-enum type");
+                return xel.Has<T>();
+            }
+            if (xel.TryGetSingleBoundAttributeByType<T>(out T _, out TrySingleStatus status))
+            {
+                return true;
+            }
+            // The attribute name is expected to be the same as the enum type's name but in lowercase.
+            if (xel
+                .Attributes()
+                .FirstOrDefault(_ => string.Equals(
+                        _.Name.LocalName,
+                        type.Name, StringComparison.OrdinalIgnoreCase
+                    )) is XAttribute attr)
+
+            {
+                StringComparison stringComparison;
+                switch (enumParsingOption)
+                {
+                    case EnumParsingOption.FindUsingLowerCaseNameThenParseValue:
+                        stringComparison = StringComparison.Ordinal;
+                        break;
+                    case EnumParsingOption.FindUsingLowerCaseNameThenParseValueIgnoreCase:
+                        stringComparison = StringComparison.OrdinalIgnoreCase;
+                        break;
+                    default:
+                        Debug.Fail("Unexpected please report.");
+                        return default;
+                }
+                foreach (var value in type.GetEnumValues())
+                {
+                    if (string.Equals(value.ToString(), attr.Value, stringComparison))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
 
         /// <summary>
         /// Attempts to retrieve a single bound attribute of type T from the specified XElement without providing detailed status of the result.

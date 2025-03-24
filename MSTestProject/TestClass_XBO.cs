@@ -495,46 +495,22 @@ Settings.Apply.Selected";
             #endregion S U B T E S T S
         }
 
-        [Placement(EnumPlacement.UseXAttribute, "xattr")]
-        private enum LocalXAttrEnum
-        {
-            Default,
-            NonDefault,
-        }
-
-
-        [Placement(EnumPlacement.UseXBoundAttribute, "xba")]
-        private enum LocalXBAEnum
-        {
-            Default,
-            NonDefault,
-        }
-
-        [Placement(EnumPlacement.UseXAttribute, alwaysUseFullKey: true )]
-        private enum LocalFullKeyEnum
-        {
-            Default,
-            NonDefault,
-        }
-
-        private enum LocalSortAttributeOrder
-        {
-            text,
-        }
-        class LocalClass() { }
-
         [TestMethod]
         public void Test_TryGetSingleBoundAttributeByType()
         {
             string actual, expected;
             XElement xel = new XElement("xel");
 
-            // struct
+            // structs with [Placement]
             Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out LocalXAttrEnum a));
             Assert.AreEqual(LocalXAttrEnum.Default, a, "Expecting default because the call does not use nullable");
 
             Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out LocalXBAEnum b));
             Assert.AreEqual(LocalXBAEnum.Default, b, "Expecting default because the call does not use nullable");
+
+            // structs without [Placement]
+            Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out NodeType n));
+            Assert.AreEqual(NodeType.drive, n, "Expecting default because the call does not use nullable");
 
             // Nullable
             Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out LocalXAttrEnum? c));
@@ -542,6 +518,10 @@ Settings.Apply.Selected";
 
             Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out LocalXBAEnum? d));
             Assert.IsNull(d, "Expecting null because the call uses nullable");
+
+            // structs without [Placement]
+            Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out NodeType? nn));
+            Assert.IsNull(nn, "Expecting null because the call uses nullable");
 
             // Class and Nullable Class
             Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out LocalClass e));
@@ -553,10 +533,11 @@ Settings.Apply.Selected";
             xel.SetAttributeValue(LocalXAttrEnum.NonDefault);
             xel.SetAttributeValue(LocalXBAEnum.NonDefault);
             xel.SetBoundAttributeValue(new LocalClass());
+            xel.SetAttributeValue(NodeType.file);
 
             actual = xel.SortAttributes<LocalSortAttributeOrder>().ToString();
             expected = @" 
-<xel xattr=""NonDefault"" xba=""[LocalXBAEnum.NonDefault]"" localclass=""[LocalClass]"" />";
+<xel xattr=""NonDefault"" xba=""[LocalXBAEnum.NonDefault]"" localclass=""[LocalClass]"" nodetype=""file"" />";
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -589,7 +570,6 @@ Settings.Apply.Selected";
             xel.RemoveAttributes();
             xel.SetAttributeValue(LocalFullKeyEnum.NonDefault);
 
-
             actual = xel.SortAttributes<LocalSortAttributeOrder>().ToString();
             expected = @" 
 <xel localfullkeyenum=""LocalFullKeyEnum.NonDefault"" />";
@@ -600,6 +580,91 @@ Settings.Apply.Selected";
                 "Expecting FullKeyAttribute is properly formatted."
             );
         }
+
+        [TestMethod]
+        public void Test_HasT()
+        {
+            string actual, expected;
+            XElement xel = new XElement("xel");
+
+            // structs with [Placement]
+            Assert.IsFalse(xel.Has<LocalXAttrEnum>());
+            Assert.IsFalse(xel.Has<LocalXBAEnum>());
+
+            // structs without [Placement]
+            Assert.IsFalse(xel.Has<NodeType>());
+
+            // Nullable
+            Assert.IsFalse(xel.Has<LocalXAttrEnum?>());
+            Assert.IsFalse(xel.Has<LocalXBAEnum?>());
+
+            // Class and Nullable Class
+            Assert.IsFalse(xel.Has<LocalClass>());
+            Assert.IsFalse(xel.Has<LocalClass?>());
+
+            xel.SetAttributeValue(LocalXAttrEnum.NonDefault);
+            xel.SetAttributeValue(LocalXBAEnum.NonDefault);
+            xel.SetAttributeValue(NodeType.file);
+            xel.SetBoundAttributeValue(new LocalClass());
+
+            actual = xel.SortAttributes<LocalSortAttributeOrder>().ToString();
+            expected = @" 
+<xel xattr=""NonDefault"" xba=""[LocalXBAEnum.NonDefault]"" nodetype=""file"" localclass=""[LocalClass]"" />";
+
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting XAttribute x 2 and XBoundAttribute x 2 with custom names for enums."
+            );
+
+            // structs with [Placement]
+            Assert.IsTrue(xel.Has<LocalXAttrEnum>());
+            Assert.IsTrue(xel.Has<LocalXBAEnum>());
+
+            // structs without [Placement] uses strict rules
+            Assert.IsFalse(xel.Has<NodeType>());
+
+            // structs without [Placement] specifying loose rules
+            Assert.IsTrue(xel.Has<NodeType>(EnumParsingOption.FindUsingLowerCaseNameThenParseValue));
+
+            // Nullable
+            Assert.IsTrue(xel.Has<LocalXAttrEnum>());
+            Assert.IsTrue(xel.Has<LocalXBAEnum?>());
+
+            // Class and Nullable Class
+            Assert.IsTrue(xel.Has<LocalClass>());
+            Assert.IsTrue(xel.Has<LocalClass?>());
+        }
+
+        #region L O C A L S
+        [Placement(EnumPlacement.UseXAttribute, "xattr")]
+        private enum LocalXAttrEnum
+        {
+            Default,
+            NonDefault,
+        }
+
+        [Placement(EnumPlacement.UseXBoundAttribute, "xba")]
+        private enum LocalXBAEnum
+        {
+            Default,
+            NonDefault,
+        }
+
+        [Placement(EnumPlacement.UseXAttribute, alwaysUseFullKey: true )]
+        private enum LocalFullKeyEnum
+        {
+            Default,
+            NonDefault,
+        }
+
+        private enum LocalSortAttributeOrder
+        {
+            text,
+        }
+        class LocalClass() { }
+        #endregion L O C A L S
     }
     interface IClickable
     {
