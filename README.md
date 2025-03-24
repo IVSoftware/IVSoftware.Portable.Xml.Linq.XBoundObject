@@ -59,16 +59,22 @@ public void TestBasicPlacement()
 ```
 
 
-
-One example would be projecting a flat list of file names to a two-dimensional runtime XML structure. Options include useful values like `FindOrReplace` and the placement reports status including whether the element pre-existed. A placer instance can be invoked with inline lambda event handlers for before and after element additions, to gain real-time control over each step of the XML path traversal. Specifically, this is often an optimal hook for `SetBoundAttributeValue()` initializations.
+The content of the newly created `XElement` can be modified using optional parameters to streamline this process. The content can be supplied direcly in the `Place` call using any number of optional parameters suppied in any order. See the [Optional Parameters](#optional-parameters) section for a quick-start guide to using this feature.
+___
 
 ### Enhancements: Working with `Enum` and `enum` Attribute Values
 
-Named enum values are often used in conjuction with `XBoundObject`. They can, for example, be the `Key` members of a flat `Dictionary` to access the 2-dimensional runtime XML document. To complete the example, a button might hold the enum key as its ID, and clicking the button uses the ID to look up an `XElement`, and bound to it is an instance of a `View` class. Enumc can be the glue that holds everything together, so thay take on a certain importance in the framework.
+Named enum values are often used in conjuction with `XBoundObject` and can take it to a higher level. They can, for example, be the `Key` members of a flat `Dictionary` to access the 2-dimensional runtime XML document. 
+
+Consider a button with an ID property that holds an enum key, and where clicking the button uses the ID to look up an `XElement`. Now that it has the element, it might use a construct like `xel.To<View>()` and show an XBound UI in reponse. Given this kind of far-reaching capability, supporting the manipulation of named enums is vital to the framework and well supported in the extensions.
+
+___
 
 #### Nullable Enums
 
-When a single named enum is bound to an `XElement` e.g. by `xel.SetBoundAttributeValue(MyColors.Aqua)` it can be detected by `xel.Has<Enum>()` because it's the only one. It also works to use `xel.Has<MyColors>()`. But there is a critical distinction: the `Enum` class is nullable, so it's fine to use what we might call the "implicit try" of the `To<Enum>()` method because there's a default argument involved making the effective call `To<Enum>(@throw=false)`. In C# 9 and above we might use this shortcut to test whether it exists:
+When a single named enum is bound to an `XElement` e.g. by `xel.SetBoundAttributeValue(MyColors.Aqua)` it can be detected by `xel.Has<Enum>()` because it's the only one. It also works to use `xel.Has<MyColors>()`. But there is a critical distinction: the `Enum` class is nullable, so it's fine to use what we might call the "implicit try" of the `To<Enum>()`. In this case, the method's `@throw` argument defaults to false, making the effective call `To<Enum>(@throw=false)`. 
+
+Here's what a typical call might look like using C# 9 and above.
 
 ```
 if(xel.To<Enum>() is { } myColor)
@@ -76,7 +82,7 @@ if(xel.To<Enum>() is { } myColor)
     Debug.WriteLine(myColor.ToString());
 }
 ```
-We can do the same thing with named enum `MyColors` but one must be careful to make the request as nullable:
+So far, everything works as expected because when `T` is `Enum` it's nullable and `null` is the default returned by `To<Enum>()`. However, this wouldn't be the case when `T` is a named `enum` type because such types aren't nullable. This means that it's critical to use the nullable operator for `T?` so that this delivers the intended result:
 
 ```
 // Correctly returns null if not exists
@@ -88,9 +94,16 @@ if(xel.To<MyColors?>() is { } myColor)
 
 If one sticks to these two patterns, everything is going to be fine. If one chooses, named enum values of `MyEnumA.Value` and `MyEnumB.Value` can coexist and be unambiguously retrieved using the second pattern.
 
+___
+
 #### Safety Enhancement
 
-In previous versions, what was _not_ fine is to invoke the second pattern without indicating that the named enum is nullable. The problem is that `To<T>()` returns `default(T)`. For a named enum type, since `T` isn't nullable, this expression returned `true` (because by definition it _cannot_ return `null`) while at the same time the value (if `@throw` is `false`) might be an unintended default value. 
+So the question is, what happens if this nullable operator is left out accidentally? In previous versions, the way this edge case behaves is:
+
+1. The `To<T>()` method returns `default(T)` for a non-existent attribute, possibly deceiving us into thinking it exists.
+2. Since the default is to 'not' throw, previous versions would act as though the call succeeded because the method was returning an instance of `T` even though the default value it was returning wan't meaningful.
+ 
+For previous versions to ever allow this without a debug assert is a bug, and this release fixes it. The developer will now be notified when this happens, but only when running in `Debug` mode because (out of an abundance of caution) the reporting level is `Debug.Assert` not `throw`. This is a tradeoff of course. Most importantly, the new release isn't allowed to actually _crash_ your app by throwing new exceptions where it wasn't before. And the presence of a debug assert should allow your Unit Testing to detect occurrences where previously it couldn't. But the thing is, this _will_ require a little bit of testing, because in `Release` mode (where debug asserts are ignored) this is still essentially a silent spurious failure in this narrow edge case. 
 
 ```
 // Pathological case
