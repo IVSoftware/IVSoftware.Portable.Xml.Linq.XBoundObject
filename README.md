@@ -24,7 +24,7 @@ ___
 
 ## New in Release 1.4
 
-This release introduces a new feature and an important enhancement to improve your experience.
+This release introduces a new XML placement feature and extended support for named enums. It also adds a new debug assertion for detecting an edge case that can occur when using named enums in conjunction with the `To<T>()` method.
 
 ### New Feature: Placer
 
@@ -398,13 +398,52 @@ ___
 
 ## Placer Extensions
 
+The `Place` method in the `Extensions` class allows for dynamic configuration and manipulation of XML elements within an existing XML structure. This method is designed to handle various configurations through optional parameters, enhancing flexibility and allowing detailed customization during the XML manipulation process.
+
+
 ```
+/// <summary>
+/// Places or modifies an XML element at a specified path within the XML structure of the source element, 
+/// allowing for dynamic configuration through additional parameters. This method simplifies XML manipulations 
+/// by optionally configuring the element's attributes and values during the placement process, without returning the modified or created element.
+/// </summary>
+
+public static PlacerResult Place(
+    this XElement source,
+    string path,
+    params object[] args){...}
 ```
 
 ___
 
 ```
+/// <summary>
+/// Places or modifies an XML element at a specified path within the XML structure of the source element. This method 
+/// allows dynamic configuration through additional parameters and returns the newly created or modified XML element.
+/// It supports complex configurations including attribute settings and event handling, facilitating detailed control over the XML manipulation process.
+/// </summary>
+public static PlacerResult Place(
+    this XElement source,
+    string path,
+    out XElement xel,
+    params object[] args){...}
 ```
+___
+
+### Optional Parameters
+
+1. **PlacerMode**: This enum dictates the placement behavior, choosing between creating new elements if they do not exist or finding and returning existing ones.
+
+2. **Dictionary of `StdPlacerKeys` to `string`**: Enables dynamic setting of properties such as the name of a new XML element (`NewXElementName`) and the attribute name (`PathAttributeName`) used to navigate through the XML structure. This customization is applied during runtime based on the needs of the operation.
+
+3. **Attribute Configurations (`XAttribute` and instances of `XBoundAttribute`)**: These parameters facilitate the addition of new attributes to the XML elements being placed or modified. They can include standard XML attributes or instances of `XBoundAttribute`, which might carry additional metadata or behavior definitions.
+
+4. **Enum with Custom Attribute (`EnumPlacement`)**: Facilitates the use of enums in a way that their values can be applied directly as attribute values on XML elements, according to their defined placement strategy (using the enum value as an XML attribute or a bound attribute).
+
+5. **Value Handling**: A single value can be passed to include directly within the new or modified XML element, making it easy to insert text or data content.
+
+These optional parameters are auto-detected by type and can be supplied in any sequence  to make the `Place` method extremely versatile, supporting complex XML document manipulations with ease and precision.
+
 ___
 
 # Examples
@@ -416,7 +455,6 @@ Convert a set of flat enumerations and turn it into a runtime hierarchy.
 ___
 
 ### [XBound Clickable Objects](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/XBoundClickableObjects.md)
-
 
 Using `xroot` from the prior example, iterate the XML, attach a clickable object to each node then use the ID to fire its click event. 
 
@@ -434,7 +472,6 @@ ___
 
 
 ### [NotifyWithDescendants](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/NotifyOnDescendants.md)
-
 
 ___
 

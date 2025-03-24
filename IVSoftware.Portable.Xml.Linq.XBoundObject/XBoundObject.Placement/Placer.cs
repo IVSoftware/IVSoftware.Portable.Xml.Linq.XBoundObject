@@ -394,6 +394,11 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     }
     public static partial class Extensions
     {
+        /// <summary>
+        /// Places or modifies an XML element at a specified path within the XML structure of the source element. This method 
+        /// allows dynamic configuration through additional parameters and returns the newly created or modified XML element.
+        /// It supports complex configurations including attribute settings and event handling, facilitating detailed control over the XML manipulation process.
+        /// </summary>
         public static PlacerResult Place(
             this XElement source,
             string path,
@@ -477,6 +482,12 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             xel = pp.XResult;
             return pp.PlacerResult;
         }
+        
+        /// <summary>
+        /// Places or modifies an XML element at a specified path within the XML structure of the source element, 
+        /// allowing for dynamic configuration through additional parameters. This method simplifies XML manipulations 
+        /// by optionally configuring the element's attributes and values during the placement process, without returning the modified or created element.
+        /// </summary>
         public static PlacerResult Place(
             this XElement source,
             string path,
