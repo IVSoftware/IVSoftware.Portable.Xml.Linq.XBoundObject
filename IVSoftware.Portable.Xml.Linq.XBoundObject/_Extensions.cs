@@ -60,33 +60,33 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         /// This method first attempts to retrieve and convert an attribute of type T that is bound as an XBoundAttribute. For Enum values, if no suitable XBoundAttribute is found, the method then attempts to parse the attribute from a standard XAttribute. In this case, the lower-case type is the attribute Name, and the method attempts to parse the case sensitive value.
         /// If `throw` is set to true and neither conversion succeeds, an exception is thrown. If `throw` is set to false, the method returns the default value of T, allowing silent handling of the absence or incorrect format of the expected attribute. For the special case of named enum types which are not nullable, version 1.4 brings new capabilities to avoid the inadvertent use of an incorrect default enum value when @throw is set to false. The preferred error handling when T is Enum or enum is EnumErrorReportOption.Throw (which will have priority over @throw=false when T is Enum or enum) but since this carries side-effects for pre-1.4 versions, to take advantage of this new safety feature change the `Compatibility.DefaultEnumErrorReportOption` from its default value of Assert to the more robust setting of Throw.
         /// </remarks>
-        public static T To<T>(this XElement xel, bool @throw = false)
-            => To<T>(
-                xel,
-                enumErrorReporting: @throw
-                ? EnumErrorReportOption.Throw
-                : EnumErrorReportOption.Default,
-                enumParsing: EnumParsingOption.AllowEnumParsing);
-
-
-        /// <summary>
-        /// Converts an XElement attribute to its corresponding type T.
-        /// </summary>
-        /// <typeparam name="T">The type to which the attribute should be converted. When T represents Enum or enum types, additional parsing features are available.</typeparam>
-        /// <param name="xel">The XElement from which to retrieve and convert the attribute.</param>
-        /// <param name="enumParsing">Adds a non-default option to disable the fallback to string-based parsing for Enums when no XBoundAttribute is found.</param>
-        /// <returns>The converted attribute of type T if successful, based on the specified Enum parsing option.</returns>
-        /// <remarks>
-        /// This method first attempts to retrieve and convert an attribute of type T that is bound as an XBoundAttribute. For Enum values, if no suitable XBoundAttribute is found, the method then attempts to parse the attribute from a standard XAttribute. In this case, the lower-case type is the attribute Name, and the method attempts to parse the case sensitive value.
-        /// For the special case of named enum types which are not nullable, version 1.4 brings new capabilities to avoid the inadvertent use of an incorrect default enum value when a valid T value cannot be determined. This error reporting for enums in this overload defaults to `EnumErrorReportOption.Default` which is linked to `Compatibility.DefaultEnumErrorReportOption`. The preferred error handling when T is Enum or enum is EnumErrorReportOption.Throw (which will have priority over @throw=false when T is Enum or enum) but since this carries side-effects for pre-1.4 versions, to take advantage of this new safety feature change the `Compatibility.DefaultEnumErrorReportOption` from its default value of Assert to the more robust setting of Throw.
-        /// </remarks>
         public static T To<T>(
             this XElement xel,
-            EnumParsingOption enumParsing)
-            => To<T>(
-                xel,
-                enumErrorReporting: EnumErrorReportOption.Default,
-                enumParsing: enumParsing);
+            bool @throw = false)
+        {
+            // Uses strict rules for enums.
+            if (xel.TryGetSingleBoundAttributeByType(out T result))
+            {
+                return result;
+            }
+            else
+            {
+                var msg = InvalidOperationNotFoundMessage<T>();
+                if (@throw)
+                {
+                    throw new InvalidOperationException(msg);
+                }
+                else
+                {
+                    // This assert is new in release 1.4 to bring our attention
+                    // to the fact that a meaningless default named enum value
+                    // is being returned for a non-existent attribute.
+                    // THE EASY FIX: Use the nullable T? in this call instead.
+                    Debug.Fail(msg);
+                    return default;
+                }
+            }
+        }
 
         /// <summary>
         /// Converts an XElement attribute to its corresponding type T, with comprehensive options for handling enums.
@@ -101,89 +101,63 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         /// Version 1.4 introduces a safety feature specifically for non-nullable named enum types, designed to detect incorrect default enum values when a valid T cannot be established. This feature, activated by setting `EnumErrorReportOption.Throw`, is not enabled by default to avoid disrupting existing clients with unexpected exceptions. Existing implementations might encounter silent failures in the specific edge case where T is a named enum value and @throw is false. To opt into this more robust error handling, set the global `Compatibility.DefaultEnumErrorReportOption` to 'Throw', thus enabling the feature across your application. Ensure that your application can handle these new exceptions appropriately.
         /// </remarks>
         public static T To<T>(
-                this XElement xel,
-                EnumErrorReportOption enumErrorReporting,
-                EnumParsingOption enumParsing = EnumParsingOption.AllowEnumParsing
-            )
+            this XElement xel,
+            EnumParsingOption enumParsingOption,
+            bool @throw = false)
+            where T : struct, Enum
         {
-            if (Equals(enumErrorReporting, EnumErrorReportOption.Default))
+            if (enumParsingOption == EnumParsingOption.UseStrictRules)
             {
-                enumErrorReporting = Compatibility.DefaultErrorReportOption;
+                return xel.To<T>(@throw);
             }
-            var type = typeof(T);
 
-            if (xel.TryGetSingleBoundAttributeByType(out T result))
+            var type = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+            // The attribute name is expected to be the same as the enum type's name but in lowercase.
+            if (xel
+                .Attributes()
+                .FirstOrDefault(_ => string.Equals(
+                        _.Name.LocalName,
+                        type.Name, StringComparison.OrdinalIgnoreCase
+                    )) is XAttribute attr)
+
             {
-                return result;
+                StringComparison stringComparison;
+                switch (enumParsingOption)
+                {
+                    case EnumParsingOption.UseLowerCaseNameToParseValue:
+                        stringComparison = StringComparison.Ordinal;
+                        break;
+                    case EnumParsingOption.UseLowerCaseNameToParseValueIgnoreCase:
+                        stringComparison = StringComparison.OrdinalIgnoreCase;
+                        break;
+                    default:
+                        if (@throw) throw new Exception("Unexpected please report.");
+                        Debug.Fail("Unexpected please report.");
+                        return default;
+                }
+                foreach (var value in type.GetEnumValues())
+                {
+                    if (string.Equals(value.ToString(), attr.Value, stringComparison))
+                    {
+                        return (T)value;
+                    }
+                }
+            }
+            var msg = InvalidOperationNotFoundMessage<T>();
+            if (@throw)
+            {
+                throw new InvalidOperationException(msg);
             }
             else
             {
-                // Try the Enum special-case fallback.
-                if (localTryGetParsedEnum(out T parsedEnum))
-                {
-                    return parsedEnum;
-                }
+                // This assert is new in release 1.4 to bring our attention
+                // to the fact that a meaningless default named enum value
+                // is being returned for a non-existent attribute.
+                // THE EASY FIX: Use the nullable T? in this call instead.
+                Debug.Fail(msg);
                 return default;
             }
-            bool localTryGetParsedEnum(out T parsedEnum)
-            {
-                Type nullableAspirantType = Nullable.GetUnderlyingType(typeof(T));
-                Type safeType = nullableAspirantType ?? typeof(T);
-                if(safeType.IsEnum)
-                {
-                    if (Equals(enumParsing, EnumParsingOption.AllowEnumParsing))
-                    {
-                        // The attribute name is expected to be the same as the enum type's name but in lowercase, 
-                        // and the value is stored as a case-sensitive string. This approach is used typically when 
-                        // the attribute is set using SetEnumValue(EnumType.Value) which writes the enum as a string.
-                        if (xel
-                            .Attributes()
-                            .FirstOrDefault(_ => string.Equals(
-                                    _.Name.LocalName,
-                                    safeType.Name, StringComparison.OrdinalIgnoreCase
-                                )) is XAttribute attr)
-
-                        {
-                            foreach (var value in safeType.GetEnumValues())
-                            {
-                                if (string.Equals(value.ToString(), attr.Value))
-                                {
-                                    parsedEnum = (T)value;
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                    if (nullableAspirantType is null)
-                    {
-                        switch (enumErrorReporting)
-                        {
-                            case 0:
-                                break;
-                            case EnumErrorReportOption.Assert:
-                                // This IS going to return an unintended default enum value.
-                                // The tradeoff is, we don't want to risk crashing a pre-1.4 app by throwing the exception.
-                                // IDEALLY: Set the Compatibility.DefaultEnumErrorReportOption to Throw.
-                                Debug.Fail(InvalidOperationNotFoundMessage<T>());
-                                break;
-                            case EnumErrorReportOption.Throw:
-                                throw new InvalidOperationException(InvalidOperationNotFoundMessage<T>());
-                            default:
-                                Debug.Fail("Unexpected");
-                                break;
-                        }
-                    }
-                    else
-                    {   /* G T K */
-                        // This will be returning null for the nullable enum type as requested!
-                    }
-                }
-                parsedEnum = default;
-                return false;
-            }
         }
-        internal static string InvalidOperationNotFoundMessage<T>() => $"No valid {typeof(T).Name} found. To handle cases where an enum attribute might not exist, use a nullable version: To<{typeof(T).Name}?>() or check @this.Has<{typeof(T).Name}>() first.";
-        internal static string InvalidOperationMultipleFoundMessage<T>() => $@"Multiple valid {typeof(T).Name} found. To disambiguate them, obtain the attribute by name: Attributes().OfType<XBoundAttribute>().Single(_=>_.name=""targetName""";
 
         /// <summary>
         /// Determines whether the XElement has an attribute representing type T.
@@ -303,6 +277,65 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         }
 
         /// <summary>
+        /// Try get enum value using strict [Placement] attribute rules.
+        /// </summary>
+        public static bool TryGetAttributeValue<T>(
+            this XElement xel, out T enumValue)
+            where T : struct, Enum
+            => xel.TryGetSingleBoundAttributeByType(out enumValue);
+
+
+        /// <summary>
+        /// Try get enum value with opt-ins for loose enum parsing rules.
+        /// </summary>
+        public static bool TryGetAttributeValue<T>(
+            this XElement xel, out T enumValue,
+            EnumParsingOption enumParsingOption)
+            where T : struct, Enum
+        {
+            if (enumParsingOption == EnumParsingOption.UseStrictRules)
+            {
+                return xel.TryGetAttributeValue(out enumValue);
+            }
+
+            var type = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+            // The attribute name is expected to be the same as the enum type's name but in lowercase.
+            if (xel
+                .Attributes()
+                .FirstOrDefault(_ => string.Equals(
+                        _.Name.LocalName,
+                        type.Name, StringComparison.OrdinalIgnoreCase
+                    )) is XAttribute attr)
+
+            {
+                StringComparison stringComparison;
+                switch (enumParsingOption)
+                {
+                    case EnumParsingOption.UseLowerCaseNameToParseValue:
+                        stringComparison = StringComparison.Ordinal;
+                        break;
+                    case EnumParsingOption.UseLowerCaseNameToParseValueIgnoreCase:
+                        stringComparison = StringComparison.OrdinalIgnoreCase;
+                        break;
+                    default:
+                        Debug.Fail("Unexpected please report.");
+                        enumValue = default;
+                        return false;
+                }
+                foreach (var value in type.GetEnumValues())
+                {
+                    if (string.Equals(value.ToString(), attr.Value, stringComparison))
+                    {
+                        enumValue = (T)value;
+                        return true;
+                    }
+                }
+            }
+            enumValue = default;
+            return false;
+        }
+
+        /// <summary>
         /// Returns the first ancestor that Has XBoundAttribute of type T.
         /// </summary>
         public static T AncestorOfType<T>(this XElement @this, bool includeSelf = false, bool @throw = false)
@@ -364,44 +397,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                     : pattr?.Name ?? type.Name,
                     attrValue);                   
             }
-        }
-
-        public static bool TryGetAttributeValue<T>(
-            this XElement @this,
-            out T value,
-            StringComparison stringComparison = StringComparison.OrdinalIgnoreCase,
-            EnumErrorReportOption errorReporting = EnumErrorReportOption.Default,
-            bool useStrictEnumParsing = false)
-        where T : struct, Enum
-        {
-            var type = typeof(T);
-
-            value = default;
-
-            // Uses strict enum parsing by default
-            if (@this.TryGetSingleBoundAttributeByType(
-                out T aspirant,
-                out TrySingleStatus status))
-            {
-                value = aspirant;
-                return true;
-            }
-            else if(!useStrictEnumParsing)
-            {
-                // The attribute name is expected to be the same as the enum type's name but in lowercase, 
-                // and the value is stored as a case-sensitive string. This approach is used typically when 
-                // the attribute is set using SetEnumValue(EnumType.Value) which writes the enum as a string.
-                var attribute = @this
-                    .Attributes()
-                    .FirstOrDefault(attr => string.Equals(attr.Name.LocalName, type.Name, stringComparison));
-
-                if (attribute != null && Enum.TryParse(attribute.Value, out T parsedValue))
-                {
-                    value = parsedValue;
-                    return true;
-                }
-            }
-            return false;
         }
 
 
@@ -476,5 +471,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         }
         private static object _lock = new object();
         internal static bool IsSorting { get; private set; }
+
+        internal static string InvalidOperationNotFoundMessage<T>() => $"No valid {typeof(T).Name} found. To handle cases where an enum attribute might not exist, use a nullable version: To<{typeof(T).Name}?>() or check @this.Has<{typeof(T).Name}>() first.";
+        internal static string InvalidOperationMultipleFoundMessage<T>() => $@"Multiple valid {typeof(T).Name} found. To disambiguate them, obtain the attribute by name: Attributes().OfType<XBoundAttribute>().Single(_=>_.name=""targetName""";
     }
 }
