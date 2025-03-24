@@ -257,27 +257,87 @@ Settings.Apply.Selected";
             var xel = new XElement("tmp");
             xel.SetAttributeValue(NodeType.folder);
 
-            subtestWhereAttributeExists();
+            subtestTryGetAttributeValueWhereAttributeIsXATTR();
+            subtestToTWhereAttributeIsXATTR();
+
+            subtestToTNullableWhereAttributeIsXATTR();
+            void subtestToTNullableWhereAttributeIsXATTR() { }
+            {
+                // To T? with implicit strict rules.
+                Assert.IsTrue(
+                    xel.To<NodeType?>()
+                    is null, 
+                    "Expecting nullable not found (due to strict rules) returns correct value of 'null' and NOT assert."
+                );
+                // To T? with loose rules.
+                Assert.IsTrue(
+                    xel.To<NodeType?>(enumParsingOption: EnumParsingOption.FindUsingLowerCaseNameThenParseValue)
+                    is NodeType,
+                    "Expecting nullable enum type to return valid T in this case."
+                );
+            }
             subtestDoNotThrowWhereEnumAttributeDoesNotExist();
             subtestThrowWhereEnumAttributeDoesNotExist();
             subtestMultiples();
 
             #region S U B T E S T S
-            void subtestWhereAttributeExists()
+            void subtestTryGetAttributeValueWhereAttributeIsXATTR()
             {
+                // Loose enum parsing rules.
                 Assert.IsTrue(
-                    xel.TryGetAttributeValue(out NodeType result1),
-                    $"Expecting nested TryGetAttributeValueByType call returns false but parsed enum succeds.");
+                    xel.TryGetAttributeValue(out NodeType result1a, enumParsingOption: EnumParsingOption.FindUsingLowerCaseNameThenParseValue),
+                    $"Expecting success using loose parsing rules.");
 
                 Assert.AreEqual(
                     NodeType.folder,
-                    result1,
+                    result1a,
                     "Expecting FIXED version 1.4.0-prerelease bug.");
 
-                Assert.IsTrue(
-                    xel.To<NodeType>() is NodeType result2,
-                    $"Expecting parsed enum fallback success based on {nameof(EnumParsingOption.UseLowerCaseNameToParseValue)}");
+                Assert.IsFalse(
+                    xel.TryGetAttributeValue(out NodeType result1b, enumParsingOption: EnumParsingOption.UseStrictRules),
+                    $"Expecting non-detection. The value is XATTR not XBA and does NOT have a [Placement] attribute to guide.");
+ 
+                // This is the 'incorrect' default value but that's ok
+                // because it's flagged with the FALSE return value.
+                Assert.AreEqual(
+                    NodeType.drive,
+                    result1b,
+                    "Expecting FIXED version 1.4.0-prerelease bug.");
 
+                // Default: Use loose rules EnumParsingOption.FindUsingLowerCaseNameThenParseValue
+                Assert.IsTrue(
+                    xel.TryGetAttributeValue(out NodeType result1c),
+                    $"Expecting success. Since the value exists, parsing rules never come into play.");
+
+                Assert.AreEqual(
+                    NodeType.folder,
+                    result1c,
+                    "Expecting FIXED version 1.4.0-prerelease bug.");
+
+                // To T with explicit loose rules.
+                Assert.IsTrue(
+                    xel.To<NodeType>(enumParsingOption: EnumParsingOption.FindUsingLowerCaseNameThenParseValue) is NodeType result2,
+                    $"Expecting parsed enum fallback success based on {nameof(EnumParsingOption.UseStrictRules)}");
+
+                Assert.AreEqual(
+                    NodeType.folder,
+                    result2,
+                    "Expecting new overload with allowEnumParsing to work.");
+            }
+            
+            void subtestToTWhereAttributeIsXATTR()
+            {
+                // To T with explicit loose rules.
+                Assert.IsTrue(
+                    xel.To<NodeType>(enumParsingOption: EnumParsingOption.FindUsingLowerCaseNameThenParseValue) is NodeType result2,
+                    $"Expecting parsed enum fallback success based on {nameof(EnumParsingOption.UseStrictRules)}");
+
+                Assert.AreEqual(
+                    NodeType.folder,
+                    result2,
+                    "Expecting new overload with allowEnumParsing to work.");
+
+                // To T with explicit strict rules.
                 try
                 {
                     _ = xel.To<NodeType>(enumParsingOption: EnumParsingOption.UseStrictRules);
@@ -301,12 +361,29 @@ Settings.Apply.Selected";
                     }
                 }
 
-                Assert.AreEqual(
-                    NodeType.folder,
-                    result2,
-                    "Expecting new overload with allowEnumParsing to work.");
+                // To T with implicit strict rules.
+                try
+                {
+                    _ = xel.To<NodeType>();
+                    Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
+                }
+                catch (Exception ex)
+                {
+                    Assert.AreEqual(
+                        EnumErrorReportOption.Assert,
+                        Compatibility.DefaultErrorReportOption);
 
-                Assert.IsTrue(xel.To<NodeType?>() is NodeType, "Expecting nullable enum type to return valid T in this case.");
+                    switch (ex.GetType().Name)
+                    {
+                        // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+                        case "AssertFailedException":   // Correct response in Release mode
+                        case "DebugAssertException":    // Correct response in Debug mode (but this is an MSTest internal class)
+                            break;
+                        default:
+                            Assert.Fail("Expecting a different exception here.");
+                            break;
+                    }
+                }
             }
 
             void subtestDoNotThrowWhereEnumAttributeDoesNotExist()
@@ -396,9 +473,13 @@ Settings.Apply.Selected";
                 xel.SetBoundAttributeValue(SortOrder.Ascending);
                 xel.SetBoundAttributeValue(NodeType.folder);
 
+                Assert.IsNull(
+                    xel.To<Enum>(),
+                    $"Expecting the system works here and simply returns a null for a multiple."
+                );
                 try
                 {
-                    _ = xel.To<Enum>();
+                    _ = xel.To<Enum>(@throw: true);
                     Assert.Fail($"Expecting {nameof(InvalidOperationException)}");
                 }
                 catch (InvalidOperationException ex)

@@ -65,24 +65,42 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             bool @throw = false)
         {
             // Uses strict rules for enums.
-            if (xel.TryGetSingleBoundAttributeByType(out T result))
+            if (xel.TryGetSingleBoundAttributeByType(out T result, out TrySingleStatus status))
             {
                 return result;
             }
             else
             {
-                var msg = InvalidOperationNotFoundMessage<T>();
+                string msg;
+                switch (status)
+                {
+                    default:
+                        msg = InvalidOperationNotFoundMessage<T>();
+                        break;
+                    case TrySingleStatus.FoundMany:
+                        msg = InvalidOperationMultipleFoundMessage<T>();
+                        break;
+                }
                 if (@throw)
                 {
                     throw new InvalidOperationException(msg);
                 }
                 else
                 {
-                    // This assert is new in release 1.4 to bring our attention
-                    // to the fact that a meaningless default named enum value
-                    // is being returned for a non-existent attribute.
-                    // THE EASY FIX: Use the nullable T? in this call instead.
-                    Debug.Fail(msg);
+                    if (Equals(default, null))
+                    {   /* G T K */
+                        // This is ideal including:
+                        // - Enum (which is nullable)
+                        // - Nullable named enum types.
+                    }
+                    else
+                    {
+                        // This assert is new in release 1.4 to bring our attention
+                        // to the fact that a meaningless default named enum value
+                        // is being returned for a non-existent attribute.
+                        // THE EASY FIX: Use the nullable T? in this call instead.
+                        Debug.Fail(msg);
+                    }
                     return default;
                 }
             }
@@ -104,14 +122,17 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             this XElement xel,
             EnumParsingOption enumParsingOption,
             bool @throw = false)
-            where T : struct, Enum
         {
+            var type = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+            if (!type.IsEnum)
+            {
+                Debug.WriteLine($"ADVISORY: Ignoring {nameof(EnumParsingOption)} for non-enum type");
+                return xel.To<T>(@throw);
+            }
             if (enumParsingOption == EnumParsingOption.UseStrictRules)
             {
                 return xel.To<T>(@throw);
             }
-
-            var type = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
             // The attribute name is expected to be the same as the enum type's name but in lowercase.
             if (xel
                 .Attributes()
@@ -124,10 +145,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                 StringComparison stringComparison;
                 switch (enumParsingOption)
                 {
-                    case EnumParsingOption.UseLowerCaseNameToParseValue:
+                    case EnumParsingOption.FindUsingLowerCaseNameThenParseValue:
                         stringComparison = StringComparison.Ordinal;
                         break;
-                    case EnumParsingOption.UseLowerCaseNameToParseValueIgnoreCase:
+                    case EnumParsingOption.FindUsingLowerCaseNameThenParseValueIgnoreCase:
                         stringComparison = StringComparison.OrdinalIgnoreCase;
                         break;
                     default:
@@ -226,20 +247,18 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                .OfType<XBoundAttribute>()
                .Where(_ => _.Tag is T)
                .ToArray();
-            if (xbas.SingleOrDefault(_ => _.Tag is T) is XBoundAttribute xba)
+            switch (xbas.Length)
             {
-                o = (T)xba.Tag;
-                result = TrySingleStatus.FoundOne;
-                return true;
-            }
-            else 
-            {
-                if (xbas.Length > 1)
-                {
+                case 0:
+                    break;
+                case 1:
+                    o = (T)xbas[0].Tag;
+                    result = TrySingleStatus.FoundOne;
+                    return true;
+                default:
                     result = TrySingleStatus.FoundMany;
                     o = default;
                     return false;
-                }
             }
             var type = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
 
@@ -266,11 +285,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                     }
                 }
             }
-
-            // Under no circumstances is this even considered a failure condition!
+            // In a 'try' method this is not considered a failure condition!
             // - The returned boolean is false. This is correct.
             // - Yes, its true that a non-nullable enum will hold its default
-            //   value. But you're supposed to check the bool. That's the point.
+            //   value. We're supposed to check the bool. That's the point.
             o = default;
             result = TrySingleStatus.FoundNone;
             return false;
@@ -282,8 +300,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         public static bool TryGetAttributeValue<T>(
             this XElement xel, out T enumValue)
             where T : struct, Enum
-            => xel.TryGetSingleBoundAttributeByType(out enumValue);
-
+            => xel.TryGetAttributeValue(out enumValue, EnumParsingOption.FindUsingLowerCaseNameThenParseValue);
 
         /// <summary>
         /// Try get enum value with opt-ins for loose enum parsing rules.
@@ -295,7 +312,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         {
             if (enumParsingOption == EnumParsingOption.UseStrictRules)
             {
-                return xel.TryGetAttributeValue(out enumValue);
+                return xel.TryGetSingleBoundAttributeByType(out enumValue);
             }
 
             var type = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
@@ -311,10 +328,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                 StringComparison stringComparison;
                 switch (enumParsingOption)
                 {
-                    case EnumParsingOption.UseLowerCaseNameToParseValue:
+                    case EnumParsingOption.FindUsingLowerCaseNameThenParseValue:
                         stringComparison = StringComparison.Ordinal;
                         break;
-                    case EnumParsingOption.UseLowerCaseNameToParseValueIgnoreCase:
+                    case EnumParsingOption.FindUsingLowerCaseNameThenParseValueIgnoreCase:
                         stringComparison = StringComparison.OrdinalIgnoreCase;
                         break;
                     default:
@@ -331,6 +348,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                     }
                 }
             }
+            // In a 'try' method this is not considered a failure condition!
+            // - The returned boolean is false. This is correct.
+            // - Yes, its true that a non-nullable enum will hold its default
+            //   value. We're supposed to check the bool. That's the point.
             enumValue = default;
             return false;
         }
