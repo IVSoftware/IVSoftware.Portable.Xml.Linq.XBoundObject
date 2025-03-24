@@ -18,14 +18,18 @@
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageReleaseNotes>
 			New in 1.4:
-			- Added Placer microclass for dynamic path-based XML element placement.
-			- Enhanced enum support with safety checks for non-nullable named enum types via EnumErrorReportOption.
+			- Added Placer extensions for path-based XML element placement.
+			- Enhanced enum support with safety asserts for non-nullable named enum types in edge cases.
+			- New [Placement] attribute for Enum allows individual enum types to declare their own storage as either XElement or XBoundAttribute.
+			- All try methods are idiomatically correct now. Any 'bool @throw = false' arguments have been removed from the signature. We're banking on the notion that if you're calling a Try method that you don't really want it to ever throw. These 'did' serve a purpose because internally they supported the @throw attribute of methods like To T. These reasons are no longer valid and the artifacts have been removed. Please report on the repo if this causes any issues.
+			- These improvements are major. THIS RELEASE WILL NOW BUMP TO VERSION: 2.0.0-beta
+			- This release really ramps up the unit testing. See repos for all the glorious details.
 		</PackageReleaseNotes>
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
 		<BaseVersion>1.4.1</BaseVersion>
-		<VersionPrefix>$(BaseVersion)-prerelease</VersionPrefix>
+		<VersionPrefix>$(BaseVersion)-rc</VersionPrefix>
 	</PropertyGroup>
 	<ItemGroup>
 	  <Compile Remove="Screenshots\**" />
