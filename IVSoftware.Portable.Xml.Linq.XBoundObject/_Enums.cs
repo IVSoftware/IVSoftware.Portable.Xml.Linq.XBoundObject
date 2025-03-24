@@ -54,6 +54,12 @@ namespace IVSoftware.Portable.Xml.Linq
     public enum EnumParsingOption
     {
         /// <summary>
+        /// This option retrieves an Enum value only when bound
+        /// stated rules using a [Placement] attribute.
+        /// </summary>
+        UseStrictRules,
+
+        /// <summary>
         /// This option attempts to infer an Enum value that 
         /// is stored as a string value on an ordinary XAttribute.
         /// It parses the attribute name as the EnumType lower case,
@@ -68,12 +74,6 @@ namespace IVSoftware.Portable.Xml.Linq
         /// and the value ignoring the case.
         /// </summary>
         FindUsingLowerCaseNameThenParseValueIgnoreCase,
-
-        /// <summary>
-        /// This option retrieves an Enum value only when bound
-        /// stated rules using a [Placement] attribute.
-        /// </summary>
-        UseStrictRules,
     }
 
     /// <summary>
