@@ -28,7 +28,39 @@ This release introduces a new XML placement feature and extended support for nam
 
 ### New Feature: Placer
 
-An instance of the Placer microclass allows for a single flat path to be efficiently placed in an XML runtime document. One example would be projecting a flat list of file names to a two-dimensional runtime XML structure. Options include useful values like `FindOrReplace` and the placement reports status including whether the element pre-existed. A placer instance can be invoked with inline lambda event handlers for before and after element additions, to gain real-time control over each step of the XML path traversal. Specifically, this is often an optimal hook for `SetBoundAttributeValue()` initializations.
+A common requirement when working with `System.Xml.Linq` is to find or place an `XElement` instance in the runtime XML document based on a flat path descriptor string (e.g. a filename). The example below demonstrates how using the `Place` extension can make the fully featured `Placer` class simple to use.
+
+```
+public void TestBasicPlacement()
+{
+    // Test setup
+    string actual, expected;
+    var xroot = new XElement("root");
+
+    // Perform a placement
+    var path = Path.Combine("C:", "Child Folder", "Leaf Folder");
+    actual = xroot.Place(path, out XElement xelnew).ToFullKey();
+    expected = "PlacerResult.Created";
+
+    actual = xroot.ToString();
+    expected = @" 
+<root>
+    <xnode text=""C:"">
+        <xnode text=""Child Folder"">
+            <xnode text=""Leaf Folder"" />
+        </xnode>
+    </xnode>
+</root>";
+
+    // Inspect the newly created 'out XElement' value
+    actual = xelnew.ToShallow().ToString();
+    expected = @"<xnode text=""Leaf Folder"" />";
+}
+```
+
+
+
+One example would be projecting a flat list of file names to a two-dimensional runtime XML structure. Options include useful values like `FindOrReplace` and the placement reports status including whether the element pre-existed. A placer instance can be invoked with inline lambda event handlers for before and after element additions, to gain real-time control over each step of the XML path traversal. Specifically, this is often an optimal hook for `SetBoundAttributeValue()` initializations.
 
 ### Enhancements: Working with `Enum` and `enum` Attribute Values
 
@@ -134,7 +166,7 @@ public static T To<T>(this XElement xel, bool @throw = false){...}
 
 ___
 
-#### New in version 1.4
+#### New in release 1.4
 
 ```
 /// <summary>
@@ -173,7 +205,7 @@ public static bool Has<T>(this XElement xel){...}
 ```
 ___
 
-#### New in version 1.4
+#### New in release 1.4
 
 ```
 /// <summary>
@@ -432,6 +464,8 @@ ___
 
 ### Optional Parameters
 
+Using the 'out' value, a newly created `XElement` can now be freely modified using standard `System.Xml.Linq` as well as `XBoundObject` methods. To streamline this process, the content can be supplied direcly in the `Place` call using any number of optional parameters suppied in any order:
+
 1. **PlacerMode**: This enum dictates the placement behavior, choosing between creating new elements if they do not exist or finding and returning existing ones.
 
 2. **Dictionary of `StdPlacerKeys` to `string`**: Enables dynamic setting of properties such as the name of a new XML element (`NewXElementName`) and the attribute name (`PathAttributeName`) used to navigate through the XML structure. This customization is applied during runtime based on the needs of the operation.
@@ -440,9 +474,11 @@ ___
 
 4. **Enum with Custom Attribute (`EnumPlacement`)**: Facilitates the use of enums in a way that their values can be applied directly as attribute values on XML elements, according to their defined placement strategy (using the enum value as an XML attribute or a bound attribute).
 
-5. **Value Handling**: A single value can be passed to include directly within the new or modified XML element, making it easy to insert text or data content.
+5. **XElement** For scenarios where the `XElement` to be inserted is already instantiated (this might be the removed node of a drag drop, for example), this node will be substituted instead of created. 
 
-These optional parameters are auto-detected by type and can be supplied in any sequence  to make the `Place` method extremely versatile, supporting complex XML document manipulations with ease and precision.
+6. **Value**: After filtering any of the above types, any remaining single value of any other type will be set as the XElement value e.g. `<xel>Value</xel>`.
+
+These arguments are auto-detected by type and can be supplied in any sequence to make the `Place` method extremely versatile.
 
 ___
 

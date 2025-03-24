@@ -410,6 +410,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 newXElementName = Placer.DefaultNewXElementName,
                 pathAttributeName = Placer.DefaultPathAttributeName;
             var attrs = new List<XAttribute>();
+            XElement? substitute = null;
             object value = null;
 
             foreach (var arg in args)
@@ -437,6 +438,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     case XBoundAttribute _:
                     case XAttribute _:
                         attrs.Add((XAttribute)arg);
+                        break;
+                    case XElement _:
+                        substitute = (XElement)arg;
                         break;
                     case Enum enumVal:
                         var enumType = enumVal.GetType();
@@ -473,6 +477,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     e.Xel.Name = newXElementName;
                     if (e.IsPathMatch)
                     {
+                        if(substitute != null)
+                        {
+                            e.Xel = substitute;
+                        }
                         if (attrs.Any()) e.Xel.Add(attrs);
                         if (value != null) e.Xel.Add(value);
                     }
