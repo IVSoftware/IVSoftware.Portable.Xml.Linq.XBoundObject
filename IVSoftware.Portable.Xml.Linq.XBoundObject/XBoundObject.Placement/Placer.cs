@@ -69,7 +69,12 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         ) : this(
                 xSource: xSource,
                 parse: 
-                    fqpath.GetValid().Trim().Split(Path.DirectorySeparatorChar),
+                    fqpath
+                    .GetValid()
+                    .Trim()
+                    .Split(Path.DirectorySeparatorChar)
+                    .Where(_=>!string.IsNullOrWhiteSpace(_))  // For example, a drive iteration like C:\ that ends with a delimiter
+                    .ToArray(),
                 onBeforeAdd: onBeforeAdd,
                 onAfterAdd: onAfterAdd,
                 onIterate: onIterate,

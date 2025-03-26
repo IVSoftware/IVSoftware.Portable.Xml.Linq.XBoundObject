@@ -292,4 +292,15 @@ public class TestClass_Placer
         }
         #endregion S U B T E S T S
     }
+
+
+
+    [TestMethod]
+    public void Test_DrivePlacement()
+    {
+        foreach (var drive in new[] { @"C:\", @"D:\" })
+        {
+
+        }
+    }
 }
