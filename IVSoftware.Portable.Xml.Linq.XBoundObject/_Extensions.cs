@@ -477,7 +477,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         /// <returns>A new XElement with the same name and attributes, but without child elements.</returns>
         public static XElement ToShallow(this XElement @this)
             => new XElement(@this.Name, @this.Attributes());
-        enum DefaultStdAttributeName { text, }
+        enum DefaultStdAttributeName { text }
 
         /// <summary>
         /// Constructs a path by traversing the element and its ancestors, collecting the value

@@ -29,6 +29,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     /// <summary>
     /// Represents the expansion state of a view element.
     /// </summary>
+    [Placement(EnumPlacement.UseXAttribute, name:"expanded")]
     public enum ExpandedState
     {
         /// <summary>
@@ -50,6 +51,19 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// No child elements exist.
         /// </summary>
         Leaf,
+
+        /// <summary>
+        /// Transitive state that results in stable
+        /// expanded state based on visible children.
+        /// </summary>
+        Auto,
+    }
+
+    [Placement(EnumPlacement.UseXAttribute, name:"isvisible")]
+    public enum VisibleState
+    {
+        True, 
+        False,
     }
 
     /// <summary>

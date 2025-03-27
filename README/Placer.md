@@ -33,10 +33,13 @@ The first requirement is to take a "flat" representation (i.e. the file path) an
 // <PackageReference 
 //     Include = "IVSoftware.Portable.Xml.Linq.XBoundObject" 
 //     Version="1.4.1-rc" />
+
 XElement xroot = new XElement("root"); 
+
 string path =
     @"C:\Github\IVSoftware\Demo\IVSoftware.Demo.CrossPlatform.FilesAndFolders\BasicPlacement.Maui\BasicPlacement.Maui.csproj"
     .Replace('\\', Path.DirectorySeparatorChar); // Real code uses Path.Combine()
+
 xroot.Place(path);
 var expected = xroot.ToString();
 ```

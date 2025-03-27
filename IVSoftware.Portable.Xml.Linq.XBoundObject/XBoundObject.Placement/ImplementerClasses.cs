@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.SqlTypes;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Xml.Linq;
+using System.Xml.Serialization;
 
 namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 {
@@ -31,9 +34,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     }
     public class XBoundViewObjectImplementer : XBoundObjectImplementer, IXBoundViewObject
     {
-        public XElement XEL => throw new NotImplementedException();
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public ExpandedState Collapse(string path, Enum pathAttribute = null)
         {
@@ -45,23 +45,96 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             throw new NotImplementedException();
         }
 
-        public XElement InitXEL(XElement xel)
-        {
-            throw new NotImplementedException();
-        }
-
         public XElement Show(string path, Enum pathAttribute = null)
         {
             throw new NotImplementedException();
         }
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        public event PropertyChangedEventHandler PropertyChanged;
+
     }
-    public class XBoundViewImplementer : XBoundObjectImplementer
+    public class ViewContext : XBoundObjectImplementer
     {
-        public XBoundViewImplementer(int indent) => Indent = indent;
-        public XBoundViewImplementer(XElement xel, int indent)
+        SemaphoreSlim 
+            _reentrancyCheck = new SemaphoreSlim(1, 1);
+        public ViewContext(int indent) => Indent = indent;
+        public ViewContext(XElement xel, int indent)
             : this(indent)
         {
             InitXEL(xel);
+            xel.Changing += onChanging;
+            xel.Changed += onChanged;
+        }
+
+        private void onChanging(object sender, XObjectChangeEventArgs e)
+        {
+            switch(sender)
+            {
+                case XAttribute xattr:
+                    if(xattr.Parent is XElement)
+                    {
+                        onXAttributeChange(xattr.Parent, xattr, e);
+                    }
+                    break;
+                case XElement xel:
+                    if (xel.Parent is XElement)
+                    {
+                        onXElementChange(xel, xel.Parent, e);
+                    }
+                    break;
+            }
+        }
+
+        private void onChanged(object sender, XObjectChangeEventArgs e)
+        {
+            switch (sender)
+            {
+                case XAttribute xattr:
+                    if (xattr.Parent is XElement)
+                    {
+                        onXAttributeChange(xattr.Parent, xattr, e);
+                    }
+                    break;
+                case XElement xel:
+                    if (xel.Parent is XElement)
+                    {
+                        onXElementChange(xel, xel.Parent, e);
+                    }
+                    break;
+            }
+        }
+
+        private void onXAttributeChange(XElement xel, XAttribute xattr, XObjectChangeEventArgs e)
+        {
+            switch (e.ObjectChange)
+            {
+                case XObjectChange.Add:
+                    break;
+                case XObjectChange.Name:
+                    break;
+                case XObjectChange.Remove:
+                    break;
+                case XObjectChange.Value:
+                    break;
+                default: throw new NotImplementedException();
+            }
+        }
+        void onXElementChange(XElement xel, XElement pxel, XObjectChangeEventArgs e)
+        {3
+            switch (e.ObjectChange)
+            {
+                case XObjectChange.Add:
+                    break;
+                case XObjectChange.Name:
+                    break;
+                case XObjectChange.Remove:
+                    break;
+                case XObjectChange.Value:
+                    break;
+                default: throw new NotImplementedException();
+            }
         }
         public int Indent { get; }
 
@@ -74,19 +147,23 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             return base.InitXEL(xel);
         }
     }
-    public class XBoundIndexedViewImplementer : XBoundViewImplementer
+
+    /// <summary>
+    /// Uses SQLite Markdown to query and filter the elements by path.
+    /// </summary>
+    public class XBoundFilteredViewImplementer : ViewContext
     {
-        public XBoundIndexedViewImplementer(object databaseConnection, int indent) 
+        public XBoundFilteredViewImplementer(object dataSource, int indent) 
             : base(indent)
-            => _databaseConnection = databaseConnection;
-        public XBoundIndexedViewImplementer(
+            => _dataSource = dataSource;
+        public XBoundFilteredViewImplementer(
             XElement xel,
             object databaseConnection,
             int indent)
             : base(xel, indent)
-            => _databaseConnection = databaseConnection;
+            => _dataSource = databaseConnection;
 
-        private readonly object _databaseConnection;
-        public T GetDatabaseConnection<T>() => (T)_databaseConnection;
+        private readonly object _dataSource;
+        public T GetDatabaseConnection<T>() => (T)_dataSource;
     }
 }

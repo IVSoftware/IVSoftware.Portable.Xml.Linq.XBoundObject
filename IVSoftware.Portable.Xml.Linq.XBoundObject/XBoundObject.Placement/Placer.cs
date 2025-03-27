@@ -1,4 +1,4 @@
-﻿using IVSoftware.Portable.Xml.Linq.XBoundObject;
+﻿
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -475,6 +475,24 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             }
         }
 
+        public static XElement Show(
+                this XElement @this,
+                string path,
+                Enum pathAttribute = null)
+        {
+            if(FindOrReplace(@this, path, pathAttribute) is XElement xel)
+            {
+                xel.SetAttributeValue(VisibleState.True);
+                xel.Parent?.SetAttributeValue(ExpandedState.Auto);
+                return xel;
+            }
+            else
+            {
+                Debug.Fail("Expecting no-fail create.");
+                return null;
+            }
+        }
+
         /// <summary>
         /// Places or modifies an XML element at a specified path within the XML structure of the source element. This method 
         /// allows dynamic configuration through additional parameters and returns the newly created or modified XML element.
@@ -636,8 +654,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         {
             if (@this.Parent != null)
             {
-                throw new InvalidOperationException("The receiver myust be a root element.");
+                throw new InvalidOperationException("The receiver must be a root element.");
             }
+            @this.SetBoundAttributeValue(new ViewContext(@this, indent));
             return @this;
         }
     }
