@@ -628,4 +628,17 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 
         public object[] Payload { get; }
     }
+
+    public static partial class Extensions
+    {
+        public static XElement UseXBoundView(
+            this XElement @this, int indent=10)
+        {
+            if (@this.Parent != null)
+            {
+                throw new InvalidOperationException("The receiver myust be a root element.");
+            }
+            return @this;
+        }
+    }
 }

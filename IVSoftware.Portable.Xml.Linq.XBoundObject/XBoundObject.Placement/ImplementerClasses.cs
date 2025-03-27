@@ -13,7 +13,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public XBoundObjectImplementer(XElement xel) => _xel = xel;
         public XElement XEL => _xel;
         private XElement _xel;
-        public XElement InitXEL(XElement xel)
+        public virtual XElement InitXEL(XElement xel)
         {
             if(_xel is null)
             {
@@ -54,5 +54,39 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         {
             throw new NotImplementedException();
         }
+    }
+    public class XBoundViewImplementer : XBoundObjectImplementer
+    {
+        public XBoundViewImplementer(int indent) => Indent = indent;
+        public XBoundViewImplementer(XElement xel, int indent)
+            : this(indent)
+        {
+            InitXEL(xel);
+        }
+        public int Indent { get; }
+
+        public override XElement InitXEL(XElement xel)
+        {
+            if (xel.Parent != null)
+            {
+                throw new InvalidOperationException("The receiver must be a root element.");
+            }
+            return base.InitXEL(xel);
+        }
+    }
+    public class XBoundIndexedViewImplementer : XBoundViewImplementer
+    {
+        public XBoundIndexedViewImplementer(object databaseConnection, int indent) 
+            : base(indent)
+            => _databaseConnection = databaseConnection;
+        public XBoundIndexedViewImplementer(
+            XElement xel,
+            object databaseConnection,
+            int indent)
+            : base(xel, indent)
+            => _databaseConnection = databaseConnection;
+
+        private readonly object _databaseConnection;
+        public T GetDatabaseConnection<T>() => (T)_databaseConnection;
     }
 }
