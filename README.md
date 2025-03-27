@@ -338,6 +338,19 @@ public static XElement ToShallow(this XElement @this) {...}
 ---
 
 ```
+/// <summary>
+/// Constructs a path by traversing the element and its ancestors, collecting the value
+/// of the specified attribute from each. If the attribute is null, it defaults to 
+/// <see cref="DefaultStdAttributeName.text"/>.
+/// The <paramref name="pathAttribute"/> parameter accepts any user-defined enum, 
+/// such e.g. 'StdAttributeNames'. This enum can also be reused with related 
+/// methods like SortAttributes.
+/// </summary>
+public static string GetPath(this XElement @this, Enum pathAttribute){...}
+```
+---
+
+```
 
 /// <summary>
 /// Creates a new XElement that includes only the specified attributes, removing all others.

@@ -82,36 +82,37 @@ ___
 
 There is no need for recursion here. The width of the `BoxView` creates the 2-dimensional effect.
 
-```
-<DataTemplate>
+```xaml
+ <DataTemplate>
     <Grid ColumnDefinitions="Auto,40,*" RowDefinitions="40" >
         <BoxView 
-        Grid.Column="0" 
-        WidthRequest="{Binding Space}"
-        BackgroundColor="{
-            Binding BackgroundColor, 
-            Source={x:Reference FileCollectionView}}"/>
+            Grid.Column="0" 
+            WidthRequest="{Binding Space}"
+            BackgroundColor="{
+                Binding BackgroundColor, 
+                Source={x:Reference FileCollectionView}}"/>
         <Button 
-        Grid.Column="1" 
-        Text="{Binding PlusMinus}" 
-        TextColor="Black"
-        Command="{
-            Binding PlusMinusToggleCommand, 
-            Source={x:Reference MainPageViewModel}}"
-        CommandParameter="{Binding .}"
-        FontSize="16"
-        BackgroundColor="Transparent"
-        Padding="0"
-        BorderWidth="0"
-        VerticalOptions="Fill"
-        HorizontalOptions="Fill"
-        MinimumHeightRequest="0"
-        MinimumWidthRequest="0"
-        CornerRadius="0"/>
+            Grid.Column="1" 
+            Text="{Binding PlusMinusGlyph}" 
+            TextColor="Black"
+            Command="{
+                Binding PlusMinusToggleCommand, 
+                Source={x:Reference MainPageViewModel}}"
+            CommandParameter="{Binding .}"
+            FontSize="16"
+            FontFamily="file-and-folder-icons"
+            BackgroundColor="Transparent"
+            Padding="0"
+            BorderWidth="0"
+            VerticalOptions="Fill"
+            HorizontalOptions="Fill"
+            MinimumHeightRequest="0"
+            MinimumWidthRequest="0"
+            CornerRadius="0"/>
         <Label 
-        Grid.Column="2"
-        Text="{Binding Text}" 
-        VerticalTextAlignment="Center" Padding="2,0,0,0"/>
+            Grid.Column="2"
+            Text="{Binding Text}" 
+            VerticalTextAlignment="Center" Padding="2,0,0,0"/>
     </Grid>
 </DataTemplate>
 ```
@@ -122,6 +123,13 @@ The `Space` property controls the indentation shown on the view.
 ```
 class FileItem : INotifyPropertyChanged
 {
+    public FileItem(XElement xel)
+    {
+        XEL = xel;
+        xel.SetBoundAttributeValue(this);
+    }
+    public XElement XEL { get; }
+
     public string Text
     {
         get => _text;
@@ -145,10 +153,27 @@ class FileItem : INotifyPropertyChanged
             {
                 _plusMinus = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(PlusMinusGlyph));
             }
         }
     }
     string _plusMinus = "+";
+
+    public string PlusMinusGlyph
+    {
+        get
+        {
+            switch (PlusMinus)
+            {
+                case "+":
+                    return "\uE803";
+                case "-":
+                    return "\uE804";
+                default:
+                    return "\uE805";
+            }
+        }
+    }
 
     public int Space
     {
@@ -162,6 +187,7 @@ class FileItem : INotifyPropertyChanged
             }
         }
     }
+
     int _space = default;
 
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
@@ -204,34 +230,46 @@ public ICommand PlusMinusToggleCommand
                 switch (fileItem.PlusMinus)
                 {
                     case "+":
-                        var index = FileItems.IndexOf(fileItem);
-                        foreach (
-                            var child in 
-                            fileItem.XEL.Elements()
-                            .Where(_=>_.Has<FileItem>()))
+                        try
                         {
-                            localRecursiveAdd(child);
-
-                            #region L o c a l F x       
-                            void localRecursiveAdd(XElement current)
+                            IsBusy = true;
+                            var index = 0;
+                            fileItem.PlusMinus = "-";
+                            foreach (var xel in XRoot.VisibleElements())
                             {
-                                index++;
-                                var add = current.To<FileItem>();
-                                FileItems.Insert(index, add);
-                                if(add.PlusMinus == "-")
+                                var currentFileItem = xel.To<FileItem>();
+                                var currentIndex = FileItems.IndexOf(currentFileItem);
+                                if (index < FileItems.Count)
                                 {
-                                    foreach (
-                                        var nested in
-                                        add.XEL.Elements()
-                                        .Where(_ => _.Has<FileItem>()))
+                                    var current = FileItems[index];
+                                    if (ReferenceEquals(current, currentFileItem))
+                                    {   /* G T K */
+                                        // Item exists at the correct index.
+                                    }
+                                    else
                                     {
-                                        localRecursiveAdd(nested);
+                                        if (currentIndex == -1)
+                                        {
+                                            FileItems.Insert(index, currentFileItem);
+                                        }
+                                        else
+                                        {
+                                            Debug.Fail("First Time! Make sure this works.");
+                                            FileItems.Move(currentIndex, index);
+                                        }
                                     }
                                 }
-                            }		
-                            #endregion L o c a l F x
+                                else
+                                {
+                                    FileItems.Insert(index, currentFileItem);
+                                }
+                                index++;
+                            }
                         }
-                        fileItem.PlusMinus = "-";
+                        finally
+                        {
+                            IsBusy = false;
+                        }
                         break;
                     case "-":
                         foreach (var desc in fileItem.XEL.Descendants())
@@ -254,8 +292,42 @@ public ICommand PlusMinusToggleCommand
 }
 ICommand? _plusMinusToggleCommand = null;
 ```
-
 ___
+
+### Visible Items Enumerator
+
+The `XRoot.VisibleElements()` enumerator is implemented as shown.
+
+```
+public static IEnumerable<XElement> VisibleElements(this XElement @this)
+{
+    Debug.Assert(@this.Name.LocalName == "root");
+    foreach (var element in localAddChildItems(@this.Elements()))
+    {
+        yield return element;
+    }
+    IEnumerable<XElement> localAddChildItems(IEnumerable<XElement> elements)
+    {
+        foreach (var element in elements)
+        {
+            if (element.To<FileItem>() is { } fileItem)
+            {
+                yield return element;
+                if (fileItem.PlusMinus == "-")
+                {
+                    foreach (var childElement in localAddChildItems(element.Elements()))
+                    {
+                        yield return childElement;
+                    }
+                }
+            }
+        }
+    }
+}
+```
+___
+
+
 
 ## In-Depth Example Code
 

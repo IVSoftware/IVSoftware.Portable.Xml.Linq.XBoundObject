@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
@@ -400,9 +401,85 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     public static partial class Extensions
     {
         /// <summary>
+        /// Finds or replaces an <see cref="XElement"/> at the specified path within the current element. 
+        /// If the path does not exist, it is created. Supports optional event handlers for customization.
+        /// </summary>
+        /// <param name="path">The hierarchical path to locate or create.</param>
+        /// <param name="pathAttribute">Optional enum specifying the attribute used to build the path; defaults to "text".</param>
+        /// <param name="onBeforeAdd">Optional handler invoked before adding a new element.</param>
+        /// <param name="onAfterAdd">Optional handler invoked after adding a new element.</param>
+        /// <param name="onIterate">Optional handler invoked during path traversal.</param>
+        /// <returns>The located or newly created <see cref="XElement"/>.</returns>
+
+        public static XElement FindOrReplace(
+                this XElement @this,
+                string path,
+                Enum pathAttribute = null,
+                AddEventHandler onBeforeAdd = null,
+                AddEventHandler onAfterAdd = null,
+                IterateEventHandler onIterate = null
+            )
+        {
+            var placer = new Placer(
+                @this,
+                path,
+                onBeforeAdd,
+                onAfterAdd,
+                onIterate, 
+                PlacerMode.FindOrCreate,
+                pathAttribute?.ToString() ?? "text");
+
+            return placer.XResult;
+        }
+
+        /// <summary>
+        /// Finds or replaces an <see cref="XElement"/> at the specified path. If the
+        /// path does not exist, it is created. If a bound T is not detected, a new T()
+        /// is bound to the target XElement.
+        /// </summary>
+        /// <typeparam name="T">A type implementing <see cref="IXBoundObject"/> with a public parameterless constructor.</typeparam>
+        /// <param name="path">The hierarchical path to locate or create.</param>
+        /// <param name="pathAttribute">Optional enum specifying the attribute used to build the path; defaults to "text".</param>
+        /// <param name="onBeforeAdd">Optional handler invoked before adding a new element.</param>
+        /// <param name="onAfterAdd">Optional handler invoked after adding a new element.</param>
+        /// <param name="onIterate">Optional handler invoked during path traversal.</param>
+        /// <returns>The bound object of type <typeparamref name="T"/> or null if not found.</returns>
+        public static T FindOrReplace<T>(
+                this XElement @this,
+                string path,
+                Enum pathAttribute = null,
+                AddEventHandler onBeforeAdd = null,
+                AddEventHandler onAfterAdd = null,
+                IterateEventHandler onIterate = null
+            )
+            where T : class, IXBoundObject, new()
+        {
+            var placer = new Placer(
+                @this,
+                path,
+                localOnBeforeAdd,
+                onAfterAdd,
+                onIterate,
+                PlacerMode.FindOrCreate,
+                pathAttribute?.ToString() ?? "text");
+
+            return placer.XResult?.To<T>() ?? default;
+
+            void localOnBeforeAdd(object sender, AddEventArgs e)
+            {
+                if (!e.Xel.Has<T>())
+                {
+                    e.Xel.SetBoundAttributeValue(new T().InitXEL(e.Xel));
+                }
+                onBeforeAdd?.Invoke( sender, e );
+            }
+        }
+
+        /// <summary>
         /// Places or modifies an XML element at a specified path within the XML structure of the source element. This method 
         /// allows dynamic configuration through additional parameters and returns the newly created or modified XML element.
-        /// It supports complex configurations including attribute settings and event handling, facilitating detailed control over the XML manipulation process.
+        /// It supports complex configurations including attribute settings and event handling, facilitating detailed control 
+        /// over the XML manipulation process.
         /// </summary>
         public static PlacerResult Place(
             this XElement source,

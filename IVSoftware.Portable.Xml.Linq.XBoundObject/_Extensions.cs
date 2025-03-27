@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Reflection;
@@ -476,6 +477,29 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         /// <returns>A new XElement with the same name and attributes, but without child elements.</returns>
         public static XElement ToShallow(this XElement @this)
             => new XElement(@this.Name, @this.Attributes());
+        enum DefaultStdAttributeName { text, }
+
+        /// <summary>
+        /// Constructs a path by traversing the element and its ancestors, collecting the value
+        /// of the specified attribute from each. If the attribute is null, it defaults to 
+        /// <see cref="DefaultStdAttributeName.text"/>.
+        /// The <paramref name="pathAttribute"/> parameter accepts any user-defined enum, 
+        /// such e.g. 'StdAttributeNames'. This enum can also be reused with related 
+        /// methods like SortAttributes.
+        /// </summary>
+        public static string GetPath(this XElement @this, Enum pathAttribute)
+        {
+            pathAttribute = pathAttribute ?? DefaultStdAttributeName.text;
+            var builder = new List<string>();
+            foreach (var anc in @this.AncestorsAndSelf().Reverse())
+            {
+                if (anc.Attribute(pathAttribute.ToString())?.Value is string value)
+                {
+                    builder.Add(value);
+                }
+            }
+            return Path.Combine(builder.ToArray());        
+        }
 
 
         /// <summary>
