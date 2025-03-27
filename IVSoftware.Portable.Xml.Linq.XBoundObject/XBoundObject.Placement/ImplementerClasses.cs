@@ -122,7 +122,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             }
         }
         void onXElementChange(XElement xel, XElement pxel, XObjectChangeEventArgs e)
-        {3
+        {
             switch (e.ObjectChange)
             {
                 case XObjectChange.Add:
