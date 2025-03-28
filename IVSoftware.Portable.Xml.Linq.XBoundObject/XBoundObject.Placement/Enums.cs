@@ -39,14 +39,15 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     }
     public enum StdAttributeNameXBoundViewObject
     {
+        text,
         isvisible,
         plusminus,
+        datamodel,
     }
 
     internal enum StdAttributeNameInternal
     {
         text,
-        datamodel,
     }
 
     [Placement(EnumPlacement.UseXAttribute)]

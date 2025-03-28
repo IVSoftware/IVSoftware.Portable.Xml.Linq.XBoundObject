@@ -136,21 +136,15 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 if (!Equals(_isVisible, value))
                 {
                     _isVisible = value;
-#if false
-                    if (value && XEL.Parent?.Parent != null)
-                    {
-                        // Set Parent visible first (single recursive).
-                        XEL.Parent.SetAttributeValue(nameof(StdAttributeNameXBoundViewObject.isvisible), bool.TrueString);
-                    }
                     if (value)
                     {
-                        XEL.SetAttributeValue(Placement.IsVisible.True);
+                        // For 'True' only, parent nodes must take on isvisible also.
+                        // [Careful] Exclude the root node!
+                        if (XEL.Parent is XElement pxel && pxel.Parent != null)
+                        {
+                            pxel.SetAttributeValue(Placement.IsVisible.True);
+                        }
                     }
-                    else
-                    {
-                        XEL.SetAttributeValue(null);
-                    }
-#endif
                     OnPropertyChanged();
                 }
             }
@@ -165,9 +159,17 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             get => _plusMinus;
             set
             {
-#if false
-                if (value == PlusMinus.Auto)
+                if (!Equals(PlusMinus, value))
                 {
+                    if (value == PlusMinus.Auto)
+                    {
+                        // For 'Auto' only, parent nodes must take on isvisible also.
+                        // [Careful] Exclude the root node!
+                        if (XEL.Parent is XElement pxel && pxel.Parent != null)
+                        {
+                            pxel.SetAttributeValue(PlusMinus.Auto);
+                        }
+#if false
                     if (XEL.Parent?.Parent != null)
                     {
                         XEL.Parent.SetAttributeValue(PlusMinus.Auto);
@@ -195,11 +197,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     {
                         _plusMinus = PlusMinus.Leaf;
                     }
-                }
 #endif
-                if (!Equals(PlusMinus, value))
-                {
-                    PlusMinus = value;
+                    }
+                    _plusMinus = value;
                     OnPropertyChanged();
                 }
             }

@@ -495,7 +495,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     {                       
                         e.Xel.SetBoundAttributeValue(
                             new XBoundViewObjectImplementer(e.Xel),
-                            name: nameof(StdAttributeNameInternal.datamodel));
+                            name: nameof(StdAttributeNameXBoundViewObject.datamodel));
                     }
                 }) is XElement xel)
             {
@@ -529,7 +529,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 {
                     e.Xel.SetBoundAttributeValue(
                         new T().InitXEL(e.Xel),
-                        name: nameof(StdAttributeNameInternal.datamodel));
+                        name: nameof(StdAttributeNameXBoundViewObject.datamodel));
                 }) is XElement xel)
             {
                 xel.SetAttributeValue(IsVisible.True);
