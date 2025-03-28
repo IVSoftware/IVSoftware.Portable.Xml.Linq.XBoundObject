@@ -143,6 +143,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                         if (XEL.Parent is XElement pxel && pxel.Parent != null)
                         {
                             pxel.SetAttributeValue(Placement.IsVisible.True);
+                            pxel.SetAttributeValue(Placement.PlusMinus.Auto);
                         }
                     }
                     OnPropertyChanged();
@@ -163,43 +164,44 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 {
                     if (value == PlusMinus.Auto)
                     {
-                        // For 'Auto' only, parent nodes must take on isvisible also.
-                        // [Careful] Exclude the root node!
-                        if (XEL.Parent is XElement pxel && pxel.Parent != null)
+                        // [Careful]
+                        // - This is 'not' like IsVisible where we ascend the hierarchy.
+                        // - In fact, this is probably being called in response to IsVisible = true.
+                        // - Point is, we're dealing with this level only!
+                        var elements = XEL.Elements().ToArray();
+                        var elementsCount = elements.Length;
+                        var visibleCount =
+                            elements
+                            .Count(_ =>
+                                _
+                                .Attribute(nameof(StdAttributeNameXBoundViewObject.isvisible))
+                                ?.Value.ToLower() == "true");
+
+                        // In each case, set backing store first so that
+                        // the attribute change doesn't cause reentry.
+                        if (elements.Any())
                         {
-                            pxel.SetAttributeValue(PlusMinus.Auto);
-                        }
-#if false
-                    if (XEL.Parent?.Parent != null)
-                    {
-                        XEL.Parent.SetAttributeValue(PlusMinus.Auto);
-                    }
-                    var elements = XEL.Elements().ToArray();
-                    var elementsCount = elements.Length;
-                    var visibleCount =
-                        elements
-                        .Count(_ =>
-                            _
-                            .Attribute(nameof(StdAttributeNameXBoundViewObject.isvisible))
-                            ?.Value.ToLower() == "true");
-                    if (elements.Any())
-                    {
-                        if (elementsCount == visibleCount)
-                        {
-                            _plusMinus = PlusMinus.Expanded;
+                            if (elementsCount == visibleCount)
+                            {
+                                _plusMinus = PlusMinus.Expanded;
+                                XEL.SetAttributeValue(PlusMinus.Expanded);
+                            }
+                            else
+                            {
+                                _plusMinus = PlusMinus.Partial;
+                                XEL.SetAttributeValue(PlusMinus.Partial);
+                            }
                         }
                         else
                         {
-                            _plusMinus = PlusMinus.Partial;
+                            _plusMinus = PlusMinus.Leaf;
+                            XEL.SetAttributeValue(PlusMinus.Leaf);
                         }
                     }
                     else
                     {
-                        _plusMinus = PlusMinus.Leaf;
+                        _plusMinus = value;
                     }
-#endif
-                    }
-                    _plusMinus = value;
                     OnPropertyChanged();
                 }
             }

@@ -500,7 +500,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 }) is XElement xel)
             {
                 xel.SetAttributeValue(IsVisible.True);
-                xel.Parent?.SetAttributeValue(PlusMinus.Auto);
                 return xel;
             }
             else

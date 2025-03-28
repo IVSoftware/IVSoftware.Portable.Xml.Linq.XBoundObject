@@ -20,26 +20,31 @@ public class TestClass_XBoundViewObject
         xroot.Show(path);
 
         actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
-
         actual.ToClipboard();
-        actual.ToClipboardExpected();
+        actual.ToClipboardAssert();
         { }
         expected = @" 
 <root viewcontext=""[ViewContext]"">
-  <xnode text=""C:"">
-    <xnode text=""Github"">
-      <xnode text=""IVSoftware"">
-        <xnode text=""Demo"">
-          <xnode text=""IVSoftware.Demo.CrossPlatform.FilesAndFolders"">
-            <xnode plusminus=""Auto"" text=""BasicPlacement.Maui"">
-              <xnode text=""BasicPlacement.Maui.csproj"" isvisible=""True"" />
+  <xnode text=""C:"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[XBoundViewObjectImplementer]"">
+    <xnode text=""Github"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[XBoundViewObjectImplementer]"">
+      <xnode text=""IVSoftware"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[XBoundViewObjectImplementer]"">
+        <xnode text=""Demo"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[XBoundViewObjectImplementer]"">
+          <xnode text=""IVSoftware.Demo.CrossPlatform.FilesAndFolders"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[XBoundViewObjectImplementer]"">
+            <xnode text=""BasicPlacement.Maui"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[XBoundViewObjectImplementer]"">
+              <xnode text=""BasicPlacement.Maui.csproj"" isvisible=""True"" datamodel=""[XBoundViewObjectImplementer]"" />
             </xnode>
           </xnode>
         </xnode>
       </xnode>
     </xnode>
   </xnode>
-</root>"
-        ;
+</root>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting an expanded tree culminating in a leaf node."
+        );
+        { }
     }
 }
