@@ -39,7 +39,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     }
     public enum StdAttributeNameXBoundViewObject
     {
-        visibility,
+        isvisible,
         plusminus,
     }
 

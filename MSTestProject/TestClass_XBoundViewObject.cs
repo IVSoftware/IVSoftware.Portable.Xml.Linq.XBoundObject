@@ -20,8 +20,26 @@ public class TestClass_XBoundViewObject
         xroot.Show(path);
 
         actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
+
         actual.ToClipboard();
-        actual.ToClipboardAssert();
+        actual.ToClipboardExpected();
         { }
+        expected = @" 
+<root viewcontext=""[ViewContext]"">
+  <xnode text=""C:"">
+    <xnode text=""Github"">
+      <xnode text=""IVSoftware"">
+        <xnode text=""Demo"">
+          <xnode text=""IVSoftware.Demo.CrossPlatform.FilesAndFolders"">
+            <xnode plusminus=""Auto"" text=""BasicPlacement.Maui"">
+              <xnode text=""BasicPlacement.Maui.csproj"" isvisible=""True"" />
+            </xnode>
+          </xnode>
+        </xnode>
+      </xnode>
+    </xnode>
+  </xnode>
+</root>"
+        ;
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.SqlTypes;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -77,17 +78,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 switch (xattr.Name.LocalName)
                 {
                     case nameof(StdAttributeNameXBoundViewObject.plusminus):
-                        if (xattr.Parent?.TryGetAttributeValue(out PlusMinus plusMinus) == true && 
-                            plusMinus == PlusMinus.Auto)
-                        {
-
-                        }
-                        else
-                        {
-                            OnPropertyChanged(nameof(PlusMinus));
-                        }
+                        OnPropertyChanged(nameof(PlusMinus));
                         break;
-                    case nameof(StdAttributeNameXBoundViewObject.visibility):
+                    case nameof(StdAttributeNameXBoundViewObject.isvisible):
                         OnPropertyChanged(nameof(IsVisible));
                         break;
                 }
@@ -109,17 +102,25 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// </summary>
         public bool IsVisible
         {
-            get =>
-                XEL.TryGetAttributeValue(out IsVisible visibility) 
-                ? bool.Parse(visibility.ToString()) 
+            get
+            {
+                var value = XEL.TryGetAttributeValue(out IsVisible visibility)
+                ? bool.Parse(visibility.ToString())
                 : false;
+                if (value && XEL.Parent?.Parent != null)
+                {
+                    // Parents are all visible.
+                    XEL.Parent.SetAttributeValue(nameof(StdAttributeNameXBoundViewObject.isvisible), bool.TrueString);
+                }
+                return value;
+            }
             set
             {
                 if (!Equals(IsVisible, value))
                 {
                     if (value)
                     {
-                        XEL.SetAttributeValue(nameof(StdAttributeNameXBoundViewObject.visibility), bool.TrueString);
+                        XEL.SetAttributeValue(nameof(StdAttributeNameXBoundViewObject.isvisible), bool.TrueString);
                     }
                     else
                     {
@@ -135,21 +136,53 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// </summary>
         public PlusMinus PlusMinus
         {
-            get =>
-                XEL.TryGetAttributeValue(out PlusMinus plusMinus)
+            get
+            {
+                // The value of PlusMinus.Auto is never returned!
+                var value = XEL.TryGetAttributeValue(out PlusMinus plusMinus)
                 ? plusMinus
                 : PlusMinus.Leaf;
+                if (value == PlusMinus.Auto)
+                {
+                    if (XEL.Parent?.Parent != null)
+                    {
+                        XEL.Parent.SetAttributeValue(PlusMinus.Auto);
+                    }
+                    var elements = XEL.Elements().ToArray();
+                    var elementsCount = elements.Length;
+                    var visibleCount =
+                        elements
+                        .Count(_ =>
+                            _
+                            .Attribute(nameof(StdAttributeNameXBoundViewObject.isvisible))
+                            ?.Value.ToLower() == "true");
+                    if (elements.Any())
+                    {
+                        if (elementsCount == visibleCount)
+                        {
+                            XEL.SetAttributeValue(PlusMinus.Expanded);
+                        }
+                        else
+                        {
+                            XEL.SetAttributeValue(PlusMinus.Partial);
+                        }
+                    }
+                    else
+                    {
+                        XEL.SetAttributeValue(PlusMinus.Leaf);
+                    }
+                }
+                return value;
+            }
             set
             {
-                if (!Equals(_plusMinus, value))
+                if (!Equals(PlusMinus, value))
                 {
-                    _plusMinus = value;
+                    PlusMinus = value;
                     OnPropertyChanged();
                 }
             }
         }
-        PlusMinus _plusMinus = default;
-
     }
 
     /// <summary>
