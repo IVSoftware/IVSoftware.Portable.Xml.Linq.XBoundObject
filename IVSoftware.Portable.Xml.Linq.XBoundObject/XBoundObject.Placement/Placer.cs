@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -699,7 +700,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     public static partial class Extensions
     {
         public static XElement UseXBoundView(
-            this XElement @this, int indent=10)
+            this XElement @this,
+            INotifyCollectionChanged items,
+            int indent = 10)
         {
             if (@this.Parent != null)
             {

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Data.SqlTypes;
 using System.Diagnostics;
@@ -212,27 +214,18 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     /// <summary>
     /// Uses SQLite Markdown to query and filter the elements by path.
     /// </summary>
-    public class XBoundFilteredViewImplementer : ViewContext
-    {
-        public XBoundFilteredViewImplementer(object dataSource, int indent) 
-            : base(indent)
-            => _dataSource = dataSource;
-        public XBoundFilteredViewImplementer(
-            XElement xel,
-            object databaseConnection,
-            int indent)
-            : base(xel, indent)
-            => _dataSource = databaseConnection;
-
-        private readonly object _dataSource;
-        public T GetDatabaseConnection<T>() => (T)_dataSource;
-    }
     public class ViewContext : XBoundObjectImplementer
     {
         public int Indent { get; }
-        public ViewContext(int indent) => Indent = indent;
-        public ViewContext(XElement xel, int indent)
-            : this(indent) => InitXEL(xel);
+        public IList Items { get; }
+
+        public ViewContext(IList items, int indent)
+        {
+            Indent = indent;
+            Items = items;
+        }
+        public ViewContext(XElement xel, IList items, int indent)
+            : this(items, indent) => InitXEL(xel);
         public override XElement InitXEL(XElement xel)
         {
             if (xel.Parent != null)

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
@@ -12,6 +13,7 @@ public class TestClass_XBoundViewObject
     public void Test_PlusMinus()
     {
         string actual, expected;
+        var items = new ObservableCollection<Item>()
         var xroot = new XElement("root").UseXBoundView();
 
         // WinOS path in a WinOS test.
@@ -47,4 +49,6 @@ public class TestClass_XBoundViewObject
         );
         { }
     }
+
+    private class Item : XBoundViewObjectImplementer { }
 }
