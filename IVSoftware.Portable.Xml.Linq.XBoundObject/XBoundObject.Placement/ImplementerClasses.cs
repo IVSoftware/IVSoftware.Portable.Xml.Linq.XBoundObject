@@ -76,9 +76,19 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 // XAttribute has a parent and is therefore actionable.
                 switch (xattr.Name.LocalName)
                 {
-                    case nameof(StdAttributeNameInternal.plusminus):
+                    case nameof(StdAttributeNameXBoundViewObject.plusminus):
+                        if (xattr.Parent?.TryGetAttributeValue(out PlusMinus plusMinus) == true && 
+                            plusMinus == PlusMinus.Auto)
+                        {
+
+                        }
+                        else
+                        {
+                            OnPropertyChanged(nameof(PlusMinus));
+                        }
                         break;
-                    case nameof(StdAttributeNameInternal.visibility):
+                    case nameof(StdAttributeNameXBoundViewObject.visibility):
+                        OnPropertyChanged(nameof(IsVisible));
                         break;
                 }
             }
@@ -93,10 +103,14 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             }
             return base.InitXEL(xel);
         }
+
+        /// <summary>
+        /// If XAttribute is not present, default to false
+        /// </summary>
         public bool IsVisible
         {
             get =>
-                XEL.TryGetAttributeValue(out Visibility visibility) 
+                XEL.TryGetAttributeValue(out IsVisible visibility) 
                 ? bool.Parse(visibility.ToString()) 
                 : false;
             set
@@ -105,7 +119,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 {
                     if (value)
                     {
-                        XEL.SetAttributeValue(Visibility.True);
+                        XEL.SetAttributeValue(nameof(StdAttributeNameXBoundViewObject.visibility), bool.TrueString);
                     }
                     else
                     {
@@ -115,6 +129,27 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 }
             }
         }
+
+        /// <summary>
+        /// If XAttribute is not present, default to PlusMinus.Leaf
+        /// </summary>
+        public PlusMinus PlusMinus
+        {
+            get =>
+                XEL.TryGetAttributeValue(out PlusMinus plusMinus)
+                ? plusMinus
+                : PlusMinus.Leaf;
+            set
+            {
+                if (!Equals(_plusMinus, value))
+                {
+                    _plusMinus = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        PlusMinus _plusMinus = default;
+
     }
 
     /// <summary>

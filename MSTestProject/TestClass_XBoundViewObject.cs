@@ -1,5 +1,7 @@
 using System.Xml.Linq;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
+using IVSoftware.WinOS.MSTest.Extensions;
 
 namespace XBoundObjectMSTest;
 
@@ -7,7 +9,7 @@ namespace XBoundObjectMSTest;
 public class TestClass_XBoundViewObject
 {
     [TestMethod]
-    public void Test()
+    public void Test_PlusMinus()
     {
         string actual, expected;
         var xroot = new XElement("root").UseXBoundView();
@@ -16,5 +18,10 @@ public class TestClass_XBoundViewObject
         var path =
             @"C:\Github\IVSoftware\Demo\IVSoftware.Demo.CrossPlatform.FilesAndFolders\BasicPlacement.Maui\BasicPlacement.Maui.csproj";
         xroot.Show(path);
+
+        actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
+        actual.ToClipboard();
+        actual.ToClipboardAssert();
+        { }
     }
 }

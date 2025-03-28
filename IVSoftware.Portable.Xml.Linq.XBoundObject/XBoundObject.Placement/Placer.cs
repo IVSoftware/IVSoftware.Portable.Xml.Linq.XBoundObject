@@ -482,7 +482,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         {
             if(FindOrReplace(@this, path, pathAttribute) is XElement xel)
             {
-                xel.SetAttributeValue(Visibility.True);
+                xel.SetAttributeValue(IsVisible.True);
                 xel.Parent?.SetAttributeValue(PlusMinus.Auto);
                 return xel;
             }
