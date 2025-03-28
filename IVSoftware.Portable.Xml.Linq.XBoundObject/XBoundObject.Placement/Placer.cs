@@ -69,12 +69,12 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             string pathAttributeName = "text"
         ) : this(
                 xSource: xSource,
-                parse: 
+                parse:
                     fqpath
                     .GetValid()
                     .Trim()
                     .Split(Path.DirectorySeparatorChar)
-                    .Where(_=>!string.IsNullOrWhiteSpace(_))  // For example, a drive iteration like C:\ that ends with a delimiter
+                    .Where(_ => !string.IsNullOrWhiteSpace(_))  // For example, a drive iteration like C:\ that ends with a delimiter
                     .ToArray(),
                 onBeforeAdd: onBeforeAdd,
                 onAfterAdd: onAfterAdd,
@@ -475,12 +475,62 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             }
         }
 
+        /// <summary>
+        /// Retrieves the <see cref="XElement"/> at the specified <paramref name="path"/>, 
+        /// ensuring it is bound and visible. If the element lacks an <see cref="IXBoundViewObject"/> 
+        /// and a factory is registered for it, using <see cref="SetFactoryMethod{T}"/>, the factory 
+        /// is used. Otherwise, a default implementation is applied.
         public static XElement Show(
                 this XElement @this,
                 string path,
-                Enum pathAttribute = null)
+                Enum pathAttribute = null) 
         {
-            if(FindOrReplace(@this, path, pathAttribute) is XElement xel)
+            if(FindOrReplace(
+                @this,
+                path,
+                pathAttribute,
+                onBeforeAdd: (sender, e) =>
+                {
+                    if (!e.Xel.Has<IXBoundViewObject>())
+                    {                       
+                        e.Xel.SetBoundAttributeValue(
+                            new XBoundViewObjectImplementer(e.Xel),
+                            name: nameof(StdAttributeNameInternal.datamodel));
+                    }
+                }) is XElement xel)
+            {
+                xel.SetAttributeValue(IsVisible.True);
+                xel.Parent?.SetAttributeValue(PlusMinus.Auto);
+                return xel;
+            }
+            else
+            {
+                Debug.Fail("Expecting no-fail create.");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the <see cref="XElement"/> at the specified <paramref name="path"/>, 
+        /// ensuring it is bound and visible. If the element lacks an <see cref="IXBoundViewObject"/> 
+        /// and a factory is registered for it, using <see cref="SetFactoryMethod{T}"/>, the factory 
+        /// is used. Otherwise, a default implementation is applied.
+        public static XElement Show<T>(
+                this XElement @this,
+                string path,
+                Enum pathAttribute = null)
+            where T : IXBoundViewObject, new()
+        {
+            if(FindOrReplace(
+                @this,
+                path,
+                pathAttribute,
+                onBeforeAdd: (sender, e) =>
+                {
+                    e.Xel.SetBoundAttributeValue(
+                        new T().InitXEL(e.Xel),
+                        name: nameof(StdAttributeNameInternal.datamodel));
+                }) is XElement xel)
             {
                 xel.SetAttributeValue(IsVisible.True);
                 xel.Parent?.SetAttributeValue(PlusMinus.Auto);

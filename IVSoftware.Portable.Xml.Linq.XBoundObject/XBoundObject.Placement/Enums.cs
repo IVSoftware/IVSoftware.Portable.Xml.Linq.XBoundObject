@@ -46,6 +46,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     internal enum StdAttributeNameInternal
     {
         text,
+        datamodel,
     }
 
     [Placement(EnumPlacement.UseXAttribute)]

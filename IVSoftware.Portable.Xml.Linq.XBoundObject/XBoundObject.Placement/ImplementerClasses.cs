@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.SqlTypes;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -13,8 +14,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 {
     public class XBoundObjectImplementer : IXBoundObject
     {
+        bool _reentrancyCheck = false;
+        object _lock = new object();
         public XBoundObjectImplementer() { }
-        public XBoundObjectImplementer(XElement xel) => _xel = xel;
+        public XBoundObjectImplementer(XElement xel) => InitXEL(xel);
         public XElement XEL => _xel;
         private XElement _xel;
         public virtual XElement InitXEL(XElement xel)
@@ -22,6 +25,34 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             if(_xel is null)
             {
                 _xel = xel;
+                _xel.Changing += onXObjectChange;
+                _xel.Changed += onXObjectChange;                
+
+                #region L o c a l F x
+		        void onXObjectChange(object sender, XObjectChangeEventArgs e)
+                {
+                    if (sender is XAttribute xattr && ReferenceEquals(xattr.Parent, XEL))
+                    {
+                        // Actionable change to one of "this" objects attributes.
+                        lock (_lock)
+                        {
+                            if (_reentrancyCheck)
+                            {
+                                return;
+                            }
+                            try
+                            {
+                                _reentrancyCheck = true;
+                                OnAttributeChanged(xattr, e);
+                            }
+                            finally
+                            {
+                                _reentrancyCheck = false;
+                            }
+                        }
+                    }
+                }
+                #endregion L o c a l F x
             }
             else
             {
@@ -32,12 +63,53 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             }
             return _xel;
         }
+
+        protected virtual void OnAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e) { }
+
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         public event PropertyChangedEventHandler PropertyChanged;
     }
     public class XBoundViewObjectImplementer : XBoundObjectImplementer, IXBoundViewObject
     {
+        public XBoundViewObjectImplementer() { }
+        public XBoundViewObjectImplementer(XElement xel) : base(xel) { }
+
+        /// <summary>
+        /// When an actionable (has parent) attribute change occurs, the
+        /// value is retrieved and set to the implementer property value
+        /// which handles any circularity. 
+        /// </summary>
+        /// <remarks>
+        /// For example, when isvisible is set to "false" and that
+        /// attribute gets removed, the IsVisible property receives
+        /// IsVisible = false teo times but only responds once.
+        /// </remarks>
+        protected override void OnAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e)
+        {
+            base.OnAttributeChanged(xattr, e);
+            var xel = xattr.Parent;     // [Careful] This is a LATERAL 'parent' !!
+            switch (xattr.Name.LocalName)
+            {
+                case nameof(StdAttributeNameXBoundViewObject.plusminus):
+                    // - Retrieve the current value for 'plusminus'
+                    // - Forward to datamodel.
+                    PlusMinus = 
+                        xel.TryGetAttributeValue(out PlusMinus plusMinus)
+                        ? plusMinus
+                        : PlusMinus.Leaf;
+                    break;
+                case nameof(StdAttributeNameXBoundViewObject.isvisible):
+                    // - Retrieve the current value for 'isvisible' and
+                    // - Forward to datamodel.
+                    // - A null attribute converts to 'false'.
+                    IsVisible =
+                        xel
+                        .TryGetAttributeValue(out IsVisible value) &&
+                        bool.Parse(value.ToString());
+                    break;
+            }
+        }
         public PlusMinus Collapse(string path, Enum pathAttribute = null)
         {
             throw new NotImplementedException();
@@ -64,6 +136,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 if (!Equals(_isVisible, value))
                 {
                     _isVisible = value;
+#if false
                     if (value && XEL.Parent?.Parent != null)
                     {
                         // Set Parent visible first (single recursive).
@@ -77,6 +150,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     {
                         XEL.SetAttributeValue(null);
                     }
+#endif
                     OnPropertyChanged();
                 }
             }
@@ -91,6 +165,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             get => _plusMinus;
             set
             {
+#if false
                 if (value == PlusMinus.Auto)
                 {
                     if (XEL.Parent?.Parent != null)
@@ -120,9 +195,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     {
                         _plusMinus = PlusMinus.Leaf;
                     }
-#if false
-#endif
                 }
+#endif
                 if (!Equals(PlusMinus, value))
                 {
                     PlusMinus = value;
@@ -131,71 +205,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             }
         }
         PlusMinus _plusMinus = PlusMinus.Leaf;
-    }
-    public class ViewContext : XBoundObjectImplementer
-    {
-        SemaphoreSlim 
-            _reentrancyCheck = new SemaphoreSlim(1, 1);
-        public ViewContext(int indent) => Indent = indent;
-        public ViewContext(XElement xel, int indent)
-            : this(indent)
-        {
-            InitXEL(xel);
-            xel.Changing += onXObjectChange;
-            xel.Changed += onXObjectChange;
-        }
-        private void onXObjectChange(object sender, XObjectChangeEventArgs e) 
-        {
-            if(sender is XAttribute xattr && xattr.Parent != null)
-            {
-                // XAttribute has a parent and is therefore actionable.
-                switch (xattr.Name.LocalName)
-                {
-                    case nameof(StdAttributeNameXBoundViewObject.plusminus):
-                        if( xattr.Parent.TryGetAttributeValue(out PlusMinus plusMinus) &&
-                            xattr.Parent.To<IXBoundViewObject>() is IXBoundViewObject plusminusView)
-                        {
-                            switch (plusMinus)
-                            {
-                                case PlusMinus.Collapsed:
-                                    break;
-                                case PlusMinus.Partial:
-                                    break;
-                                case PlusMinus.Expanded:
-                                    break;
-                                case PlusMinus.Leaf:
-                                    break;
-                                case PlusMinus.Auto:
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                        break;
-                    case nameof(StdAttributeNameXBoundViewObject.isvisible):
-                        if (xattr.Parent.TryGetAttributeValue(out IsVisible isvisible) &&
-                            xattr.Parent.To<IXBoundViewObject>() is IXBoundViewObject isvisibleView)
-                        {
-                            //IsVisible = bool.Parse(isvisible.ToString());
-                        }
-                        else
-                        {
-                            xattr.Parent.SetAttributeValueNull<IsVisible>();
-                        }
-                        break;
-                }
-            }
-        }
-        public int Indent { get; }
-
-        public override XElement InitXEL(XElement xel)
-        {
-            if (xel.Parent != null)
-            {
-                throw new InvalidOperationException("The receiver must be a root element.");
-            }
-            return base.InitXEL(xel);
-        }
     }
 
     /// <summary>
@@ -215,5 +224,33 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 
         private readonly object _dataSource;
         public T GetDatabaseConnection<T>() => (T)_dataSource;
+    }
+    public class ViewContext : XBoundObjectImplementer
+    {
+        public int Indent { get; }
+        public ViewContext(int indent) => Indent = indent;
+        public ViewContext(XElement xel, int indent)
+            : this(indent) => InitXEL(xel);
+        public override XElement InitXEL(XElement xel)
+        {
+            if (xel.Parent != null)
+            {
+                throw new InvalidOperationException("The receiver must be a root element.");
+            }
+            return base.InitXEL(xel);
+        }
+        protected override void OnAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e)
+        {
+            base.OnAttributeChanged(xattr, e);
+            switch (xattr.Name.LocalName)
+            {
+                case nameof(StdAttributeNameXBoundViewObject.plusminus):
+                    Debug.Fail("Unexpected because this should be a root node.");
+                    break;
+                case nameof(StdAttributeNameXBoundViewObject.isvisible):
+                    Debug.Fail("Unexpected because this should be a root node.");
+                    break;
+            }
+        }
     }
 }
