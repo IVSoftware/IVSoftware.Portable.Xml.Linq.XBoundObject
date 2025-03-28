@@ -54,5 +54,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// <param name="pathAttribute">Optional enum specifying the attribute used to build the path; defaults to user-defined enum or null.</param>
         /// <returns>The <see cref="PlusMinus"/> after the operation.</returns>
         PlusMinus Collapse(string path, Enum pathAttribute = null);
+
+        PlusMinus PlusMinus { get; }
+        bool IsVisible { get; }
     }
 }

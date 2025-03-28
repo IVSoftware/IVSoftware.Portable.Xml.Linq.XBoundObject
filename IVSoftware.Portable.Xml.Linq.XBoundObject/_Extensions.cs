@@ -470,6 +470,23 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         }
 
         /// <summary>
+        /// Sets an attribute using the enum's type name or a custom name specified via [PlacementAttribute] as the attribute name,
+        /// and the enum value as the attribute value. Uses XBoundAttribute if [Placement] specifies UseXBoundAttribute.
+        /// </summary>
+        public static void SetAttributeValueNull<T>(this XElement @this, bool useLowerCaseName = true)
+            where T : struct, Enum
+        {
+            var type = typeof(T);
+            PlacementAttribute pattr = @type.GetCustomAttribute<PlacementAttribute>();
+            @this
+            .SetAttributeValue(
+                useLowerCaseName
+                ? pattr?.Name?.ToLower() ?? type.Name.ToLower()
+                : pattr?.Name ?? type.Name,
+                null);
+        }
+
+        /// <summary>
         /// Creates a shallow copy of the given XElement, preserving only its name and attributes,
         /// but excluding its child elements.
         /// </summary>

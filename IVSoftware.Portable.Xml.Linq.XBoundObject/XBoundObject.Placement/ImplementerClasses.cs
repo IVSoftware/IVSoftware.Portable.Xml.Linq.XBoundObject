@@ -53,10 +53,84 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             throw new NotImplementedException();
         }
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        public event PropertyChangedEventHandler PropertyChanged;
+        /// <summary>
+        /// If XAttribute is not present, default to false
+        /// </summary>
+        public bool IsVisible
+        {
+            get => _isVisible;
+            set
+            {
+                if (!Equals(_isVisible, value))
+                {
+                    _isVisible = value;
+                    if (value && XEL.Parent?.Parent != null)
+                    {
+                        // Set Parent visible first (single recursive).
+                        XEL.Parent.SetAttributeValue(nameof(StdAttributeNameXBoundViewObject.isvisible), bool.TrueString);
+                    }
+                    if (value)
+                    {
+                        XEL.SetAttributeValue(Placement.IsVisible.True);
+                    }
+                    else
+                    {
+                        XEL.SetAttributeValue(null);
+                    }
+                    OnPropertyChanged();
+                }
+            }
+        }
+        bool _isVisible;
 
+        /// <summary>
+        /// If XAttribute is not present, default to PlusMinus.Leaf
+        /// </summary>
+        public PlusMinus PlusMinus
+        {
+            get => _plusMinus;
+            set
+            {
+                if (value == PlusMinus.Auto)
+                {
+                    if (XEL.Parent?.Parent != null)
+                    {
+                        XEL.Parent.SetAttributeValue(PlusMinus.Auto);
+                    }
+                    var elements = XEL.Elements().ToArray();
+                    var elementsCount = elements.Length;
+                    var visibleCount =
+                        elements
+                        .Count(_ =>
+                            _
+                            .Attribute(nameof(StdAttributeNameXBoundViewObject.isvisible))
+                            ?.Value.ToLower() == "true");
+                    if (elements.Any())
+                    {
+                        if (elementsCount == visibleCount)
+                        {
+                            _plusMinus = PlusMinus.Expanded;
+                        }
+                        else
+                        {
+                            _plusMinus = PlusMinus.Partial;
+                        }
+                    }
+                    else
+                    {
+                        _plusMinus = PlusMinus.Leaf;
+                    }
+#if false
+#endif
+                }
+                if (!Equals(PlusMinus, value))
+                {
+                    PlusMinus = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        PlusMinus _plusMinus = PlusMinus.Leaf;
     }
     public class ViewContext : XBoundObjectImplementer
     {
@@ -78,10 +152,36 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 switch (xattr.Name.LocalName)
                 {
                     case nameof(StdAttributeNameXBoundViewObject.plusminus):
-                        OnPropertyChanged(nameof(PlusMinus));
+                        if( xattr.Parent.TryGetAttributeValue(out PlusMinus plusMinus) &&
+                            xattr.Parent.To<IXBoundViewObject>() is IXBoundViewObject plusminusView)
+                        {
+                            switch (plusMinus)
+                            {
+                                case PlusMinus.Collapsed:
+                                    break;
+                                case PlusMinus.Partial:
+                                    break;
+                                case PlusMinus.Expanded:
+                                    break;
+                                case PlusMinus.Leaf:
+                                    break;
+                                case PlusMinus.Auto:
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
                         break;
                     case nameof(StdAttributeNameXBoundViewObject.isvisible):
-                        OnPropertyChanged(nameof(IsVisible));
+                        if (xattr.Parent.TryGetAttributeValue(out IsVisible isvisible) &&
+                            xattr.Parent.To<IXBoundViewObject>() is IXBoundViewObject isvisibleView)
+                        {
+                            //IsVisible = bool.Parse(isvisible.ToString());
+                        }
+                        else
+                        {
+                            xattr.Parent.SetAttributeValueNull<IsVisible>();
+                        }
                         break;
                 }
             }
@@ -95,93 +195,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 throw new InvalidOperationException("The receiver must be a root element.");
             }
             return base.InitXEL(xel);
-        }
-
-        /// <summary>
-        /// If XAttribute is not present, default to false
-        /// </summary>
-        public bool IsVisible
-        {
-            get
-            {
-                var value = XEL.TryGetAttributeValue(out IsVisible visibility)
-                ? bool.Parse(visibility.ToString())
-                : false;
-                if (value && XEL.Parent?.Parent != null)
-                {
-                    // Parents are all visible.
-                    XEL.Parent.SetAttributeValue(nameof(StdAttributeNameXBoundViewObject.isvisible), bool.TrueString);
-                }
-                return value;
-            }
-            set
-            {
-                if (!Equals(IsVisible, value))
-                {
-                    if (value)
-                    {
-                        XEL.SetAttributeValue(nameof(StdAttributeNameXBoundViewObject.isvisible), bool.TrueString);
-                    }
-                    else
-                    {
-                        XEL.SetAttributeValue(null);
-                    }
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        /// <summary>
-        /// If XAttribute is not present, default to PlusMinus.Leaf
-        /// </summary>
-        public PlusMinus PlusMinus
-        {
-            get
-            {
-                // The value of PlusMinus.Auto is never returned!
-                var value = XEL.TryGetAttributeValue(out PlusMinus plusMinus)
-                ? plusMinus
-                : PlusMinus.Leaf;
-                if (value == PlusMinus.Auto)
-                {
-                    if (XEL.Parent?.Parent != null)
-                    {
-                        XEL.Parent.SetAttributeValue(PlusMinus.Auto);
-                    }
-                    var elements = XEL.Elements().ToArray();
-                    var elementsCount = elements.Length;
-                    var visibleCount =
-                        elements
-                        .Count(_ =>
-                            _
-                            .Attribute(nameof(StdAttributeNameXBoundViewObject.isvisible))
-                            ?.Value.ToLower() == "true");
-                    if (elements.Any())
-                    {
-                        if (elementsCount == visibleCount)
-                        {
-                            XEL.SetAttributeValue(PlusMinus.Expanded);
-                        }
-                        else
-                        {
-                            XEL.SetAttributeValue(PlusMinus.Partial);
-                        }
-                    }
-                    else
-                    {
-                        XEL.SetAttributeValue(PlusMinus.Leaf);
-                    }
-                }
-                return value;
-            }
-            set
-            {
-                if (!Equals(PlusMinus, value))
-                {
-                    PlusMinus = value;
-                    OnPropertyChanged();
-                }
-            }
         }
     }
 
