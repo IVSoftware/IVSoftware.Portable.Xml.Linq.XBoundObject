@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -412,7 +413,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// <param name="onIterate">Optional handler invoked during path traversal.</param>
         /// <returns>The located or newly created <see cref="XElement"/>.</returns>
 
-        public static XElement FindOrReplace(
+        public static XElement FindOrCreate(
                 this XElement @this,
                 string path,
                 Enum pathAttribute = null,
@@ -445,7 +446,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// <param name="onAfterAdd">Optional handler invoked after adding a new element.</param>
         /// <param name="onIterate">Optional handler invoked during path traversal.</param>
         /// <returns>The bound object of type <typeparamref name="T"/> or null if not found.</returns>
-        public static T FindOrReplace<T>(
+        public static T FindOrCreate<T>(
                 this XElement @this,
                 string path,
                 Enum pathAttribute = null,
@@ -484,19 +485,50 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public static XElement Show(
                 this XElement @this,
                 string path,
-                Enum pathAttribute = null) 
+                Enum pathAttribute = null,
+                PlacerMode mode = PlacerMode.FindOrCreate)
         {
-            if(FindOrReplace(
+            pathAttribute = pathAttribute ?? StdAttributeNameInternal.text;
+
+            // Use Placer instance (instead of FindOrCreate) in
+            // order to to support the 'mode' argument.
+            var placer = new Placer(
+                @this,
+                path,
+                onBeforeAdd: (sender, e) =>
+                {
+                    @this.internalOnBeforeAddViewObject(e);
+                },
+                pathAttributeName: pathAttribute?.ToString(),
+                mode: mode
+            );
+            if (placer.XResult is XElement xel)
+            {
+                xel.To<IXBoundViewObject>(@throw: true).IsVisible = true;
+            }
+            return placer.XResult;
+#if false
+            {
+                if(FindOrCreate(
                 @this,
                 path,
                 pathAttribute,
                 onBeforeAdd: (sender, e) =>
                 {
                     if (!e.Xel.Has<IXBoundViewObject>())
-                    {                       
-                        e.Xel.SetBoundAttributeValue(
-                            new XBoundViewObjectImplementer(e.Xel),
-                            name: nameof(StdAttributeNameXBoundViewObject.datamodel));
+                    {
+                        if (e.Xel.Ancestors().Last()?.To<ViewContext>() is ViewContext context &&
+                            context.Items is IList items &&
+                            items.GetType().GetGenericArguments().SingleOrDefault() is object o)
+                        {
+
+                        }
+                        else
+                        {
+                            e.Xel.SetBoundAttributeValue(
+                                new XBoundViewObjectImplementer(e.Xel),
+                                name: nameof(StdAttributeNameXBoundViewObject.datamodel));
+                        }
                     }
                 }) is XElement xel)
             {
@@ -508,8 +540,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 Debug.Fail("Expecting no-fail create.");
                 return null;
             }
+#endif
         }
-
+#if false
         /// <summary>
         /// Retrieves the <see cref="XElement"/> at the specified <paramref name="path"/>, 
         /// ensuring it is bound and visible. If the element lacks an <see cref="IXBoundViewObject"/> 
@@ -521,7 +554,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 Enum pathAttribute = null)
             where T : IXBoundViewObject, new()
         {
-            if(FindOrReplace(
+            if(FindOrCreate(
                 @this,
                 path,
                 pathAttribute,
@@ -541,6 +574,85 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 Debug.Fail("Expecting no-fail create.");
                 return null;
             }
+        }
+
+#endif
+
+        /// <summary>
+        /// Expands the element at the specified path using the given <paramref name="mode"/> to locate or create it.
+        /// </summary>
+        /// <param name="path">The hierarchical path to the element.</param>
+        /// <param name="pathAttribute">Optional enum specifying the attribute used to build the path; defaults to user-defined enum or null.</param>
+        /// <param name="mode">
+        /// Determines how the target element is located:
+        /// <see cref="PlacerMode.FindOrCreate"/> to create missing elements,
+        /// <see cref="PlacerMode.FindOrThrow"/> to throw if not found,
+        /// <see cref="PlacerMode.FindOrAssert"/> to assert failure if not found.
+        /// </param>
+        /// <returns>The <see cref="XElement"/> after the operation.</returns>
+        public static XElement Expand(
+                this XElement @this,
+                string path,
+                Enum pathAttribute = null,
+                PlacerMode mode = PlacerMode.FindOrCreate)
+        {
+            pathAttribute = pathAttribute ?? StdAttributeNameInternal.text;
+
+            // Use Placer instance (instead of FindOrCreate) in
+            // order to to support the 'mode' argument.
+            var placer = new Placer(
+                @this,
+                path,
+                onBeforeAdd: (sender, e) =>
+                {
+                    @this.internalOnBeforeAddViewObject(e);
+                },
+                pathAttributeName: pathAttribute.ToString(),
+                mode: mode);
+            if(placer.XResult is XElement xel)
+            {
+                throw new NotImplementedException();
+            }
+            return placer.XResult;
+        }
+
+        /// <summary>
+        /// Collapses the element at the specified path using the given <paramref name="mode"/> to locate or create it.
+        /// </summary>
+        /// <param name="path">The hierarchical path to the element.</param>
+        /// <param name="pathAttribute">Optional enum specifying the attribute used to build the path; defaults to user-defined enum or null.</param>
+        /// <param name="mode">
+        /// Determines how the target element is located:
+        /// <see cref="PlacerMode.FindOrPartial"/> to allow partial matches,
+        /// <see cref="PlacerMode.FindOrCreate"/> to create missing elements,
+        /// <see cref="PlacerMode.FindOrThrow"/> to throw if not found,
+        /// <see cref="PlacerMode.FindOrAssert"/> to assert failure if not found.
+        /// </param>
+        /// <returns>The <see cref="XElement"/> after the operation.</returns>
+        public static XElement Collapse(
+                this XElement @this,
+                string path,
+                Enum pathAttribute = null,
+                PlacerMode mode = PlacerMode.FindOrCreate)
+        {
+            pathAttribute = pathAttribute ?? StdAttributeNameInternal.text;
+
+            // Use Placer instance (instead of FindOrCreate) in
+            // order to to support the 'mode' argument.
+            var placer = new Placer(
+                @this,
+                path,
+                onBeforeAdd: (sender, e) =>
+                {
+                    @this.internalOnBeforeAddViewObject(e);
+                },
+                pathAttributeName: pathAttribute.ToString(),
+                mode: mode);
+            if (placer.XResult is XElement xel)
+            {
+                throw new NotImplementedException();
+            }
+            return placer.XResult;
         }
 
         /// <summary>
@@ -656,6 +768,35 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             string path,
             params object[] args)
             => source.Place(path, out XElement _, args);
+
+
+        private static void internalOnBeforeAddViewObject(this XElement @this, AddEventArgs e)
+        {
+            if (!e.Xel.Has<IXBoundViewObject>())
+            {
+                // [Careful] Use @this or other parented node, not the aspirant!
+                if (@this.AncestorsAndSelf().Last()?.To<ViewContext>() is ViewContext context &&
+                    context.Items is IList items &&
+                    items.GetType().GetGenericArguments().SingleOrDefault() is Type type)
+                {
+                    if (Activator.CreateInstance(type) is IXBoundObject xbo)
+                    {
+                        xbo.InitXEL(e.Xel);
+                        e.Xel.SetBoundAttributeValue(
+                            xbo,
+                            name: nameof(StdAttributeNameXBoundViewObject.datamodel));
+                    }
+                    else Debug.Fail($"Expecting successful creation of type '{type.Name}'");
+                }
+                else
+                {
+                    e.Xel.SetBoundAttributeValue(
+                        new XBoundViewObjectImplementer(e.Xel),
+                        name: nameof(StdAttributeNameXBoundViewObject.datamodel));
+                }
+            }
+        }
+
     }
     static partial class ExtensionsInternal
     {
@@ -701,14 +842,14 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     {
         public static XElement UseXBoundView(
             this XElement @this,
-            INotifyCollectionChanged items,
+            IList items = null,
             int indent = 10)
         {
             if (@this.Parent != null)
             {
                 throw new InvalidOperationException("The receiver must be a root element.");
             }
-            @this.SetBoundAttributeValue(new ViewContext(@this, indent));
+            @this.SetBoundAttributeValue(new ViewContext(@this, items, indent));
             return @this;
         }
     }

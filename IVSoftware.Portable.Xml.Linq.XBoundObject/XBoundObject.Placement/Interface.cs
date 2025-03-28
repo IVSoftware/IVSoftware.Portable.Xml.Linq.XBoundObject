@@ -31,31 +31,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     /// </summary>
     public interface IXBoundViewObject : IXBoundObject
     {
-        /// <summary>
-        /// Displays the element at the specified path.
-        /// </summary>
-        /// <param name="path">The hierarchical path to the element.</param>
-        /// <param name="pathAttribute">Optional enum specifying the attribute used to build the path; defaults to user-defined enum or null.</param>
-        /// <returns>The <see cref="XElement"/> at the specified path.</returns>
-        XElement Show(string path, Enum pathAttribute = null);
-
-        /// <summary>
-        /// Expands the element at the specified path.
-        /// </summary>
-        /// <param name="path">The hierarchical path to the element.</param>
-        /// <param name="pathAttribute">Optional enum specifying the attribute used to build the path; defaults to user-defined enum or null.</param>
-        /// <returns>The <see cref="PlusMinus"/> after the operation.</returns>
-        PlusMinus Expand(string path, Enum pathAttribute = null);
-
-        /// <summary>
-        /// Collapses the element at the specified path.
-        /// </summary>
-        /// <param name="path">The hierarchical path to the element.</param>
-        /// <param name="pathAttribute">Optional enum specifying the attribute used to build the path; defaults to user-defined enum or null.</param>
-        /// <returns>The <see cref="PlusMinus"/> after the operation.</returns>
-        PlusMinus Collapse(string path, Enum pathAttribute = null);
-
-        PlusMinus PlusMinus { get; }
-        bool IsVisible { get; }
+        bool IsVisible { get; set; }
+        PlusMinus PlusMinus { get; set; }
     }
 }

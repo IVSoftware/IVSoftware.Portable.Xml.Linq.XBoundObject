@@ -112,20 +112,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     break;
             }
         }
-        public PlusMinus Collapse(string path, Enum pathAttribute = null)
-        {
-            throw new NotImplementedException();
-        }
 
-        public PlusMinus Expand(string path, Enum pathAttribute = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public XElement Show(string path, Enum pathAttribute = null)
-        {
-            throw new NotImplementedException();
-        }
 
         /// <summary>
         /// If XAttribute is not present, default to false

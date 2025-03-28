@@ -13,8 +13,8 @@ public class TestClass_XBoundViewObject
     public void Test_PlusMinus()
     {
         string actual, expected;
-        var items = new ObservableCollection<Item>()
-        var xroot = new XElement("root").UseXBoundView();
+        var items = new ObservableCollection<Item>();
+        var xroot = new XElement("root").UseXBoundView(items);
 
         // WinOS path in a WinOS test.
         var path =
@@ -23,24 +23,26 @@ public class TestClass_XBoundViewObject
 
         actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
         actual.ToClipboard();
-        actual.ToClipboardAssert();
+        actual.ToClipboardExpected();
         { }
+
         expected = @" 
 <root viewcontext=""[ViewContext]"">
-  <xnode text=""C:"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[XBoundViewObjectImplementer]"">
-    <xnode text=""Github"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[XBoundViewObjectImplementer]"">
-      <xnode text=""IVSoftware"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[XBoundViewObjectImplementer]"">
-        <xnode text=""Demo"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[XBoundViewObjectImplementer]"">
-          <xnode text=""IVSoftware.Demo.CrossPlatform.FilesAndFolders"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[XBoundViewObjectImplementer]"">
-            <xnode text=""BasicPlacement.Maui"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[XBoundViewObjectImplementer]"">
-              <xnode text=""BasicPlacement.Maui.csproj"" isvisible=""True"" datamodel=""[XBoundViewObjectImplementer]"" />
+  <xnode text=""C:"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+    <xnode text=""Github"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+      <xnode text=""IVSoftware"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+        <xnode text=""Demo"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+          <xnode text=""IVSoftware.Demo.CrossPlatform.FilesAndFolders"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+            <xnode text=""BasicPlacement.Maui"" isvisible=""True"" plusminus=""Partial"" datamodel=""[Item]"">
+              <xnode text=""BasicPlacement.Maui.csproj"" datamodel=""[Item]"" />
             </xnode>
           </xnode>
         </xnode>
       </xnode>
     </xnode>
   </xnode>
-</root>";
+</root>"
+        ;
 
         Assert.AreEqual(
             expected.NormalizeResult(),
