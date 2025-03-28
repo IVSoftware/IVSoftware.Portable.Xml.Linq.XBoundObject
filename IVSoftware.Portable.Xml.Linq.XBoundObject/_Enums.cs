@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
+using System;
 using System.ComponentModel;
 
 namespace IVSoftware.Portable.Xml.Linq
@@ -75,5 +76,51 @@ namespace IVSoftware.Portable.Xml.Linq
         FoundOne,
         FoundNone,
         FoundMany,
+    }
+
+    /// <summary>
+    /// Represents the expansion state of a view element.
+    /// </summary>
+    [Placement(EnumPlacement.UseXAttribute)]
+    public enum PlusMinus
+    {
+        /// <summary>
+        /// All child elements are collapsed.
+        /// </summary>
+        Collapsed,
+
+        /// <summary>
+        /// Expanded, but not all child elements are visible.
+        /// </summary>
+        Partial,
+
+        /// <summary>
+        /// All child elements are visible.
+        /// </summary>
+        Expanded,
+
+        /// <summary>
+        /// No child elements exist.
+        /// </summary>
+        Leaf,
+
+        /// <summary>
+        /// Transitive state that results in stable
+        /// expanded state based on visible children.
+        /// </summary>
+        Auto,
+    }
+
+    [Placement(EnumPlacement.UseXAttribute)]
+    public enum Visibility
+    {
+        True,
+        False,
+    }
+    enum StdAttributeNameInternal
+    { 
+        text,
+        visibility,
+        plusminus,
     }
 }

@@ -482,8 +482,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         {
             if(FindOrReplace(@this, path, pathAttribute) is XElement xel)
             {
-                xel.SetAttributeValue(VisibleState.True);
-                xel.Parent?.SetAttributeValue(ExpandedState.Auto);
+                xel.SetAttributeValue(Visibility.True);
+                xel.Parent?.SetAttributeValue(PlusMinus.Auto);
                 return xel;
             }
             else

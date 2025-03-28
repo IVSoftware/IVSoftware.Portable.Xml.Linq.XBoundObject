@@ -10,7 +10,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     /// Interface for objects bound to an <see cref="XElement"/>.
     /// Provides access to the bound element and a method to initialize it once.
     /// </summary>
-    public interface IXBoundObject
+    public interface IXBoundObject : INotifyPropertyChanged
     {
         /// <summary>
         /// Gets the bound <see cref="XElement"/> instance.
@@ -27,49 +27,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     }
 
     /// <summary>
-    /// Represents the expansion state of a view element.
-    /// </summary>
-    [Placement(EnumPlacement.UseXAttribute, name:"expanded")]
-    public enum ExpandedState
-    {
-        /// <summary>
-        /// All child elements are collapsed.
-        /// </summary>
-        Collapsed,
-
-        /// <summary>
-        /// Expanded, but not all child elements are visible.
-        /// </summary>
-        Partial,
-
-        /// <summary>
-        /// All child elements are visible.
-        /// </summary>
-        Expanded,
-
-        /// <summary>
-        /// No child elements exist.
-        /// </summary>
-        Leaf,
-
-        /// <summary>
-        /// Transitive state that results in stable
-        /// expanded state based on visible children.
-        /// </summary>
-        Auto,
-    }
-
-    [Placement(EnumPlacement.UseXAttribute, name:"isvisible")]
-    public enum VisibleState
-    {
-        True, 
-        False,
-    }
-
-    /// <summary>
     /// Interface for view objects bound to an <see cref="XElement"/>, supporting expansion and display operations.
     /// </summary>
-    public interface IXBoundViewObject : IXBoundObject, INotifyPropertyChanged
+    public interface IXBoundViewObject : IXBoundObject
     {
         /// <summary>
         /// Displays the element at the specified path.
@@ -84,15 +44,15 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// </summary>
         /// <param name="path">The hierarchical path to the element.</param>
         /// <param name="pathAttribute">Optional enum specifying the attribute used to build the path; defaults to user-defined enum or null.</param>
-        /// <returns>The <see cref="ExpandedState"/> after the operation.</returns>
-        ExpandedState Expand(string path, Enum pathAttribute = null);
+        /// <returns>The <see cref="PlusMinus"/> after the operation.</returns>
+        PlusMinus Expand(string path, Enum pathAttribute = null);
 
         /// <summary>
         /// Collapses the element at the specified path.
         /// </summary>
         /// <param name="path">The hierarchical path to the element.</param>
         /// <param name="pathAttribute">Optional enum specifying the attribute used to build the path; defaults to user-defined enum or null.</param>
-        /// <returns>The <see cref="ExpandedState"/> after the operation.</returns>
-        ExpandedState Collapse(string path, Enum pathAttribute = null);
+        /// <returns>The <see cref="PlusMinus"/> after the operation.</returns>
+        PlusMinus Collapse(string path, Enum pathAttribute = null);
     }
 }

@@ -31,16 +31,18 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             }
             return _xel;
         }
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        public event PropertyChangedEventHandler PropertyChanged;
     }
     public class XBoundViewObjectImplementer : XBoundObjectImplementer, IXBoundViewObject
     {
-
-        public ExpandedState Collapse(string path, Enum pathAttribute = null)
+        public PlusMinus Collapse(string path, Enum pathAttribute = null)
         {
             throw new NotImplementedException();
         }
 
-        public ExpandedState Expand(string path, Enum pathAttribute = null)
+        public PlusMinus Expand(string path, Enum pathAttribute = null)
         {
             throw new NotImplementedException();
         }
@@ -64,76 +66,21 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             : this(indent)
         {
             InitXEL(xel);
-            xel.Changing += onChanging;
-            xel.Changed += onChanged;
+            xel.Changing += onXObjectChange;
+            xel.Changed += onXObjectChange;
         }
-
-        private void onChanging(object sender, XObjectChangeEventArgs e)
+        private void onXObjectChange(object sender, XObjectChangeEventArgs e) 
         {
-            switch(sender)
+            if(sender is XAttribute xattr && xattr.Parent != null)
             {
-                case XAttribute xattr:
-                    if(xattr.Parent is XElement)
-                    {
-                        onXAttributeChange(xattr.Parent, xattr, e);
-                    }
-                    break;
-                case XElement xel:
-                    if (xel.Parent is XElement)
-                    {
-                        onXElementChange(xel, xel.Parent, e);
-                    }
-                    break;
-            }
-        }
-
-        private void onChanged(object sender, XObjectChangeEventArgs e)
-        {
-            switch (sender)
-            {
-                case XAttribute xattr:
-                    if (xattr.Parent is XElement)
-                    {
-                        onXAttributeChange(xattr.Parent, xattr, e);
-                    }
-                    break;
-                case XElement xel:
-                    if (xel.Parent is XElement)
-                    {
-                        onXElementChange(xel, xel.Parent, e);
-                    }
-                    break;
-            }
-        }
-
-        private void onXAttributeChange(XElement xel, XAttribute xattr, XObjectChangeEventArgs e)
-        {
-            switch (e.ObjectChange)
-            {
-                case XObjectChange.Add:
-                    break;
-                case XObjectChange.Name:
-                    break;
-                case XObjectChange.Remove:
-                    break;
-                case XObjectChange.Value:
-                    break;
-                default: throw new NotImplementedException();
-            }
-        }
-        void onXElementChange(XElement xel, XElement pxel, XObjectChangeEventArgs e)
-        {
-            switch (e.ObjectChange)
-            {
-                case XObjectChange.Add:
-                    break;
-                case XObjectChange.Name:
-                    break;
-                case XObjectChange.Remove:
-                    break;
-                case XObjectChange.Value:
-                    break;
-                default: throw new NotImplementedException();
+                // XAttribute has a parent and is therefore actionable.
+                switch (xattr.Name.LocalName)
+                {
+                    case nameof(StdAttributeNameInternal.plusminus):
+                        break;
+                    case nameof(StdAttributeNameInternal.visibility):
+                        break;
+                }
             }
         }
         public int Indent { get; }
@@ -145,6 +92,28 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 throw new InvalidOperationException("The receiver must be a root element.");
             }
             return base.InitXEL(xel);
+        }
+        public bool IsVisible
+        {
+            get =>
+                XEL.TryGetAttributeValue(out Visibility visibility) 
+                ? bool.Parse(visibility.ToString()) 
+                : false;
+            set
+            {
+                if (!Equals(IsVisible, value))
+                {
+                    if (value)
+                    {
+                        XEL.SetAttributeValue(Visibility.True);
+                    }
+                    else
+                    {
+                        XEL.SetAttributeValue(null);
+                    }
+                    OnPropertyChanged();
+                }
+            }
         }
     }
 
