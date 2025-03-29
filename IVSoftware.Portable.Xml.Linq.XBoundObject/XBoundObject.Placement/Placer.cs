@@ -472,7 +472,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             {
                 if (!e.Xel.Has<T>())
                 {
-                    e.Xel.SetBoundAttributeValue(new T().InitXEL(e.Xel));
+                    var t = new T();
+                    t.InitXEL(e.Xel);
+                    e.Xel.SetBoundAttributeValue(t);
                 }
                 onBeforeAdd?.Invoke( sender, e );
             }
@@ -651,11 +653,17 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 mode: mode);
             if (placer.XResult is XElement xel)
             {
-                foreach (var desc in xel.Descendants().Reverse())
+                foreach (
+                    var xbvo in 
+                    xel
+                    .Descendants()
+                    .Reverse()
+                    .Select(_=>_.To<IXBoundViewObject>())
+                    .Where(_=>_ != null))
                 {
-                    desc.SetAttributeValueNull<IsVisible>();
+                    xbvo.IsVisible = false;
                 }
-                xel.SetAttributeValue(PlusMinus.Collapsed);
+                xel.To<IXBoundViewObject>(@throw: true).PlusMinus = PlusMinus.Collapsed;
             }
             return placer.XResult;
         }

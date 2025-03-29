@@ -477,13 +477,20 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             where T : struct, Enum
         {
             var type = typeof(T);
-            PlacementAttribute pattr = @type.GetCustomAttribute<PlacementAttribute>();
-            @this
-            .SetAttributeValue(
-                useLowerCaseName
-                ? pattr?.Name?.ToLower() ?? type.Name.ToLower()
-                : pattr?.Name ?? type.Name,
-                null);
+            string name;
+            if (@type.GetCustomAttribute<PlacementAttribute>() is PlacementAttribute pattr &&
+                pattr.Name is string)
+            {
+                name = pattr.Name;
+            }
+            else
+            {
+                name =
+                    useLowerCaseName
+                    ? type.Name.ToLower()
+                    : type.Name;
+            }
+            @this.SetAttributeValue(name, null);
         }
 
         /// <summary>
@@ -581,5 +588,36 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         internal static bool IsSorting { get; private set; }
         internal static string InvalidOperationNotFoundMessage<T>() => $"No valid {typeof(T).Name} found. To handle cases where an enum attribute might not exist, use a nullable version: To<{typeof(T).Name}?>() or check @this.Has<{typeof(T).Name}>() first.";
         internal static string InvalidOperationMultipleFoundMessage<T>() => $@"Multiple valid {typeof(T).Name} found. To disambiguate them, obtain the attribute by name: Attributes().OfType<XBoundAttribute>().Single(_=>_.name=""targetName""";
+
+        /// <summary>
+        /// Recursively sorts the child elements of all descendant nodes within the given <see cref="XElement"/>.
+        /// </summary>
+        /// <param name="comparer">
+        /// Optional comparer used to sort the child elements. If null, a default comparer is used that performs no reordering.
+        /// </param>
+        /// <remarks>
+        /// Each descendant's direct children are collected, sorted, and re-added in order.
+        /// The default comparer may be customized to provide meaningful ordering.
+        /// </remarks>
+        public static void Sort(this XElement @this, IComparer<XElement> comparer = null)
+        {
+            comparer = comparer ?? Comparer<XElement>.Create(localDefaultComparer);
+            foreach (var xel in @this.DescendantsAndSelf())
+            {
+                var xels = xel.Elements().ToList();
+                xel.RemoveNodes();
+                xels.Sort(comparer);
+                xel.Add(xels);
+            }
+
+            int localDefaultComparer(XElement a, XElement b)
+                =>( a
+                    .Attribute(nameof(StdAttributeNameInternal.text))
+                    ?.Value ?? string.Empty)
+                    .CompareTo(
+                    b
+                    .Attribute(nameof(StdAttributeNameInternal.text))
+                    ?.Value ?? string.Empty);
+        }
     }
 }

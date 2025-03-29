@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -11,8 +13,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 {
     public class XBoundObjectImplementer : IXBoundObject
     {
-        bool _reentrancyCheck = false;
-        object _lock = new object();
         public XBoundObjectImplementer() { }
         public XBoundObjectImplementer(XElement xel) => InitXEL(xel);
         public XElement XEL => _xel;
@@ -34,23 +34,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     }
                     if (sender is XAttribute xattr && ReferenceEquals(xattr.Parent, XEL))
                     {
-                        // Actionable change to one of "this" objects attributes.
-                        lock (_lock)
-                        {
-                            if (_reentrancyCheck)
-                            {
-                                return;
-                            }
-                            try
-                            {
-                                _reentrancyCheck = true;
-                                OnAttributeChanged(xattr, e);
-                            }
-                            finally
-                            {
-                                _reentrancyCheck = false;
-                            }
-                        }
+                        OnAttributeChanged(xattr, e);
                     }
                 }
                 #endregion L o c a l F x
@@ -89,6 +73,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// </remarks>
         protected override void OnAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e)
         {
+            return;
             base.OnAttributeChanged(xattr, e);
 
             if (e.ObjectChange == XObjectChange.Remove)
@@ -140,39 +125,45 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// </summary>
         public bool IsVisible
         {
-            get => _isVisible;
+            get => 
+                XEL.TryGetAttributeValue(out IsVisible enumValue)
+                ? bool.Parse(enumValue.ToString())
+                : false;
             set
             {
-                if (!Equals(_isVisible, value))
+                if (!Equals(IsVisible, value))
                 {
-                    _isVisible = value;
                     if (value)
                     {
                         XEL.SetAttributeValue(Placement.IsVisible.True);
-                        // For 'True' only, parent nodes must take on isvisible also.
-                        // [Careful] Exclude the root node!
-                        if (XEL.Parent is XElement pxel && pxel.Parent != null)
+                        // For 'True' only, parent nodes become visible also.
+                        if (XEL.Parent?.To<IXBoundViewObject>() is IXBoundViewObject pxbo)
                         {
-                            pxel.SetAttributeValue(Placement.IsVisible.True);
-                            pxel.SetAttributeValue(Placement.PlusMinus.Auto);
+                            // [Careful]
+                            // These must be set as INPC Properties not as XATTR!
+                            pxbo.IsVisible = true;
+                            pxbo.PlusMinus = PlusMinus.Auto;
                         }
                     }
                     else
                     {
                         XEL.SetAttributeValueNull<Placement.PlusMinus>();
+                        XEL.SetAttributeValueNull<Placement.IsVisible>();
                     }
                     OnPropertyChanged();
                 }
             }
         }
-        bool _isVisible;
 
         /// <summary>
         /// If XAttribute is not present, default to PlusMinus.Leaf
         /// </summary>
         public PlusMinus PlusMinus
         {
-            get => _plusMinus;
+            get => 
+                XEL.TryGetAttributeValue(out PlusMinus value)
+                ? value
+                : PlusMinus.Leaf;
             set
             {
                 if (!Equals(PlusMinus, value))
@@ -198,30 +189,26 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                         {
                             if (elementsCount == visibleCount)
                             {
-                                _plusMinus = PlusMinus.Expanded;
                                 XEL.SetAttributeValue(PlusMinus.Expanded);
                             }
                             else
                             {
-                                _plusMinus = PlusMinus.Partial;
                                 XEL.SetAttributeValue(PlusMinus.Partial);
                             }
                         }
                         else
                         {
-                            _plusMinus = PlusMinus.Leaf;
                             XEL.SetAttributeValue(PlusMinus.Leaf);
                         }
                     }
                     else
                     {
-                        _plusMinus = value;
+                        XEL.SetAttributeValue(value);
                     }
                     OnPropertyChanged();
                 }
             }
         }
-        PlusMinus _plusMinus = PlusMinus.Leaf;
     }
 
     /// <summary>
@@ -232,10 +219,55 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public int Indent { get; }
         public IList Items { get; }
 
+        private readonly Dictionary<XElement, IXBoundObject> _o1 = null;
+
         public ViewContext(IList items, int indent)
         {
             Indent = indent;
             Items = items;
+            if(Items is INotifyCollectionChanged incc)
+            {
+                _o1 = new Dictionary<XElement, IXBoundObject>();
+                incc.CollectionChanged += (sender, e) =>
+                {
+                    switch (e.Action)
+                    {
+                        case NotifyCollectionChangedAction.Add:
+                            localAdd();
+                            break;
+                        case NotifyCollectionChangedAction.Move:
+                            {   /* G T K */
+                                // N O O P
+                            }
+                            break;
+                        case NotifyCollectionChangedAction.Remove:
+                            localRemove();
+                            break;
+                        case NotifyCollectionChangedAction.Replace:
+                            localRemove();
+                            localAdd();
+                            break;
+                        case NotifyCollectionChangedAction.Reset:
+                            _o1.Clear();
+                            break;
+                        default: throw new NotImplementedException();
+                    }
+                    void localAdd()
+                    {
+                        foreach (IXBoundObject item in e.NewItems ?? Array.Empty<IXBoundObject>())
+                        {
+                            _o1[item.XEL] = item; 
+                        }
+                    }
+                    void localRemove()
+                    {
+                        foreach (IXBoundObject item in e.OldItems ?? Array.Empty< IXBoundObject>())
+                        {
+                            _o1.Remove(item.XEL);
+                        }
+                    }
+                };
+            }
         }
         public ViewContext(XElement xel, IList items, int indent)
             : this(items, indent) => InitXEL(xel);
@@ -291,6 +323,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                             }
                             else
                             {
+                                throw new NotImplementedException("TODO!");
                             }
                         }
                         else
@@ -308,43 +341,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     Items.RemoveAt(index);
                 }
             }
-#if false
-dynamic observable = Items;
-observable.Move(oldIndex, newIndex);
-
-
-            fileItem.PlusMinus = "-";
-            foreach (var xel in XRoot.VisibleElements())
-            {
-                var currentFileItem = xel.To<FileItem>();
-                var currentIndex = FileItems.IndexOf(currentFileItem);
-                if (index < FileItems.Count)
-                {
-                    var current = FileItems[index];
-                    if (ReferenceEquals(current, currentFileItem))
-                    {   /* G T K */
-                        // Item exists at the correct index.
-                    }
-                    else
-                    {
-                        if (currentIndex == -1)
-                        {
-                            FileItems.Insert(index, currentFileItem);
-                        }
-                        else
-                        {
-                            Debug.Fail("First Time! Make sure this works.");
-                            FileItems.Move(currentIndex, index);
-                        }
-                    }
-                }
-                else
-                {
-                    FileItems.Insert(index, currentFileItem);
-                }
-                index++;
-            }
-#endif
         }
 
         public string GetIndentedText(

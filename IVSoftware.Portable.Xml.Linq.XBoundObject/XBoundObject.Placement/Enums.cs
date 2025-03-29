@@ -37,6 +37,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// </summary>
         Auto,
     }
+
+    [Placement(EnumPlacement.UseXAttribute)]
     public enum StdAttributeNameXBoundViewObject
     {
         text,
@@ -45,6 +47,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         datamodel,
     }
 
+
+    [Placement(EnumPlacement.UseXAttribute)]
     internal enum StdAttributeNameInternal
     {
         text,
