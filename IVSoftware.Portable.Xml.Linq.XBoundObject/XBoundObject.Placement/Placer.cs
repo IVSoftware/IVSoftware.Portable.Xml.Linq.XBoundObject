@@ -904,12 +904,51 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 
     public static partial class Extensions
     {
+        /// <summary>
+        /// Configures an XElement as the root of a view-bound XML tree, enabling automatic synchronization 
+        /// with an optional IList and other view-model behaviors.
+        ///
+        /// This extension sets up a ViewContext for the given element, allowing:
+        /// - Automatic expansion and collapse tracking
+        /// - Visibility filtering
+        /// - Hierarchical indentation
+        /// - Automatic synchronization with an ObservableCollection<T>
+        /// - Optional sorting logic
+        ///
+        /// Default Sorting Behavior:
+        /// If a custom sorter is not provided and sorting is enabled:
+        /// - If the 'items' parameter can be evaluated as IList<T>, then:
+        ///     - If T implements IComparable<T>, sorting will use T.CompareTo.
+        ///     - Otherwise, elements are sorted by their "text" attribute alphanumerically.
+        /// - If 'items' is not provided, sorting falls back to alphanumeric ordering on the "text" attribute.
+        ///
+        /// Providing 'items' is optional. However, passing it enables automatic synchronization with the bound view model.
+        /// </summary>
+        /// <param name="this">The root XElement to bind. Must not have a parent element.</param>
+        /// <param name="items">
+        /// Optional backing list representing the visible view model items.
+        /// Should be an ObservableCollection<T> where T implements IXBoundViewObject.
+        /// </param>
+        /// <param name="indent">The number of spaces to indent per level. Default is 10.</param>
+        /// <param name="autoSyncEnabled">Whether to enable automatic list synchronization. Default is true.</param>
+        /// <param name="autoSyncSettleDelay">
+        /// Optional debounce delay used to batch rapid changes before syncing. Default is 100ms.
+        /// </param>
+        /// <param name="sortingEnabled">Whether child elements should be sorted after structural or visibility changes.</param>
+        /// <param name="customSorter">
+        /// Optional comparison function for custom sorting logic. Used in place of the default sorter.
+        /// Must accept two objects and return a comparison result (like Comparer<T>.Compare).
+        /// </param>
+        /// <returns>The original XElement, now configured as a bound view root.</returns>
+
         public static XElement WithXBoundView(
             this XElement @this,
             IList items = null,
             int indent = 10,
             bool autoSyncEnabled = true,
-            TimeSpan? autoSyncSettleDelay = null)
+            TimeSpan? autoSyncSettleDelay = null,
+            bool sortingEnabled = true,
+            Func<object, object, int> customSorter)
         {
             if (@this.Parent != null)
             {

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
@@ -499,9 +500,11 @@ C:
             await awaiter.WaitAsync();
 
             actual = xroot.ToString();
+            actual.ToClipboardExpected();
+            { }
             expected = @" 
 <root viewcontext=""[ViewContext]"">
-  <xnode datamodel=""[Item]"" text=""C:"" isvisible=""True"" plusminus=""Leaf"">
+  <xnode datamodel=""[Item]"" text=""C:"" isvisible=""True"">
     <xnode item=""[Item]"" text=""E"" />
     <xnode item=""[Item]"" text=""F"" />
     <xnode item=""[Item]"" text=""G"" />
@@ -529,9 +532,6 @@ C:
             await awaiter.WaitAsync();
 
             actual = xroot.ToString();
-            actual.ToClipboard();
-            actual.ToClipboardExpected();
-            { }
             expected = @" 
 <root viewcontext=""[ViewContext]"">
   <xnode item=""[Item]"" text=""B:"">
@@ -539,7 +539,7 @@ C:
     <xnode item=""[Item]"" text=""B"" />
     <xnode item=""[Item]"" text=""C"" />
   </xnode>
-  <xnode datamodel=""[Item]"" text=""C:"" isvisible=""True"" plusminus=""Leaf"">
+  <xnode datamodel=""[Item]"" text=""C:"" isvisible=""True"">
     <xnode item=""[Item]"" text=""E"" />
     <xnode item=""[Item]"" text=""F"" />
     <xnode item=""[Item]"" text=""G"" />
@@ -577,7 +577,7 @@ C:
     <xnode item=""[Item]"" text=""I"" />
     <xnode item=""[Item]"" text=""H"" />
   </xnode>
-  <xnode datamodel=""[Item]"" text=""C:"" isvisible=""True"" plusminus=""Leaf"">
+  <xnode datamodel=""[Item]"" text=""C:"" isvisible=""True"">
     <xnode item=""[Item]"" text=""G"" />
     <xnode item=""[Item]"" text=""F"" />
     <xnode item=""[Item]"" text=""E"" />
@@ -590,6 +590,44 @@ C:
 </root>"
             ;
 
+            actual = context.ItemsToString();
+
+            actual.ToClipboard();
+            actual.ToClipboardExpected();
+            expected = @" 
+  C:";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting ONLY the root is visible"
+            );
+
+
+            await subtestImplicitVisible();
+            async Task subtestImplicitVisible()
+            {
+                xel = xroot.Descendants().Skip(7).First();
+                xel.To<Item>().Expand();
+                await awaiter.WaitAsync();
+                { }
+            }
+
+
+            actual = context.ItemsToString();
+            actual.ToClipboard();
+            actual.ToClipboardExpected();
+            actual.ToClipboardAssert();
+            { }
+            expected = @" 
+* C:
+    E";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting values to match."
+            );
 
             // Wait for unintended sync events.
             Thread.Sleep(TimeSpan.FromSeconds(0.5));

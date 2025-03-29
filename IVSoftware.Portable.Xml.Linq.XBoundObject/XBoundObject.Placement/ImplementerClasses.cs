@@ -273,7 +273,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                         }
                         else
                         {
-                            XEL.SetAttributeValue(PlusMinus.Leaf);
+                            XEL.SetAttributeValueNull<PlusMinus>();
                         }
                     }
 
@@ -286,7 +286,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                         else
                         {
                             // Can't be collapsed!
-                            XEL.SetAttributeValue(PlusMinus.Leaf);
+                            XEL.SetAttributeValueNull<PlusMinus>();
                         }
                     }
 
@@ -305,7 +305,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                         else
                         {
                             // Can't expand!
-                            XEL.SetAttributeValue(PlusMinus.Leaf);
+                            XEL.SetAttributeValueNull<PlusMinus>();
                         }
                     }
 
@@ -318,7 +318,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                         }
                         else
                         {
-                            XEL.SetAttributeValue(value);
+                            XEL.SetAttributeValueNull<PlusMinus>();
                         }
                     }
 
@@ -404,6 +404,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 
         public PlusMinus Expand(bool allowPartial = false)
         {
+            IsVisible = true;
             if (!allowPartial)
             {
                 foreach (
