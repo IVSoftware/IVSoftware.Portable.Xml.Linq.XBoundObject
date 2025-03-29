@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
@@ -650,7 +651,11 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 mode: mode);
             if (placer.XResult is XElement xel)
             {
-                throw new NotImplementedException();
+                foreach (var desc in xel.Descendants().Reverse())
+                {
+                    desc.SetAttributeValueNull<IsVisible>();
+                }
+                xel.SetAttributeValue(PlusMinus.Collapsed);
             }
             return placer.XResult;
         }
@@ -797,6 +802,45 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             }
         }
 
+        /// <summary>
+        /// Recursively enumerates visible descendant elements starting from the root <see cref="XElement"/>, 
+        /// optionally including all immediate root children regardless of visibility state.
+        /// </summary>
+        /// <param name="alwaysShowRootElements">
+        /// If true, all direct child elements of the root are included regardless of their visibility; 
+        /// otherwise, only visible elements are processed.
+        /// </param>
+        /// <returns>An enumeration of <see cref="XElement"/> nodes that are considered visible.</returns>
+        public static IEnumerable<XElement> VisibleElements(this XElement @this, bool alwaysShowRootElements = false)
+        {
+            Debug.Assert(@this.Parent is null, "Expecting root node");
+
+            IEnumerable<XElement> elements = alwaysShowRootElements
+                ? @this.Elements()
+                : @this.Elements().Where(localGetIsVisible);
+
+            foreach (var element in localAddChildItems(elements))
+            {
+                yield return element;
+            }
+
+            #region L o c a l F x       
+            IEnumerable<XElement> localAddChildItems(IEnumerable<XElement> items)
+            {
+                foreach (var element in items)
+                {
+                    yield return element;
+                    foreach (var child in localAddChildItems(element.Elements().Where(localGetIsVisible)))
+                    {
+                        yield return child;
+                    }
+                }
+            }
+            bool localGetIsVisible(XElement xel) =>
+                xel.TryGetAttributeValue(out IsVisible value) &&
+                bool.Parse(value.ToString());		
+            #endregion L o c a l F x
+        }
     }
     static partial class ExtensionsInternal
     {
