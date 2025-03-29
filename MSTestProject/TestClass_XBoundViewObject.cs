@@ -64,7 +64,7 @@ public class TestClass_XBoundViewObject
             .WithXBoundView(
                 items, 
                 indent: 2, 
-                autoSyncEnabled: true,
+                autoSyncEnabled: false,
                 sortingEnabled: false
              );
         var context = xroot.To<ViewContext>(@throw: true);
@@ -396,7 +396,7 @@ C:
         <xnode text=""Demo"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
           <xnode text=""IVSoftware.Demo.CrossPlatform.FilesAndFolders"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
             <xnode text=""BasicPlacement.Maui"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
-              <xnode text=""BasicPlacement.Maui.csproj"" isvisible=""True"" plusminus=""Leaf"" datamodel=""[Item]"" />
+              <xnode text=""BasicPlacement.Maui.csproj"" isvisible=""True"" datamodel=""[Item]"" />
             </xnode>
           </xnode>
         </xnode>
