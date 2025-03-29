@@ -429,6 +429,132 @@ C:
         #endregion S U B T E S T S
     }
 
+    [TestMethod]
+    public async Task Test_PlusMinusCommand()
+    {
+        string actual, expected;
+        XElement? xel;
+        Item item;
+
+        SemaphoreSlim awaiter = new SemaphoreSlim(0, 1);
+        void localOnAwaited(object? sender, AwaitedEventArgs e)
+        {
+            switch (e.Caller)
+            {
+                case "WDTAutoSync":
+                    awaiter.Release();
+                    break;
+                default:
+                    break;
+            }
+        }
+        try
+        {
+            _expectingAutoSyncEvents = true;
+            Awaited += localOnAwaited;
+            var xroot = 
+                new XElement("root")
+                .WithXBoundView(
+                    items: new ObservableCollection<Item>(),
+                    indent: 2);
+            var context = xroot.To<ViewContext>();
+            Assert.IsNotNull(context);
+
+            string path =
+                @"C:\Github\IVSoftware\Demo\IVSoftware.Demo.CrossPlatform.FilesAndFolders\BasicPlacement.Maui\BasicPlacement.Maui.csproj"
+                .Replace('\\', Path.DirectorySeparatorChar);
+            awaiter.Wait(0);
+            xroot.Show(path);
+            await awaiter.WaitAsync();
+
+            actual = context.PrintItems();
+            expected = @" 
+- C:
+  - Github
+    - IVSoftware
+      - Demo
+        - IVSoftware.Demo.CrossPlatform.FilesAndFolders
+          - BasicPlacement.Maui
+              BasicPlacement.Maui.csproj"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting tree expanded to '.csproj' file"
+            );
+            xel = xroot.Descendants().Skip(3).First();
+            item = xel.To<Item>();
+            Assert.AreEqual("Demo", item.Text);
+            item.PlusMinusToggleCommand?.Execute(item);
+            Assert.AreEqual(
+                PlusMinus.Collapsed, 
+                item.PlusMinus,
+                $"Expecting item collapsed after toggle command.");
+            await awaiter.WaitAsync();
+            actual = context.PrintItems();
+            expected = @" 
+- C:
+  - Github
+    - IVSoftware
+      + Demo"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting collapsed Demo node"
+            );
+
+            await subtestPartialExpand();
+            async Task subtestPartialExpand()
+            {
+                path = Path.Combine(xel.GetPath(), "README.md");
+                item = xroot.FindOrCreate<Item>(path);
+                Assert.IsInstanceOfType<Item>(item);
+                await awaiter.WaitAsync();
+                actual = context.PrintItems();
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting no change to expected data. The new node is not visible."
+                );
+                item.IsVisible = true;
+                await awaiter.WaitAsync();
+                actual = context.PrintItems();
+                { }
+
+                actual.ToClipboard();
+                actual.ToClipboardAssert();
+                { }
+                expected = @" 
+- C:
+  - Github
+    - IVSoftware
+      * Demo
+          README.md";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting partial expansion."
+                );
+            }
+        }
+        catch
+        {
+            throw new Exception("You shouldn't be here.");
+        }
+        finally
+        {
+            awaiter.Wait(0);
+            awaiter.Release();
+            awaiter.Dispose();
+            Awaited -= localOnAwaited;
+            _expectingAutoSyncEvents = false;
+        }
+    }
+
     /// <summary>
     /// Class for testing automatic type injection.
     /// </summary>

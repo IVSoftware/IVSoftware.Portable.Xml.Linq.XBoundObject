@@ -510,7 +510,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         /// such e.g. 'StdAttributeNames'. This enum can also be reused with related 
         /// methods like SortAttributes.
         /// </summary>
-        public static string GetPath(this XElement @this, Enum pathAttribute)
+        public static string GetPath(this XElement @this, Enum pathAttribute = null)
         {
             pathAttribute = pathAttribute ?? StdAttributeNameInternal.text;
             var builder = new List<string>();

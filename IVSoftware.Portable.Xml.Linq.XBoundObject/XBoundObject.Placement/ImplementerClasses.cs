@@ -90,7 +90,21 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     _plusMinusToggleCommand = new CommandPCL<IXBoundViewObject>(
                         execute: (xbvo)=>
                         {
-
+                            switch (xbvo.PlusMinus)
+                            {
+                                case PlusMinus.Collapsed:
+                                    xbvo.PlusMinus = PlusMinus.Expanded;
+                                    break;
+                                case PlusMinus.Partial:
+                                    Debug.Fail("TODO");
+                                    break;
+                                case PlusMinus.Expanded:
+                                    xbvo.PlusMinus = PlusMinus.Collapsed;
+                                    break;
+                                default:
+                                    // N O O P
+                                    break;
+                            }
                         }, 
                         canExecute: (xbvo)=>
                         {
@@ -103,7 +117,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                                 default:
                                     return false;
                             }
-                            throw new NotImplementedException();
                         });
                 }
                 return _plusMinusToggleCommand;
@@ -279,6 +292,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 case nameof(PlusMinus):
                     OnPropertyChanged(nameof(PlusMinusGlyph));
                     OnPropertyChanged(nameof(Space));
+                    if(propertyName == nameof(PlusMinus))
+                    {
+                        OnPlusMinusChanged();
+                    }
                     break;
                 case nameof(Parent):
                     if( Parent is XElement pxel &&
@@ -288,6 +305,35 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                         _depth = XEL.Ancestors().Count() - 1;
                         this.OnAwaited();
                     }
+                    break;
+            }
+        }
+
+        protected virtual void OnPlusMinusChanged()
+        {
+            switch (PlusMinus)
+            {
+                case PlusMinus.Collapsed:
+                    foreach (
+                        var item in 
+                        XEL
+                        .Descendants()
+                        .Reverse()
+                        .Select(_=>_.To<IXBoundViewObject>())
+                        .Where(_=> _ != null))
+                    {
+                        item.IsVisible = false;
+                    }
+                    break;
+                case PlusMinus.Partial:
+                    break;
+                case PlusMinus.Expanded:
+                    break;
+                case PlusMinus.Leaf:
+                    break;
+                case PlusMinus.Auto:
+                    break;
+                default:
                     break;
             }
         }
