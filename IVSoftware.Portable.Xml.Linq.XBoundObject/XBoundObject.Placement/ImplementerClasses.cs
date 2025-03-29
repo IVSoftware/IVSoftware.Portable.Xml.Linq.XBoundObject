@@ -289,12 +289,29 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 
             string localSpacerFunc(string text)
             {
+                char exp;
+                switch (xel.To<IXBoundViewObject>().PlusMinus)
+                {
+                    case PlusMinus.Collapsed:
+                        exp = '+';
+                        break;
+                    case PlusMinus.Partial:
+                        exp = '*';
+                        break;
+                    case PlusMinus.Expanded:
+                        exp = '-';
+                        break;
+                    case PlusMinus.Leaf:
+                    default:
+                        exp = ' ';
+                        break;
+                }
                 var spaces = string.Join(
                     string.Empty,
                     Enumerable.Repeat(
                         " ", 
                         Indent * (xel.Ancestors().Count() - 1)));
-                return $"{spaces}{text}";
+                return $"{spaces}{exp} {text}";
             }
         }
     }

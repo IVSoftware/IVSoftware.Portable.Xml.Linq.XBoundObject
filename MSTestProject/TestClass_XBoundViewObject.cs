@@ -76,23 +76,18 @@ public class TestClass_XBoundViewObject
                         context.GetIndentedText(_.XEL)));
             actual = joined;
             actual.ToClipboard();
-            actual.ToClipboardAssert("Expecting full expansion");
+            actual.ToClipboardExpected();
             { }
             expected = @" 
-B:(Floppy Disk)
-C:
-  Github
-    IVSoftware
-      Demo
-        IVSoftware.Demo.CrossPlatform.FilesAndFolders
-          BasicPlacement.Maui
-            BasicPlacement.Maui.csproj";
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting full expansion"
-            );
+  B:(Floppy Disk)
+- C:
+  - Github
+    - IVSoftware
+      - Demo
+        - IVSoftware.Demo.CrossPlatform.FilesAndFolders
+          - BasicPlacement.Maui
+              BasicPlacement.Maui.csproj"
+            ;
         }
 
         #region S U B T E S T S
@@ -138,15 +133,14 @@ C:
                     items.Select(_ =>
                         context.GetIndentedText(_.XEL)));
             actual = joined;
-
             expected = @" 
-C:
-  Github
-    IVSoftware
-      Demo
-        IVSoftware.Demo.CrossPlatform.FilesAndFolders
-          BasicPlacement.Maui
-            BasicPlacement.Maui.csproj"
+- C:
+  - Github
+    - IVSoftware
+      - Demo
+        - IVSoftware.Demo.CrossPlatform.FilesAndFolders
+          - BasicPlacement.Maui
+              BasicPlacement.Maui.csproj"
             ;
 
             Assert.AreEqual(
@@ -195,10 +189,11 @@ C:
                         context.GetIndentedText(_.XEL)));
             actual = joined;
             expected = @" 
-C:
-  Github
-    IVSoftware
-      Demo";
+- C:
+  - Github
+    - IVSoftware
+      + Demo"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -273,10 +268,6 @@ C:
             xroot.Sort();
 
             actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
-
-            actual.ToClipboard();
-            actual.ToClipboardExpected();
-            { }
             expected = @" 
 <root viewcontext=""[ViewContext]"">
   <xnode text=""B:(Floppy Disk)"" isvisible=""True"" item=""[Item]"" />
@@ -311,13 +302,17 @@ C:
                     items.Select(_ =>
                         context.GetIndentedText(_.XEL)));
             actual = joined;
-            expected = @" 
-B:(Floppy Disk)
-C:
-  Github
-    IVSoftware
-      Demo";
 
+            actual.ToClipboard();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+  B:(Floppy Disk)
+- C:
+  - Github
+    - IVSoftware
+      + Demo"
+            ;
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
@@ -413,8 +408,9 @@ C:
                         context.GetIndentedText(_.XEL)));
             actual = joined;
             expected = @" 
-B:(Floppy Disk)
-C:";
+  B:(Floppy Disk)
++ C:"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
