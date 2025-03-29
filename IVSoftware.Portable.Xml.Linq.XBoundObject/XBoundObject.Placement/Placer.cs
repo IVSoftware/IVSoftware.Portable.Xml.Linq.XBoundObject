@@ -614,7 +614,19 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 mode: mode);
             if(placer.XResult is XElement xel)
             {
-                throw new NotImplementedException();
+                foreach (
+                    var xbvo in
+                    xel
+                    .Elements()
+                    .Select(_=>_.To<IXBoundViewObject>())
+                    .Where(_=>_ != null)
+                    )
+                {
+                    xbvo.IsVisible = true;
+                }
+                var xbo = xel.To<IXBoundViewObject>(@throw: true);
+                xbo.PlusMinus = PlusMinus.Auto;
+                xbo.IsVisible = true;
             }
             return placer.XResult;
         }
