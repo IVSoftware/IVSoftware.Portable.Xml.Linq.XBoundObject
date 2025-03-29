@@ -12,7 +12,15 @@ public class TestClass_XBoundViewObject
     [TestMethod]
     public void Test_PlusMinus()
     {
-        string actual, expected, path, joined;
+        string 
+            actual, 
+            expected,
+            joined,
+            adhocPath,
+            origPath =
+                @"C:\Github\IVSoftware\Demo\IVSoftware.Demo.CrossPlatform.FilesAndFolders\BasicPlacement.Maui\BasicPlacement.Maui.csproj",
+            demoPath = 
+                Path.Combine("C:", "Github", "IVSoftware", "Demo");
         var items = new ObservableCollection<Item>();
         Item? item = null;
         var xroot = new XElement("root").UseXBoundView(items, 2);
@@ -22,15 +30,77 @@ public class TestClass_XBoundViewObject
         subtestCollapseDemoNode();
         subtestAddNotVisibleFloppyB();
         subtestMakeBDriveVisible();
+        subtestExpandDemoNode();
+        subtestCollapseC();
+
+        subtestExpandLeaf();
+        void subtestExpandLeaf() 
+        {
+            xroot.Expand(origPath);
+
+            actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
+
+            actual.ToClipboard();
+            actual.ToClipboardAssert("Expecting full expansion");
+            { }
+            expected = @" 
+<root viewcontext=""[ViewContext]"">
+  <xnode text=""B:(Floppy Disk)"" isvisible=""True"" item=""[Item]"" />
+  <xnode text=""C:"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+    <xnode text=""Github"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+      <xnode text=""IVSoftware"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+        <xnode text=""Demo"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+          <xnode text=""IVSoftware.Demo.CrossPlatform.FilesAndFolders"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+            <xnode text=""BasicPlacement.Maui"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+              <xnode text=""BasicPlacement.Maui.csproj"" isvisible=""True"" plusminus=""Leaf"" datamodel=""[Item]"" />
+            </xnode>
+          </xnode>
+        </xnode>
+      </xnode>
+    </xnode>
+  </xnode>
+</root>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting full expansion"
+            );
+
+            context.SyncList();
+            joined =
+                string
+                .Join(
+                    Environment.NewLine,
+                    items.Select(_ =>
+                        context.GetIndentedText(_.XEL)));
+            actual = joined;
+            actual.ToClipboard();
+            actual.ToClipboardAssert("Expecting full expansion");
+            { }
+            expected = @" 
+B:(Floppy Disk)
+C:
+  Github
+    IVSoftware
+      Demo
+        IVSoftware.Demo.CrossPlatform.FilesAndFolders
+          BasicPlacement.Maui
+            BasicPlacement.Maui.csproj";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting full expansion"
+            );
+        }
 
         #region S U B T E S T S
 
         void subtestShowPathSimpleThenSyncList()
         {
             // WinOS path in a WinOS test.
-            path =
-                @"C:\Github\IVSoftware\Demo\IVSoftware.Demo.CrossPlatform.FilesAndFolders\BasicPlacement.Maui\BasicPlacement.Maui.csproj";
-            xroot.Show(path);
+            xroot.Show(origPath);
 
             actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
             actual.ToClipboard();
@@ -88,8 +158,7 @@ C:
 
         void subtestCollapseDemoNode()
         {
-            path = Path.Combine("C:", "Github", "IVSoftware", "Demo");
-            xroot.Collapse(path);
+            xroot.Collapse(demoPath);
 
             actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
             expected = @"
@@ -141,8 +210,8 @@ C:
         void subtestAddNotVisibleFloppyB()
         {
 
-            path = Path.Combine("B:(Floppy Disk)");
-            item = xroot.FindOrCreate<Item>(path);
+            adhocPath = Path.Combine("B:(Floppy Disk)");
+            item = xroot.FindOrCreate<Item>(adhocPath);
             Assert.IsTrue(item is Item, $"Expecting adhoc not-visible {nameof(Item)}");
 
             actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
@@ -173,6 +242,7 @@ C:
 
         void subtestMakeBDriveVisible()
         {
+            Assert.IsNotNull(item);
             item.IsVisible = true;
 
             actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
@@ -201,7 +271,6 @@ C:
             );
 
             xroot.Sort();
-
 
             actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
 
@@ -242,9 +311,6 @@ C:
                     items.Select(_ =>
                         context.GetIndentedText(_.XEL)));
             actual = joined;
-            actual.ToClipboard();
-            actual.ToClipboardExpected();
-            { }
             expected = @" 
 B:(Floppy Disk)
 C:
@@ -258,6 +324,106 @@ C:
                 "Expecting B: is visible and sorted alphabetically."
             );
         }
+
+        void subtestExpandDemoNode()
+        {
+            xroot.Expand(demoPath);
+
+            actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
+            expected = @" 
+<root viewcontext=""[ViewContext]"">
+  <xnode text=""B:(Floppy Disk)"" isvisible=""True"" item=""[Item]"" />
+  <xnode text=""C:"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+    <xnode text=""Github"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+      <xnode text=""IVSoftware"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+        <xnode text=""Demo"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+          <xnode text=""IVSoftware.Demo.CrossPlatform.FilesAndFolders"" isvisible=""True"" datamodel=""[Item]"">
+            <xnode text=""BasicPlacement.Maui"" datamodel=""[Item]"">
+              <xnode text=""BasicPlacement.Maui.csproj"" datamodel=""[Item]"" />
+            </xnode>
+          </xnode>
+        </xnode>
+      </xnode>
+    </xnode>
+  </xnode>
+</root>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting single child is now Visible"
+            );
+
+            context.SyncList();
+            joined =
+                string
+                .Join(
+                    Environment.NewLine,
+                    items.Select(_ =>
+                        context.GetIndentedText(_.XEL)));
+            actual = joined;
+            actual.ToClipboard();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+B:(Floppy Disk)
+C:
+  Github
+    IVSoftware
+      Demo
+        IVSoftware.Demo.CrossPlatform.FilesAndFolders"
+            ;
+        }
+
+        void subtestCollapseC()
+        {
+            xroot.Collapse("C:");
+
+            actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
+            expected = @" 
+<root viewcontext=""[ViewContext]"">
+  <xnode text=""B:(Floppy Disk)"" isvisible=""True"" item=""[Item]"" />
+  <xnode text=""C:"" isvisible=""True"" plusminus=""Collapsed"" datamodel=""[Item]"">
+    <xnode text=""Github"" datamodel=""[Item]"">
+      <xnode text=""IVSoftware"" datamodel=""[Item]"">
+        <xnode text=""Demo"" datamodel=""[Item]"">
+          <xnode text=""IVSoftware.Demo.CrossPlatform.FilesAndFolders"" datamodel=""[Item]"">
+            <xnode text=""BasicPlacement.Maui"" datamodel=""[Item]"">
+              <xnode text=""BasicPlacement.Maui.csproj"" datamodel=""[Item]"" />
+            </xnode>
+          </xnode>
+        </xnode>
+      </xnode>
+    </xnode>
+  </xnode>
+</root>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting single child is now Visible"
+            );
+
+            context.SyncList();
+            joined =
+                string
+                .Join(
+                    Environment.NewLine,
+                    items.Select(_ =>
+                        context.GetIndentedText(_.XEL)));
+            actual = joined;
+            expected = @" 
+B:(Floppy Disk)
+C:";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting B and C roots only"
+            );
+        }
+
+
         #endregion S U B T E S T S
     }
 
