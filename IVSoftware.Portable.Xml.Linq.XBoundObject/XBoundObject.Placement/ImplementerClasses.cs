@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IVSoftware.Portable.Threading;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -7,6 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
@@ -144,13 +146,16 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     {
         public int Indent { get; }
         public IList Items { get; }
+        public TimeSpan AutoSyncSettleDelay { get; } = TimeSpan.FromSeconds(0.1);
+        public bool AutoSyncEnabled { get; set; } = true;
 
         private readonly Dictionary<IXBoundObject, int> _o1 = null;
 
-        public ViewContext(IList items, int indent)
+        public ViewContext(IList items, int indent, bool autoSyncEnabled)
         {
             Indent = indent;
             Items = items;
+            AutoSyncEnabled = autoSyncEnabled;
             if (Items is INotifyCollectionChanged incc)
             {
                 _o1 = new Dictionary<IXBoundObject, int>();
@@ -178,6 +183,11 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                             break;
                         default: throw new NotImplementedException();
                     }
+                    if(AutoSyncEnabled)
+                    {
+                        WDTAutoSync.StartOrRestart();
+                    }
+                    #region L o c a l F x       
                     void localAdd()
                     {
                         if (e
@@ -197,12 +207,13 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                         {
                             _o1.Remove(oldXBO);
                         }
-                    }
+                    }		
+                    #endregion L o c a l F x
                 };
             }
         }
-        public ViewContext(XElement xel, IList items, int indent)
-            : this(items, indent) => InitXEL(xel);
+        public ViewContext(XElement xel, IList items, int indent, bool autoSync = true)
+            : this(items, indent, autoSync) => InitXEL(xel);
         public override XElement InitXEL(XElement xel)
         {
             if (xel.Parent != null)
@@ -314,5 +325,34 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 return $"{spaces}{exp} {text}";
             }
         }
+
+        SemaphoreSlim _busyAutoSync = new SemaphoreSlim(1, 1);
+        public WatchdogTimer WDTAutoSync
+        {
+            get
+            {
+                if (_wdtAutoSync is null)
+                {
+                    _wdtAutoSync = new WatchdogTimer { Interval = AutoSyncSettleDelay };
+                    _wdtAutoSync.RanToCompletion += async (sender, e) =>
+                    {
+                        await _busyAutoSync.WaitAsync();
+                        try
+                        {
+                            SyncList();
+                            this.OnAwaited(caller: nameof(WDTAutoSync));
+                        }
+                        finally
+                        {
+                            _busyAutoSync.Wait(0);
+                            _busyAutoSync.Release();
+                        }
+                    };
+                }
+                return _wdtAutoSync;
+            }
+        }
+        WatchdogTimer _wdtAutoSync = null;
+
     }
 }

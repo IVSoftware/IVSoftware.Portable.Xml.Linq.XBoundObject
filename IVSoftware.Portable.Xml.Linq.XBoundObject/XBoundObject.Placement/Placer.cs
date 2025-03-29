@@ -907,7 +907,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public static XElement UseXBoundView(
             this XElement @this,
             IList items = null,
-            int indent = 10)
+            int indent = 10,
+            bool autoSyncEnabled = true)
         {
             if (@this.Parent != null)
             {

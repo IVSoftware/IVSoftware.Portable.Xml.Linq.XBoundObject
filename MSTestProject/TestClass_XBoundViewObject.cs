@@ -1,14 +1,38 @@
 using System.Collections.ObjectModel;
 using System.Xml.Linq;
+using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using IVSoftware.WinOS.MSTest.Extensions;
+using static IVSoftware.Portable.Threading.Extensions;
 
 namespace XBoundObjectMSTest;
 
 [TestClass]
 public class TestClass_XBoundViewObject
 {
+    static Queue<SenderEventPair> _eventQueue = new ();
+
+    static bool _expectingAwaitedEvents = false;
+
+    private static void OnAwaited(object? sender, AwaitedEventArgs e)
+    {
+        Assert.IsTrue(
+            _expectingAwaitedEvents,
+            "Expecting SyncList() only occurs when requested."
+        );
+        _eventQueue.Enqueue(new SenderEventPair(sender, e));        
+    }
+
+    [ClassInitialize]
+    public static void ClassInitialize(TestContext context)
+        => Awaited += OnAwaited;
+
+    [ClassCleanup]
+    public static void ClassCleanup() 
+        => Awaited -= OnAwaited;
+
     [TestMethod]
     public void Test_PlusMinus()
     {
@@ -23,7 +47,7 @@ public class TestClass_XBoundViewObject
                 Path.Combine("C:", "Github", "IVSoftware", "Demo");
         var items = new ObservableCollection<Item>();
         Item? item = null;
-        var xroot = new XElement("root").UseXBoundView(items, 2);
+        var xroot = new XElement("root").UseXBoundView(items, indent: 2, autoSyncEnabled: true);
         var context = xroot.To<ViewContext>(@throw: true);
 
         subtestShowPathSimpleThenSyncList();
@@ -418,8 +442,6 @@ C:
                 "Expecting B and C roots only"
             );
         }
-
-
         #endregion S U B T E S T S
     }
 
