@@ -223,7 +223,27 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             {
                 if (!Equals(PlusMinus, value))
                 {
-                    if (value == PlusMinus.Auto)
+                    switch (value)
+                    {
+                        case PlusMinus.Auto:
+                            localOnAuto();
+                            break;
+                        case PlusMinus.Collapsed:
+                            localOnCollapse();
+                            break;
+                        case PlusMinus.Partial:
+                            localOnPartial();
+                            break;
+                        case PlusMinus.Expanded:
+                            localOnExpand();
+                            break;
+                        case PlusMinus.Leaf:
+                            localOnLeaf();
+                            break;
+                        default: throw new NotImplementedException();
+                    }
+                    #region L o c a l F x       
+                    void localOnAuto()
                     {
                         // [Careful]
                         // - This is 'not' like IsVisible where we ascend the hierarchy.
@@ -256,10 +276,54 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                             XEL.SetAttributeValue(PlusMinus.Leaf);
                         }
                     }
-                    else
+
+                    void localOnCollapse()
                     {
+                        if(XEL.HasElements)
+                        {
+                            XEL.SetAttributeValue(value);
+                        }
+                        else
+                        {
+                            // Can't be collapsed!
+                            XEL.SetAttributeValue(PlusMinus.Leaf);
+                        }
+                    }
+
+                    void localOnPartial()
+                    {
+                        // Allow
                         XEL.SetAttributeValue(value);
                     }
+
+                    void localOnExpand()
+                    {
+                        if (XEL.HasElements)
+                        {
+                            XEL.SetAttributeValue(value);
+                        }
+                        else
+                        {
+                            // Can't expand!
+                            XEL.SetAttributeValue(PlusMinus.Leaf);
+                        }
+                    }
+
+                    void localOnLeaf()
+                    {
+                        if (XEL.HasElements)
+                        {
+                            // Can't be leaf!
+                            XEL.SetAttributeValue(PlusMinus.Collapsed);
+                        }
+                        else
+                        {
+                            XEL.SetAttributeValue(value);
+                        }
+                    }
+
+                    #endregion L o c a l F x
+
                     OnPropertyChanged();
                 }
             }
@@ -338,10 +402,23 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             }
         }
 
-        public PlusMinus Expand(bool autoDetectPartial = false)
+        public PlusMinus Expand(bool allowPartial = false)
         {
-            if (autoDetectPartial) PlusMinus = PlusMinus.Auto;
-            else PlusMinus = PlusMinus.Expanded;
+            if (!allowPartial)
+            {
+                foreach (
+                    var item in
+                    XEL
+                    .Descendants()
+                    .Reverse()
+                    .Select(_ => _.To<IXBoundViewObject>())
+                    .Where(_ => _ != null))
+                {
+                    item.IsVisible = true;
+                }
+            }
+            PlusMinus = PlusMinus.Auto;
+            Debug.Assert(!Equals(PlusMinus, PlusMinus.Auto));
             return PlusMinus; // The result is 'not' necessarily the same.
         }
 
@@ -572,7 +649,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 return $"{spaces}{exp} {text}";
             }
         }
-        public string PrintItems() =>
+        public string ItemsToString() =>
             string
             .Join(
                 Environment.NewLine,

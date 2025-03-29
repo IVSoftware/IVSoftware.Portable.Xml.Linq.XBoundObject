@@ -107,7 +107,7 @@ public class TestClass_XBoundViewObject
             );
 
             context.SyncList();
-            actual = context.PrintItems();
+            actual = context.ItemsToString();
             expected = @" 
 - C:
   - Github
@@ -156,7 +156,7 @@ public class TestClass_XBoundViewObject
 
             // Apps may put this on a WDT...
             context.SyncList();
-            actual = context.PrintItems();
+            actual = context.ItemsToString();
             expected = @" 
 - C:
   - Github
@@ -264,7 +264,7 @@ public class TestClass_XBoundViewObject
 
 
             context.SyncList();
-            actual = context.PrintItems();
+            actual = context.ItemsToString();
 
             actual.ToClipboard();
             actual.ToClipboardExpected();
@@ -313,7 +313,7 @@ public class TestClass_XBoundViewObject
             );
 
             context.SyncList();
-            actual = context.PrintItems();
+            actual = context.ItemsToString();
             actual.ToClipboard();
             actual.ToClipboardExpected();
             { }
@@ -357,7 +357,7 @@ C:
             );
 
             context.SyncList();
-            actual = context.PrintItems();
+            actual = context.ItemsToString();
             expected = @" 
   B:(Floppy Disk)
 + C:"
@@ -404,7 +404,7 @@ C:
             );
 
             context.SyncList();
-            actual = context.PrintItems();
+            actual = context.ItemsToString();
             actual.ToClipboard();
             actual.ToClipboardExpected();
             { }
@@ -427,6 +427,73 @@ C:
             Thread.Sleep(TimeSpan.FromSeconds(0.5));
         }
         #endregion S U B T E S T S
+    }
+
+    [TestMethod]
+    public async Task Test_ExpandCollapseMethods()
+    {
+        string actual, expected;
+        XElement? xel;
+        Item item;
+
+        SemaphoreSlim awaiter = new SemaphoreSlim(0, 1);
+        void localOnAwaited(object? sender, AwaitedEventArgs e)
+        {
+            switch (e.Caller)
+            {
+                case "WDTAutoSync":
+                    awaiter.Release();
+                    break;
+                default:
+                    break;
+            }
+        }
+        try
+        {
+            _expectingAutoSyncEvents = true;
+            Awaited += localOnAwaited;
+            var xroot =
+                new XElement("root")
+                .WithXBoundView(
+                    items: new ObservableCollection<Item>(),
+                    indent: 2);
+            var context = xroot.To<ViewContext>();
+            Assert.IsNotNull(context);
+
+            xroot.Show(@"C:\");
+            await awaiter.WaitAsync();
+
+            actual = xroot.ToString();
+            expected = @" 
+<root viewcontext=""[ViewContext]"">
+  <xnode datamodel=""[Item]"" text=""C:"" isvisible=""True"" />
+</root>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting path is trimmed, resulting in ONE NOT TWO nodes for trailing delimiter."
+            );
+            xel = xroot.Descendants().First();
+            item = xel.To<Item>();
+            Assert.IsInstanceOfType<Item>(item);
+            Assert.AreEqual(PlusMinus.Leaf, item.Expand());
+            Assert.AreEqual(PlusMinus.Leaf, item.Expand(allowPartial:true));
+            Assert.AreEqual(PlusMinus.Leaf, item.Collapse());
+            Thread.Sleep(TimeSpan.FromSeconds(0.5));
+        }
+        catch(Exception ex)
+        {
+            throw new Exception("You shouldn't be here.");
+        }
+        finally
+        {
+            awaiter.Wait(0);
+            awaiter.Release();
+            awaiter.Dispose();
+            Awaited -= localOnAwaited;
+            _expectingAutoSyncEvents = false;
+        }
     }
 
     [TestMethod]
@@ -467,7 +534,7 @@ C:
             xroot.Show(path);
             await awaiter.WaitAsync();
 
-            actual = context.PrintItems();
+            actual = context.ItemsToString();
             expected = @" 
 - C:
   - Github
@@ -492,7 +559,7 @@ C:
                 item.PlusMinus,
                 $"Expecting item collapsed after toggle command.");
             await awaiter.WaitAsync();
-            actual = context.PrintItems();
+            actual = context.ItemsToString();
             expected = @" 
 - C:
   - Github
@@ -513,7 +580,7 @@ C:
                 item = xroot.FindOrCreate<Item>(path);
                 Assert.IsInstanceOfType<Item>(item);
                 await awaiter.WaitAsync();
-                actual = context.PrintItems();
+                actual = context.ItemsToString();
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
@@ -521,12 +588,7 @@ C:
                 );
                 item.IsVisible = true;
                 await awaiter.WaitAsync();
-                actual = context.PrintItems();
-                { }
-
-                actual.ToClipboard();
-                actual.ToClipboardAssert();
-                { }
+                actual = context.ItemsToString();
                 expected = @" 
 - C:
   - Github
@@ -540,6 +602,32 @@ C:
                     "Expecting partial expansion."
                 );
             }
+            var parent = item.Parent.To<Item>();
+            Assert.IsInstanceOfType<Item>(item);
+            parent.Expand();
+            await awaiter.WaitAsync();
+            actual = context.ItemsToString();
+
+
+            actual.ToClipboard();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+- C:
+  - Github
+    - IVSoftware
+      - Demo
+        - IVSoftware.Demo.CrossPlatform.FilesAndFolders
+          - BasicPlacement.Maui
+              BasicPlacement.Maui.csproj
+          README.md"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting full expansion of Demo node."
+            );
         }
         catch
         {
