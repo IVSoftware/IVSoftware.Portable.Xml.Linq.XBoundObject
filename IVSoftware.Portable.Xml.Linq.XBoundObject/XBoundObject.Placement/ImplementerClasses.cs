@@ -1,19 +1,11 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
-using System.ComponentModel.Design;
-using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text;
-using System.Threading;
 using System.Xml.Linq;
-using System.Xml.Serialization;
 
 namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 {
@@ -36,6 +28,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 #region L o c a l F x
 		        void onXObjectChange(object sender, XObjectChangeEventArgs e)
                 {
+                    if(XBoundObject.Extensions.IsSorting)
+                    {
+                        return;
+                    }
                     if (sender is XAttribute xattr && ReferenceEquals(xattr.Parent, XEL))
                     {
                         // Actionable change to one of "this" objects attributes.
@@ -152,6 +148,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     _isVisible = value;
                     if (value)
                     {
+                        XEL.SetAttributeValue(Placement.IsVisible.True);
                         // For 'True' only, parent nodes must take on isvisible also.
                         // [Careful] Exclude the root node!
                         if (XEL.Parent is XElement pxel && pxel.Parent != null)
@@ -160,7 +157,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                             pxel.SetAttributeValue(Placement.PlusMinus.Auto);
                         }
                     }
-                    else XEL.SetAttributeValueNull<Placement.PlusMinus>();
+                    else
+                    {
+                        XEL.SetAttributeValueNull<Placement.PlusMinus>();
+                    }
                     OnPropertyChanged();
                 }
             }
