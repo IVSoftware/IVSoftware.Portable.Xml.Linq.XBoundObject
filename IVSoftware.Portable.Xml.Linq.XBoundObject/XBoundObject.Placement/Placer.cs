@@ -914,7 +914,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             {
                 throw new InvalidOperationException("The receiver must be a root element.");
             }
-            @this.SetBoundAttributeValue(new ViewContext(@this, items, indent));
+            @this.SetBoundAttributeValue(new ViewContext(@this, items, indent, autoSyncEnabled));
             return @this;
         }
     }

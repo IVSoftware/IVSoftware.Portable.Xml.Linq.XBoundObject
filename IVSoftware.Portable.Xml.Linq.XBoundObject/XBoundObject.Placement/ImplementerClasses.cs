@@ -18,8 +18,19 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     {
         public XBoundObjectImplementer() { }
         public XBoundObjectImplementer(XElement xel) => InitXEL(xel);
-        public XElement XEL => _xel;
-        private XElement _xel;
+        public XElement XEL
+        {
+            get
+            {
+                if(_xel == null)
+                {
+                    throw new NullReferenceException(
+                        $"XEL has not been initialized. Initialize it via the constructor or by calling {nameof(InitXEL)} explicitly.");
+                }
+                return _xel;
+            }
+        }
+        private XElement _xel = null;
         public virtual XElement InitXEL(XElement xel)
         {
             if(_xel is null)
@@ -46,6 +57,42 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     {
         public XBoundViewObjectImplementer() { }
         public XBoundViewObjectImplementer(XElement xel) : base(xel) { }
+
+        public string Text
+        {
+            get =>
+                XEL
+                .Attribute(nameof(StdAttributeNameInternal.text))?
+                .Value 
+                ?? string.Empty;
+            set
+            {
+                if (value != null)
+                {
+                    if (!Equals(Text, value))
+                    {
+                        XEL.SetAttributeValue(nameof(StdAttributeNameInternal.text), value);
+                        OnPropertyChanged();
+                    }
+                }
+            }
+        }
+        public int Space
+        {
+            get
+            {
+                if (_space is null)
+                {
+                    if(XEL.AncestorOfType<ViewContext>() is ViewContext context)
+                    {
+
+                    }
+                    return 0;
+                }
+                else return (int)_space;
+            }
+        }
+        int? _space = null;
 
 
         /// <summary>
@@ -139,9 +186,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         }
     }
 
-    /// <summary>
-    /// Uses SQLite Markdown to query and filter the elements by path.
-    /// </summary>
     public class ViewContext : XBoundObjectImplementer
     {
         public int Indent { get; }
@@ -212,7 +256,13 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 };
             }
         }
-        public ViewContext(XElement xel, IList items, int indent, bool autoSync = true)
+        /// <summary>
+        /// Represents a view model context that manages a synchronized relationship between
+        /// a root <see cref="XElement"/> and a bound <see cref="IList"/> of view objects.
+        /// Supports automatic synchronization, hierarchical indentation logic, and dynamic 
+        /// tracking of visible elements with positional mapping.
+        /// </summary>
+        public ViewContext(XElement xel, IList items, int indent, bool autoSync)
             : this(items, indent, autoSync) => InitXEL(xel);
         public override XElement InitXEL(XElement xel)
         {
@@ -223,6 +273,14 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             return base.InitXEL(xel);
         }
 
+        /// <summary>
+        /// Synchronizes the <see cref="Items"/> collection to match the current set of visible
+        /// <see cref="XElement"/> nodes in <see cref="XEL"/>. Ensures each bound object is in 
+        /// the correct order, inserts missing items, and removes extraneous ones.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if <see cref="Items"/> is not an <see cref="ObservableCollection{T}"/> where T implements <see cref="IXBoundViewObject"/>.
+        /// </exception>
         public void SyncList()
         {
             var type = Items.GetType();
@@ -285,6 +343,14 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             }
         }
 
+        /// <summary>
+        /// Returns a formatted string representing the given <see cref="XElement"/> with indentation and expansion state.
+        /// Intended primarily for test diagnostics and visual inspection of tree structure.
+        /// </summary>
+        /// <param name="xel">The element to format.</param>
+        /// <param name="spacerFunc">Optional transformation function for the text value.</param>
+        /// <param name="pathAttribute">Optional attribute enum used to extract the text; defaults to internal text attribute.</param>
+        /// <returns>A string showing the element’s expansion state and hierarchical position.</returns>
         public string GetIndentedText(
             XElement xel, 
             Func<string,string> spacerFunc = null,
@@ -325,6 +391,13 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 return $"{spaces}{exp} {text}";
             }
         }
+        public string PrintItems() =>
+            string
+            .Join(
+                Environment.NewLine,
+                Items?.OfType<IXBoundViewObject>().Select(_ =>
+                    GetIndentedText(_.XEL)))
+                ?? "NULL items list.";
 
         SemaphoreSlim _busyAutoSync = new SemaphoreSlim(1, 1);
         public WatchdogTimer WDTAutoSync
@@ -353,6 +426,5 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             }
         }
         WatchdogTimer _wdtAutoSync = null;
-
     }
 }

@@ -39,7 +39,6 @@ public class TestClass_XBoundViewObject
         string 
             actual, 
             expected,
-            joined,
             adhocPath,
             origPath =
                 @"C:\Github\IVSoftware\Demo\IVSoftware.Demo.CrossPlatform.FilesAndFolders\BasicPlacement.Maui\BasicPlacement.Maui.csproj",
@@ -47,7 +46,7 @@ public class TestClass_XBoundViewObject
                 Path.Combine("C:", "Github", "IVSoftware", "Demo");
         var items = new ObservableCollection<Item>();
         Item? item = null;
-        var xroot = new XElement("root").UseXBoundView(items, indent: 2, autoSyncEnabled: true);
+        var xroot = new XElement("root").UseXBoundView(items, indent: 2, autoSyncEnabled: false);
         var context = xroot.To<ViewContext>(@throw: true);
 
         subtestShowPathSimpleThenSyncList();
@@ -56,63 +55,9 @@ public class TestClass_XBoundViewObject
         subtestMakeBDriveVisible();
         subtestExpandDemoNode();
         subtestCollapseC();
+        subtestEnsureNoAutoSyncEvent();
 
         subtestExpandLeaf();
-        void subtestExpandLeaf() 
-        {
-            xroot.Expand(origPath);
-
-            actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
-
-            actual.ToClipboard();
-            actual.ToClipboardAssert("Expecting full expansion");
-            { }
-            expected = @" 
-<root viewcontext=""[ViewContext]"">
-  <xnode text=""B:(Floppy Disk)"" isvisible=""True"" item=""[Item]"" />
-  <xnode text=""C:"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
-    <xnode text=""Github"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
-      <xnode text=""IVSoftware"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
-        <xnode text=""Demo"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
-          <xnode text=""IVSoftware.Demo.CrossPlatform.FilesAndFolders"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
-            <xnode text=""BasicPlacement.Maui"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
-              <xnode text=""BasicPlacement.Maui.csproj"" isvisible=""True"" plusminus=""Leaf"" datamodel=""[Item]"" />
-            </xnode>
-          </xnode>
-        </xnode>
-      </xnode>
-    </xnode>
-  </xnode>
-</root>";
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting full expansion"
-            );
-
-            context.SyncList();
-            joined =
-                string
-                .Join(
-                    Environment.NewLine,
-                    items.Select(_ =>
-                        context.GetIndentedText(_.XEL)));
-            actual = joined;
-            actual.ToClipboard();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-  B:(Floppy Disk)
-- C:
-  - Github
-    - IVSoftware
-      - Demo
-        - IVSoftware.Demo.CrossPlatform.FilesAndFolders
-          - BasicPlacement.Maui
-              BasicPlacement.Maui.csproj"
-            ;
-        }
 
         #region S U B T E S T S
 
@@ -150,13 +95,7 @@ public class TestClass_XBoundViewObject
             );
 
             context.SyncList();
-            joined =
-                string
-                .Join(
-                    Environment.NewLine,
-                    items.Select(_ =>
-                        context.GetIndentedText(_.XEL)));
-            actual = joined;
+            actual = context.PrintItems();
             expected = @" 
 - C:
   - Github
@@ -205,13 +144,7 @@ public class TestClass_XBoundViewObject
 
             // Apps may put this on a WDT...
             context.SyncList();
-            joined =
-                string
-                .Join(
-                    Environment.NewLine,
-                    items.Select(_ =>
-                        context.GetIndentedText(_.XEL)));
-            actual = joined;
+            actual = context.PrintItems();
             expected = @" 
 - C:
   - Github
@@ -319,13 +252,7 @@ public class TestClass_XBoundViewObject
 
 
             context.SyncList();
-            joined =
-                string
-                .Join(
-                    Environment.NewLine,
-                    items.Select(_ =>
-                        context.GetIndentedText(_.XEL)));
-            actual = joined;
+            actual = context.PrintItems();
 
             actual.ToClipboard();
             actual.ToClipboardExpected();
@@ -374,13 +301,7 @@ public class TestClass_XBoundViewObject
             );
 
             context.SyncList();
-            joined =
-                string
-                .Join(
-                    Environment.NewLine,
-                    items.Select(_ =>
-                        context.GetIndentedText(_.XEL)));
-            actual = joined;
+            actual = context.PrintItems();
             actual.ToClipboard();
             actual.ToClipboardExpected();
             { }
@@ -424,13 +345,7 @@ C:
             );
 
             context.SyncList();
-            joined =
-                string
-                .Join(
-                    Environment.NewLine,
-                    items.Select(_ =>
-                        context.GetIndentedText(_.XEL)));
-            actual = joined;
+            actual = context.PrintItems();
             expected = @" 
   B:(Floppy Disk)
 + C:"
@@ -442,11 +357,68 @@ C:
                 "Expecting B and C roots only"
             );
         }
+
+        void subtestExpandLeaf()
+        {
+            xroot.Expand(origPath);
+
+            actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
+
+            actual.ToClipboard();
+            actual.ToClipboardAssert("Expecting full expansion");
+            { }
+            expected = @" 
+<root viewcontext=""[ViewContext]"">
+  <xnode text=""B:(Floppy Disk)"" isvisible=""True"" item=""[Item]"" />
+  <xnode text=""C:"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+    <xnode text=""Github"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+      <xnode text=""IVSoftware"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+        <xnode text=""Demo"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+          <xnode text=""IVSoftware.Demo.CrossPlatform.FilesAndFolders"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+            <xnode text=""BasicPlacement.Maui"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+              <xnode text=""BasicPlacement.Maui.csproj"" isvisible=""True"" plusminus=""Leaf"" datamodel=""[Item]"" />
+            </xnode>
+          </xnode>
+        </xnode>
+      </xnode>
+    </xnode>
+  </xnode>
+</root>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting full expansion"
+            );
+
+            context.SyncList();
+            actual = context.PrintItems();
+            actual.ToClipboard();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+  B:(Floppy Disk)
+- C:
+  - Github
+    - IVSoftware
+      - Demo
+        - IVSoftware.Demo.CrossPlatform.FilesAndFolders
+          - BasicPlacement.Maui
+              BasicPlacement.Maui.csproj"
+            ;
+        }
+
+        void subtestEnsureNoAutoSyncEvent()
+        {
+            // If an unexpected event is received in this
+            // time window, it will assert in OnAwaited.
+            Thread.Sleep(TimeSpan.FromSeconds(0.5));
+        }
         #endregion S U B T E S T S
     }
 
     /// <summary>
-    /// Class for testing type injection.
+    /// Class for testing automatic type injection.
     /// </summary>
     private class Item : XBoundViewObjectImplementer { }
 }
