@@ -11,6 +11,7 @@ using System.Xml.Linq;
 
 namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 {
+    [DebuggerDisplay("{DebuggerDisplay}")]
     public class XBoundObjectImplementer : IXBoundObject
     {
         public XBoundObjectImplementer() { }
@@ -22,22 +23,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             if(_xel is null)
             {
                 _xel = xel;
-                _xel.Changing += onXObjectChange;
-                _xel.Changed += onXObjectChange;                
-
-                #region L o c a l F x
-		        void onXObjectChange(object sender, XObjectChangeEventArgs e)
-                {
-                    if(XBoundObject.Extensions.IsSorting)
-                    {
-                        return;
-                    }
-                    if (sender is XAttribute xattr && ReferenceEquals(xattr.Parent, XEL))
-                    {
-                        OnAttributeChanged(xattr, e);
-                    }
-                }
-                #endregion L o c a l F x
             }
             else
             {
@@ -49,76 +34,17 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             return _xel;
         }
 
-        protected virtual void OnAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e) { }
-
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         public event PropertyChangedEventHandler PropertyChanged;
+        internal string DebuggerDisplay
+            => XEL?.Attribute(nameof(StdAttributeNameInternal.text))?.Value ?? "Error";
     }
     public class XBoundViewObjectImplementer : XBoundObjectImplementer, IXBoundViewObject
     {
         public XBoundViewObjectImplementer() { }
         public XBoundViewObjectImplementer(XElement xel) : base(xel) { }
 
-        /// <summary>
-        /// Responds to attribute changes by updating the corresponding model properties,
-        /// including handling <see cref="XObjectChange.Remove"/> in a pre-removal state to maintain parent context.
-        /// </summary>
-        /// <remarks>
-        /// When an actionable (has parent) attribute change occurs, the value is retrieved and set to the implementer property,
-        /// which handles any circularity. For example, when "isvisible" is set to false and then removed, the model receives the
-        /// false value only once.
-        /// For <see cref="XObjectChange.Remove"/>, the method is invoked before the attribute is actually removed,
-        /// allowing access to its parent but not its value; the model is updated as if the attribute were already removed.
-        /// </remarks>
-        protected override void OnAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e)
-        {
-            return;
-            base.OnAttributeChanged(xattr, e);
-
-            if (e.ObjectChange == XObjectChange.Remove)
-            {
-                // [Careful]
-                // - This is called on _xel.Changing not _xel.Changed.
-                // - We do this in order to still have an attr parent for the operation.
-                // - But this means that the xattr HASN'T BEEN REMOVED YET.
-                // [CRITICAL]
-                // - Do not attempt to read the value of the xattr being removed!!!
-                // - Instead, set the model value as it it were already gone.
-                switch (xattr.Name.LocalName)
-                {
-                    case nameof(StdAttributeNameXBoundViewObject.plusminus):
-                        PlusMinus = PlusMinus.Leaf;
-                        break;
-                    case nameof(StdAttributeNameXBoundViewObject.isvisible):
-                        IsVisible = false;
-                        break;
-                }
-            }
-            else
-            {
-                var xel = xattr.Parent;     // [Careful] This is a LATERAL 'parent' !!
-                switch (xattr.Name.LocalName)
-                {
-                    case nameof(StdAttributeNameXBoundViewObject.plusminus):
-                        // - Retrieve the current value for 'plusminus'
-                        // - Forward to datamodel.
-                        PlusMinus =
-                            xel.TryGetAttributeValue(out PlusMinus plusMinus)
-                            ? plusMinus
-                            : PlusMinus.Leaf;
-                        break;
-                    case nameof(StdAttributeNameXBoundViewObject.isvisible):
-                        // - Retrieve the current value for 'isvisible' and
-                        // - Forward to datamodel.
-                        // - A null attribute converts to 'false'.
-                        IsVisible =
-                            xel.TryGetAttributeValue(out IsVisible value) &&
-                            bool.Parse(value.ToString());
-                        break;
-                }
-            }
-        }
 
         /// <summary>
         /// If XAttribute is not present, default to false
@@ -219,15 +145,15 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public int Indent { get; }
         public IList Items { get; }
 
-        private readonly Dictionary<XElement, IXBoundObject> _o1 = null;
+        private readonly Dictionary<IXBoundObject, int> _o1 = null;
 
         public ViewContext(IList items, int indent)
         {
             Indent = indent;
             Items = items;
-            if(Items is INotifyCollectionChanged incc)
+            if (Items is INotifyCollectionChanged incc)
             {
-                _o1 = new Dictionary<XElement, IXBoundObject>();
+                _o1 = new Dictionary<IXBoundObject, int>();
                 incc.CollectionChanged += (sender, e) =>
                 {
                     switch (e.Action)
@@ -254,16 +180,22 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     }
                     void localAdd()
                     {
-                        foreach (IXBoundObject item in e.NewItems ?? Array.Empty<IXBoundObject>())
+                        if (e
+                            .NewItems?
+                            .OfType<IXBoundObject>()
+                            .SingleOrDefault() is IXBoundObject newXBO)
                         {
-                            _o1[item.XEL] = item; 
+                            _o1[newXBO] = e.NewStartingIndex;
                         }
                     }
                     void localRemove()
                     {
-                        foreach (IXBoundObject item in e.OldItems ?? Array.Empty< IXBoundObject>())
+                        if (e
+                            .OldItems?
+                            .OfType<IXBoundObject>()
+                            .SingleOrDefault() is IXBoundObject oldXBO)
                         {
-                            _o1.Remove(item.XEL);
+                            _o1.Remove(oldXBO);
                         }
                     }
                 };
@@ -278,19 +210,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 throw new InvalidOperationException("The receiver must be a root element.");
             }
             return base.InitXEL(xel);
-        }
-        protected override void OnAttributeChanged(XAttribute xattr, XObjectChangeEventArgs e)
-        {
-            base.OnAttributeChanged(xattr, e);
-            switch (xattr.Name.LocalName)
-            {
-                case nameof(StdAttributeNameXBoundViewObject.plusminus):
-                    Debug.Fail("Unexpected because this should be a root node.");
-                    break;
-                case nameof(StdAttributeNameXBoundViewObject.isvisible):
-                    Debug.Fail("Unexpected because this should be a root node.");
-                    break;
-            }
         }
 
         public void SyncList()
@@ -323,7 +242,19 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                             }
                             else
                             {
-                                throw new NotImplementedException("TODO!");
+                                if (_o1.TryGetValue(sbAtIndex, out int currentIndex))
+                                {
+                                    Debug.Assert(
+                                        currentIndex > index,
+                                        $"Expecting higher index otherwise it's 'eating its own'");
+                                    Items.RemoveAt(currentIndex);
+                                    Items.Insert(index++, sbAtIndex);
+                                    _o1[sbAtIndex] = index;
+                                }
+                                else
+                                {
+                                    Items.Insert(index++, sbAtIndex);
+                                }
                             }
                         }
                         else
