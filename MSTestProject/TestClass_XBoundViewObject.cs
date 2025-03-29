@@ -58,7 +58,7 @@ public class TestClass_XBoundViewObject
                 Path.Combine("C:", "Github", "IVSoftware", "Demo");
         var items = new ObservableCollection<Item>();
         Item? item = null;
-        var xroot = new XElement("root").WithXBoundView(items, indent: 2, autoSyncEnabled: false);
+        var xroot = new XElement("root").WithXBoundView(items, indent: 2, autoSyncEnabled: true);
         var context = xroot.To<ViewContext>(@throw: true);
 
         subtestShowPathSimpleThenSyncList();

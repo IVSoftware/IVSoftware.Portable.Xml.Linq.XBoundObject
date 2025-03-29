@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Windows.Input;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
@@ -80,6 +81,35 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     {
         public XBoundViewObjectImplementer() { }
         public XBoundViewObjectImplementer(XElement xel) : base(xel) { }
+        public virtual ICommand PlusMinusToggleCommand
+        {
+            get
+            {
+                if (_plusMinusToggleCommand is null)
+                {
+                    _plusMinusToggleCommand = new CommandPCL<IXBoundViewObject>(
+                        execute: (xbvo)=>
+                        {
+
+                        }, 
+                        canExecute: (xbvo)=>
+                        {
+                            switch (xbvo.PlusMinus)
+                            {
+                                case PlusMinus.Collapsed:
+                                case PlusMinus.Partial:
+                                case PlusMinus.Expanded:
+                                    return true;
+                                default:
+                                    return false;
+                            }
+                            throw new NotImplementedException();
+                        });
+                }
+                return _plusMinusToggleCommand;
+            }
+        }
+        ICommand _plusMinusToggleCommand = null;
 
         public string Text
         {
@@ -109,6 +139,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             {
                 if (!Equals(__indent, value))
                 {
+                    OnPropertyChanged();
                     __indent = value;
                 }
             }
@@ -123,12 +154,12 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             {
                 if (!Equals(__depth, value))
                 {
+                    OnPropertyChanged();
                     __depth = value;
                 }
             }
         }
         int __depth = default;
-
 
 
         /// <summary>
@@ -308,10 +339,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                             break;
                         default: throw new NotImplementedException();
                     }
-                    if(AutoSyncEnabled)
-                    {
-                        WDTAutoSync.StartOrRestart();
-                    }
                     #region L o c a l F x       
                     void localAdd()
                     {
@@ -351,8 +378,22 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             {
                 throw new InvalidOperationException("The receiver must be a root element.");
             }
+            xel.Changed += (sender, e) =>
+            {
+                if (AutoSyncEnabled)
+                {
+                    var now = DateTime.Now;
+                    if(now - _preFilter < TimeSpan.FromMilliseconds(50))
+                    {
+                        return;
+                    }
+                    WDTAutoSync.StartOrRestart();
+                    _preFilter = now;
+                }
+            };
             return base.InitXEL(xel);
         }
+        DateTime _preFilter = DateTime.MinValue;
 
         /// <summary>
         /// Synchronizes the <see cref="Items"/> collection to match the current set of visible
