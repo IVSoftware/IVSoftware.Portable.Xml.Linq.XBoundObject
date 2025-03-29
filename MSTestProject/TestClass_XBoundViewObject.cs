@@ -59,7 +59,14 @@ public class TestClass_XBoundViewObject
                 Path.Combine("C:", "Github", "IVSoftware", "Demo");
         var items = new ObservableCollection<Item>();
         Item? item = null;
-        var xroot = new XElement("root").WithXBoundView(items, indent: 2, autoSyncEnabled: true);
+        var xroot = 
+            new XElement("root")
+            .WithXBoundView(
+                items, 
+                indent: 2, 
+                autoSyncEnabled: true,
+                sortingEnabled: false
+             );
         var context = xroot.To<ViewContext>(@throw: true);
 
         subtestShowPathSimpleThenSyncList();
@@ -457,7 +464,9 @@ C:
                 new XElement("root")
                 .WithXBoundView(
                     items: new ObservableCollection<Item>(),
-                    indent: 2);
+                    indent: 2,
+                    sortingEnabled: false
+                 );
             var context = xroot.To<ViewContext>();
             Assert.IsNotNull(context);
 
@@ -669,7 +678,9 @@ C:
                 new XElement("root")
                 .WithXBoundView(
                     items: new ObservableCollection<Item>(),
-                    indent: 2);
+                    indent: 2,
+                    sortingEnabled: false
+                 );
             var context = xroot.To<ViewContext>();
             Assert.IsNotNull(context);
 

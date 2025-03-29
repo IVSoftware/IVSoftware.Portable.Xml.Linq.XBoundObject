@@ -435,20 +435,26 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public int Indent { get; }
         public IList Items { get; }
         public TimeSpan AutoSyncSettleDelay { get; } = TimeSpan.FromSeconds(0.1);
+        public bool SortingEnabled { get; }
+        public Func<object, object, int> CustomSorter { get; }
         public bool AutoSyncEnabled { get; set; } = true;
 
         private readonly Dictionary<IXBoundObject, int> _o1 = null;
 
         public ViewContext(
             IList items,
-            int indent, 
-            bool autoSyncEnabled,
-            TimeSpan? autoSyncSettleDelay)
+            int indent = 10, 
+            bool autoSyncEnabled = true,
+            TimeSpan? autoSyncSettleDelay = null,
+            bool sortingEnabled = true,
+            Func<object, object, int> customSorter = null)
         {
             Indent = indent;
             Items = items;
             AutoSyncEnabled = autoSyncEnabled;
             AutoSyncSettleDelay = autoSyncSettleDelay ?? TimeSpan.FromSeconds(0.1);
+            SortingEnabled = sortingEnabled;
+            CustomSorter = customSorter;
             if (Items is INotifyCollectionChanged incc)
             {
                 _o1 = new Dictionary<IXBoundObject, int>();
@@ -507,8 +513,15 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// Supports automatic synchronization, hierarchical indentation logic, and dynamic 
         /// tracking of visible elements with positional mapping.
         /// </summary>
-        public ViewContext(XElement xel, IList items, int indent, bool autoSync, TimeSpan? autoSyncSettleDelay)
-            : this(items, indent, autoSync, autoSyncSettleDelay) => InitXEL(xel);
+        public ViewContext(
+            XElement xel,
+            IList items = null,
+            int indent = 10,
+            bool autoSyncEnabled = true,
+            TimeSpan? autoSyncSettleDelay = null,
+            bool sortingEnabled = true,
+            Func<object, object, int> customSorter = null)
+            : this(items, indent, autoSyncEnabled, autoSyncSettleDelay, sortingEnabled, customSorter) => InitXEL(xel);
         public override XElement InitXEL(XElement xel)
         {
             if (xel.Parent != null)
@@ -542,6 +555,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// </exception>
         public void SyncList()
         {
+            if(SortingEnabled)
+            {
+                Debug.Fail("Turn off for UT.");
+            }
             var type = Items.GetType();
             if (type.IsGenericType &&
                 type.GetGenericTypeDefinition() == typeof(ObservableCollection<>) &&
