@@ -599,14 +599,14 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         /// Each descendant's direct children are collected, sorted, and re-added in order.
         /// The default comparer may be customized to provide meaningful ordering.
         /// </remarks>
-        public static void Sort(this XElement @this, IComparer<XElement> comparer = null)
+        public static XElement Sort(this XElement @this, Func<XElement, XElement, int> comparer = null)
         {
-            comparer = comparer ?? Comparer<XElement>.Create(localDefaultComparer);
+            XElementComparer cmp = comparer ?? localDefaultComparer;
             foreach (var xel in @this.DescendantsAndSelf())
             {
                 var xels = xel.Elements().ToList();
                 xel.RemoveNodes();
-                xels.Sort(comparer);
+                xels.Sort(cmp);
                 xel.Add(xels);
             }
 
@@ -618,6 +618,17 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                     b
                     .Attribute(nameof(StdAttributeNameInternal.text))
                     ?.Value ?? string.Empty);
+            // Allow fluent chaining.
+            return @this;            
+        }
+        class XElementComparer : IComparer<XElement>
+        {
+            private readonly Func<XElement, XElement, int> _lambda;
+
+            public static implicit operator XElementComparer(Func<XElement, XElement, int> lambda)
+                => new XElementComparer(lambda);
+            private XElementComparer(Func<XElement, XElement, int> lambda) => _lambda = lambda;
+            public int Compare(XElement x, XElement y) => _lambda(x, y);
         }
     }
 }

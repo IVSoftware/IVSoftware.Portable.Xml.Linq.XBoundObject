@@ -478,13 +478,121 @@ C:
             item = xel.To<Item>();
             Assert.IsInstanceOfType<Item>(item);
             Assert.AreEqual(PlusMinus.Leaf, item.Expand());
-            Assert.AreEqual(PlusMinus.Leaf, item.Expand(allowPartial:true));
+            Assert.AreEqual(PlusMinus.Leaf, item.Expand(allowPartial: true));
             Assert.AreEqual(PlusMinus.Leaf, item.Collapse());
+
+            foreach (var tmp in new[]
+            {
+                Path.Combine("B:", "A"),
+                Path.Combine("B:", "B"),
+                Path.Combine("B:", "C"),
+                Path.Combine("C:", "E"),
+                Path.Combine("C:", "F"),
+                Path.Combine("C:", "G"),
+                Path.Combine("D:", "H"),
+                Path.Combine("D:", "I"),
+                Path.Combine("D:", "J"),
+            })
+            {
+                xroot.FindOrCreate<Item>(tmp);
+            }
+            await awaiter.WaitAsync();
+
+            actual = xroot.ToString();
+            expected = @" 
+<root viewcontext=""[ViewContext]"">
+  <xnode datamodel=""[Item]"" text=""C:"" isvisible=""True"" plusminus=""Leaf"">
+    <xnode item=""[Item]"" text=""E"" />
+    <xnode item=""[Item]"" text=""F"" />
+    <xnode item=""[Item]"" text=""G"" />
+  </xnode>
+  <xnode item=""[Item]"" text=""B:"">
+    <xnode item=""[Item]"" text=""A"" />
+    <xnode item=""[Item]"" text=""B"" />
+    <xnode item=""[Item]"" text=""C"" />
+  </xnode>
+  <xnode item=""[Item]"" text=""D:"">
+    <xnode item=""[Item]"" text=""H"" />
+    <xnode item=""[Item]"" text=""I"" />
+    <xnode item=""[Item]"" text=""J"" />
+  </xnode>
+</root>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting 9 nodes UNSORTED provisioned with Item"
+            );
+
+            xroot.Sort();
+            await awaiter.WaitAsync();
+
+            actual = xroot.ToString();
+            actual.ToClipboard();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<root viewcontext=""[ViewContext]"">
+  <xnode item=""[Item]"" text=""B:"">
+    <xnode item=""[Item]"" text=""A"" />
+    <xnode item=""[Item]"" text=""B"" />
+    <xnode item=""[Item]"" text=""C"" />
+  </xnode>
+  <xnode datamodel=""[Item]"" text=""C:"" isvisible=""True"" plusminus=""Leaf"">
+    <xnode item=""[Item]"" text=""E"" />
+    <xnode item=""[Item]"" text=""F"" />
+    <xnode item=""[Item]"" text=""G"" />
+  </xnode>
+  <xnode item=""[Item]"" text=""D:"">
+    <xnode item=""[Item]"" text=""H"" />
+    <xnode item=""[Item]"" text=""I"" />
+    <xnode item=""[Item]"" text=""J"" />
+  </xnode>
+</root>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting SORTED"
+            );
+
+            // Reverse sort
+            xroot.Sort(( a,  b)
+                => (b
+                    .Attribute(nameof(StdAttributeNameXBoundViewObject.text))
+                    ?.Value ?? string.Empty)
+                    .CompareTo(
+                    a
+                    .Attribute(nameof(StdAttributeNameXBoundViewObject.text))
+                    ?.Value ?? string.Empty));
+
+            await awaiter.WaitAsync();
+
+            actual = xroot.ToString();
+            expected = @" 
+<root viewcontext=""[ViewContext]"">
+  <xnode item=""[Item]"" text=""D:"">
+    <xnode item=""[Item]"" text=""J"" />
+    <xnode item=""[Item]"" text=""I"" />
+    <xnode item=""[Item]"" text=""H"" />
+  </xnode>
+  <xnode datamodel=""[Item]"" text=""C:"" isvisible=""True"" plusminus=""Leaf"">
+    <xnode item=""[Item]"" text=""G"" />
+    <xnode item=""[Item]"" text=""F"" />
+    <xnode item=""[Item]"" text=""E"" />
+  </xnode>
+  <xnode item=""[Item]"" text=""B:"">
+    <xnode item=""[Item]"" text=""C"" />
+    <xnode item=""[Item]"" text=""B"" />
+    <xnode item=""[Item]"" text=""A"" />
+  </xnode>
+</root>"
+            ;
+
+
+            // Wait for unintended sync events.
             Thread.Sleep(TimeSpan.FromSeconds(0.5));
-        }
-        catch(Exception ex)
-        {
-            throw new Exception("You shouldn't be here.");
         }
         finally
         {
