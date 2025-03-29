@@ -14,14 +14,23 @@ public class TestClass_XBoundViewObject
 {
     static Queue<SenderEventPair> _eventQueue = new ();
 
-    static bool _expectingAwaitedEvents = false;
+    static bool _expectingAutoSyncEvents = false;
 
     private static void OnAwaited(object? sender, AwaitedEventArgs e)
     {
-        Assert.IsTrue(
-            _expectingAwaitedEvents,
-            "Expecting SyncList() only occurs when requested."
-        );
+        switch (e.Caller)
+        {
+            case "OnPropertyChanged":
+                break;
+            case "WDTAutoSync":
+                Assert.IsTrue(
+                    _expectingAutoSyncEvents,
+                    "Expecting SyncList() only occurs when requested."
+                );
+                break;
+            default:
+                break;
+        }
         _eventQueue.Enqueue(new SenderEventPair(sender, e));        
     }
 
@@ -32,6 +41,9 @@ public class TestClass_XBoundViewObject
     [ClassCleanup]
     public static void ClassCleanup() 
         => Awaited -= OnAwaited;
+
+    [TestInitialize]
+    public void TestInitialize() => _eventQueue.Clear();
 
     [TestMethod]
     public void Test_PlusMinus()
@@ -46,7 +58,7 @@ public class TestClass_XBoundViewObject
                 Path.Combine("C:", "Github", "IVSoftware", "Demo");
         var items = new ObservableCollection<Item>();
         Item? item = null;
-        var xroot = new XElement("root").UseXBoundView(items, indent: 2, autoSyncEnabled: false);
+        var xroot = new XElement("root").WithXBoundView(items, indent: 2, autoSyncEnabled: false);
         var context = xroot.To<ViewContext>(@throw: true);
 
         subtestShowPathSimpleThenSyncList();

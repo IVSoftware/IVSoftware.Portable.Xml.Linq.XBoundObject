@@ -36,6 +36,13 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             if(_xel is null)
             {
                 _xel = xel;
+                _xel.Changed += (sender, e) =>
+                {
+                    if (sender is XAttribute xattr && ReferenceEquals(xattr.Parent, _xel))
+                    {
+                        Parent = _xel.Parent;
+                    }
+                };
             }
             else
             {
@@ -47,8 +54,24 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             return _xel;
         }
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
+        public XElement Parent
+        {
+            get => _parent;
+            set
+            {
+                if (!ReferenceEquals(_parent, value))
+                {
+                    _parent = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        XElement _parent = default;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
         public event PropertyChangedEventHandler PropertyChanged;
         internal string DebuggerDisplay
             => XEL?.Attribute(nameof(StdAttributeNameInternal.text))?.Value ?? "Error";
@@ -77,22 +100,35 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 }
             }
         }
-        public int Space
-        {
-            get
-            {
-                if (_space is null)
-                {
-                    if(XEL.AncestorOfType<ViewContext>() is ViewContext context)
-                    {
+        public int Space => _indent * _depth;
 
-                    }
-                    return 0;
+        private int _indent
+        {
+            get => __indent ?? 5;
+            set
+            {
+                if (!Equals(__indent, value))
+                {
+                    __indent = value;
                 }
-                else return (int)_space;
             }
         }
-        int? _space = null;
+        int? __indent = default;
+        int _space;
+
+        public int _depth
+        {
+            get => __depth;
+            set
+            {
+                if (!Equals(__depth, value))
+                {
+                    __depth = value;
+                }
+            }
+        }
+        int __depth = default;
+
 
 
         /// <summary>
@@ -184,6 +220,46 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 }
             }
         }
+        public virtual string PlusMinusGlyph
+        {
+            get
+            {
+                switch (PlusMinus)
+                {
+                    case PlusMinus.Collapsed:
+                        return "+";
+                    case PlusMinus.Partial:
+                        return "*";
+                    case PlusMinus.Expanded:
+                        return "-";
+                    default:
+                        return " ";
+                }
+            }
+        }
+
+        protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            base.OnPropertyChanged(propertyName);
+            switch (propertyName)
+            {
+                case nameof(__depth):
+                case nameof(__indent):
+                case nameof(PlusMinus):
+                    OnPropertyChanged(nameof(PlusMinusGlyph));
+                    OnPropertyChanged(nameof(Space));
+                    break;
+                case nameof(Parent):
+                    if( Parent is XElement pxel &&
+                        XEL.AncestorOfType<ViewContext>() is ViewContext context)
+                    {
+                        _indent = context.Indent;
+                        _depth = XEL.Ancestors().Count() - 1;
+                        this.OnAwaited();
+                    }
+                    break;
+            }
+        }
     }
 
     public class ViewContext : XBoundObjectImplementer
@@ -195,11 +271,16 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 
         private readonly Dictionary<IXBoundObject, int> _o1 = null;
 
-        public ViewContext(IList items, int indent, bool autoSyncEnabled)
+        public ViewContext(
+            IList items,
+            int indent, 
+            bool autoSyncEnabled,
+            TimeSpan? autoSyncSettleDelay)
         {
             Indent = indent;
             Items = items;
             AutoSyncEnabled = autoSyncEnabled;
+            AutoSyncSettleDelay = autoSyncSettleDelay ?? TimeSpan.FromSeconds(0.1);
             if (Items is INotifyCollectionChanged incc)
             {
                 _o1 = new Dictionary<IXBoundObject, int>();
@@ -262,8 +343,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// Supports automatic synchronization, hierarchical indentation logic, and dynamic 
         /// tracking of visible elements with positional mapping.
         /// </summary>
-        public ViewContext(XElement xel, IList items, int indent, bool autoSync)
-            : this(items, indent, autoSync) => InitXEL(xel);
+        public ViewContext(XElement xel, IList items, int indent, bool autoSync, TimeSpan? autoSyncSettleDelay)
+            : this(items, indent, autoSync, autoSyncSettleDelay) => InitXEL(xel);
         public override XElement InitXEL(XElement xel)
         {
             if (xel.Parent != null)

@@ -904,17 +904,24 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 
     public static partial class Extensions
     {
-        public static XElement UseXBoundView(
+        public static XElement WithXBoundView(
             this XElement @this,
             IList items = null,
             int indent = 10,
-            bool autoSyncEnabled = true)
+            bool autoSyncEnabled = true,
+            TimeSpan? autoSyncSettleDelay = null)
         {
             if (@this.Parent != null)
             {
                 throw new InvalidOperationException("The receiver must be a root element.");
             }
-            @this.SetBoundAttributeValue(new ViewContext(@this, items, indent, autoSyncEnabled));
+            @this.SetBoundAttributeValue(new ViewContext(
+                @this,
+                items,
+                indent,
+                autoSyncEnabled,
+                autoSyncSettleDelay
+                ));
             return @this;
         }
     }
