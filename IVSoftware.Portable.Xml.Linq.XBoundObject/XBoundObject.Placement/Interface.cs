@@ -32,6 +32,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     public interface IXBoundViewObject : IXBoundObject
     {
         bool IsVisible { get; set; }
-        PlusMinus PlusMinus { get; set; }
+        PlusMinus PlusMinus { get; }
+        PlusMinus Expand(bool allowPartial = false);
+        PlusMinus Collapse();
     }
 }

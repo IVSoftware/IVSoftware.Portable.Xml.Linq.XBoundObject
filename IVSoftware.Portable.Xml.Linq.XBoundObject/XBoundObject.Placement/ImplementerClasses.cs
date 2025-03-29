@@ -93,13 +93,13 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                             switch (xbvo.PlusMinus)
                             {
                                 case PlusMinus.Collapsed:
-                                    xbvo.PlusMinus = PlusMinus.Expanded;
+                                    xbvo.Expand();
                                     break;
                                 case PlusMinus.Partial:
                                     Debug.Fail("TODO");
                                     break;
                                 case PlusMinus.Expanded:
-                                    xbvo.PlusMinus = PlusMinus.Collapsed;
+                                    xbvo.Collapse();
                                     break;
                                 default:
                                     // N O O P
@@ -197,7 +197,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                             // [Careful]
                             // These must be set as INPC Properties not as XATTR!
                             pxbo.IsVisible = true;
-                            pxbo.PlusMinus = PlusMinus.Auto;
+                            pxbo.Expand(allowPartial: true);
                         }
                     }
                     else
@@ -219,7 +219,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 XEL.TryGetAttributeValue(out PlusMinus value)
                 ? value
                 : PlusMinus.Leaf;
-            set
+            internal set
             {
                 if (!Equals(PlusMinus, value))
                 {
@@ -336,6 +336,19 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 default:
                     break;
             }
+        }
+
+        public PlusMinus Expand(bool autoDetectPartial = false)
+        {
+            if (autoDetectPartial) PlusMinus = PlusMinus.Auto;
+            else PlusMinus = PlusMinus.Expanded;
+            return PlusMinus; // The result is 'not' necessarily the same.
+        }
+
+        public PlusMinus Collapse()
+        {
+            PlusMinus = PlusMinus.Collapsed;
+            return PlusMinus; // The result is 'not' necessarily the same.
         }
     }
 

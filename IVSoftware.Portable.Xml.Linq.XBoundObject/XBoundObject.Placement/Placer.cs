@@ -615,18 +615,18 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             if(placer.XResult is XElement xel)
             {
                 foreach (
-                    var xbvo in
+                    var cxbvo in
                     xel
                     .Elements()
                     .Select(_=>_.To<IXBoundViewObject>())
                     .Where(_=>_ != null)
                     )
                 {
-                    xbvo.IsVisible = true;
+                    cxbvo.IsVisible = true;
                 }
-                var xbo = xel.To<IXBoundViewObject>(@throw: true);
-                xbo.PlusMinus = PlusMinus.Auto;
-                xbo.IsVisible = true;
+                var xbvo = xel.To<IXBoundViewObject>(@throw: true);
+                xbvo.Expand(allowPartial: true);
+                xbvo.IsVisible = true;
             }
             return placer.XResult;
         }
@@ -675,7 +675,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 {
                     xbvo.IsVisible = false;
                 }
-                xel.To<IXBoundViewObject>(@throw: true).PlusMinus = PlusMinus.Collapsed;
+                xel.To<IXBoundViewObject>(@throw: true).Collapse();
             }
             return placer.XResult;
         }
