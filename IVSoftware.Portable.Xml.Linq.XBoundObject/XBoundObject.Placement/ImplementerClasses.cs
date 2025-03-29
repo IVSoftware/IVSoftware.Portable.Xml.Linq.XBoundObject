@@ -425,6 +425,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 
         public PlusMinus Collapse()
         {
+            IsVisible = true;
             PlusMinus = PlusMinus.Collapsed;
             return PlusMinus; // The result is 'not' necessarily the same.
         }
@@ -557,7 +558,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         {
             if(SortingEnabled)
             {
-                Debug.Fail("Turn off for UT.");
+                XEL.Sort(CustomSorter);
             }
             var type = Items.GetType();
             if (type.IsGenericType &&
@@ -682,7 +683,12 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             {
                 if (_wdtAutoSync is null)
                 {
-                    _wdtAutoSync = new WatchdogTimer { Interval = AutoSyncSettleDelay };
+                    _wdtAutoSync = new WatchdogTimer (
+                        defaultInitialAction: () =>
+                        {
+                            this.OnAwaited(caller: $"{nameof(WatchdogTimer.StartOrRestart)}");
+                        })
+                    { Interval = AutoSyncSettleDelay };
                     _wdtAutoSync.RanToCompletion += async (sender, e) =>
                     {
                         await _busyAutoSync.WaitAsync();

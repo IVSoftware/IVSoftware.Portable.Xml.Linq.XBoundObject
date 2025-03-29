@@ -1,6 +1,9 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.Xml.Serialization;
+using IVSoftware.Portable;
 using IVSoftware.Portable.Threading;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
@@ -16,6 +19,7 @@ public class TestClass_XBoundViewObject
     static Queue<SenderEventPair> _eventQueue = new ();
 
     static bool _expectingAutoSyncEvents = false;
+    static string[] AllowedCallers = [];
 
     private static void OnAwaited(object? sender, AwaitedEventArgs e)
     {
@@ -32,7 +36,10 @@ public class TestClass_XBoundViewObject
             default:
                 break;
         }
-        _eventQueue.Enqueue(new SenderEventPair(sender, e));        
+        if (!AllowedCallers.Any() || AllowedCallers.Contains(e.Caller))
+        {
+            _eventQueue.Enqueue(new SenderEventPair(sender, e));
+        }
     }
 
     [ClassInitialize]
@@ -44,7 +51,11 @@ public class TestClass_XBoundViewObject
         => Awaited -= OnAwaited;
 
     [TestInitialize]
-    public void TestInitialize() => _eventQueue.Clear();
+    public void TestInitialize()
+    {
+        _eventQueue.Clear();
+        AllowedCallers = [];
+    }
 
     [TestMethod]
     public void Test_PlusMinus()
@@ -614,32 +625,32 @@ C:
 
 
             await subtestImplicitVisible();
+
+            // Wait for unintended sync events.
+            Thread.Sleep(TimeSpan.FromSeconds(0.5));
+
+            #region S U B T E S T S
             async Task subtestImplicitVisible()
             {
                 xel = xroot.Descendants().Skip(7).First();
                 xel.To<Item>().Expand();
                 await awaiter.WaitAsync();
+
+                actual = context.ItemsToString();
+                actual.ToClipboard();
+                actual.ToClipboardExpected();
+                actual.ToClipboardAssert();
                 { }
-            }
-
-
-            actual = context.ItemsToString();
-            actual.ToClipboard();
-            actual.ToClipboardExpected();
-            actual.ToClipboardAssert();
-            { }
-            expected = @" 
+                expected = @" 
 * C:
     E";
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting values to match."
-            );
-
-            // Wait for unintended sync events.
-            Thread.Sleep(TimeSpan.FromSeconds(0.5));
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting item E is visible and downgraded to leaf."
+                );
+            }
+            #endregion S U B T E S T S
         }
         finally
         {
@@ -800,8 +811,146 @@ C:
         }
     }
 
+    [TestMethod]
+    public async Task Test_DefaultSorting()
+    {
+        string actual, expected;
+        XElement? xel;
+        Item item;
+        string path;
+
+        SemaphoreSlim awaiter = new SemaphoreSlim(0, 1);
+        void localOnAwaited(object? sender, AwaitedEventArgs e)
+        {
+            switch (e.Caller)
+            {
+                case nameof(WatchdogTimer.StartOrRestart):
+                    Debug.WriteLine($"ADVISORY {e.Caller}");
+                    break;
+                case "WDTAutoSync":
+                    Debug.WriteLine($"ADVISORY {e.Caller}");
+                    awaiter.Release();
+                    break;
+                default:
+                    break;
+            }
+        }
+        try
+        {
+            AllowedCallers = new[] { "WDTAutoSync" };
+            Awaited += localOnAwaited;
+            _expectingAutoSyncEvents = true;
+            var xroot =
+                new XElement("root")
+                .WithXBoundView(
+                    items: new ObservableCollection<Item>(),
+                    indent: 2,
+                    autoSyncSettleDelay: TimeSpan.FromSeconds(1)
+            );
+            var context = xroot.To<ViewContext>();
+            Assert.IsNotNull(context);
+            await awaiter.WaitAsync();
+            _eventQueue.DequeueSingle();
+            await Task.Delay(5000);
+            foreach (var tmp in new[]
+            {
+                Path.Combine("D:", "I"),
+                Path.Combine("B:", "A"),
+                Path.Combine("B:", "B"),
+                Path.Combine("C:", "F"),
+                Path.Combine("B:", "C"),
+                Path.Combine("C:", "E"),
+                Path.Combine("C:", "G"),
+                Path.Combine("D:", "H"),
+                Path.Combine("D:", "J"),
+            })
+            {
+                xroot.FindOrCreate<Item>(tmp);
+            }
+            await awaiter.WaitAsync();
+            await Task.Delay(5000);
+            _eventQueue.DequeueSingle();
+
+            await awaiter.WaitAsync();
+
+            actual = xroot.ToString();
+            actual.ToClipboardExpected();
+            ;
+            expected = @" 
+<root viewcontext=""[ViewContext]"">
+  <xnode datamodel=""[Item]"" text=""B:"">
+    <xnode datamodel=""[Item]"" text=""A"" />
+    <xnode datamodel=""[Item]"" text=""B"" />
+    <xnode datamodel=""[Item]"" text=""C"" />
+  </xnode>
+  <xnode datamodel=""[Item]"" text=""C:"">
+    <xnode datamodel=""[Item]"" text=""E"" />
+    <xnode datamodel=""[Item]"" text=""F"" />
+    <xnode datamodel=""[Item]"" text=""G"" />
+  </xnode>
+  <xnode datamodel=""[Item]"" text=""D:"">
+    <xnode datamodel=""[Item]"" text=""H"" />
+    <xnode datamodel=""[Item]"" text=""I"" />
+    <xnode datamodel=""[Item]"" text=""J"" />
+  </xnode>
+</root>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting DEFAULT SORTED with NONE VISIBLE."
+            );
+
+            path = Path.Combine("D:", "I");
+            Assert.AreEqual(
+                PlacerResult.Exists,
+                xroot.Place(path, out xel),
+                "Expecting to find the existing node.");
+
+            await awaiter.WaitAsync();   
+
+
+            await subtestImplicitVisibleOnCollapse();
+            async Task subtestImplicitVisibleOnCollapse()
+            {
+                xel.To<Item>().Collapse();
+                await awaiter.WaitAsync();
+                actual = context.ItemsToString();
+
+                actual.ToClipboard();
+                expected = @" 
+* D:
+    I";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting node is shown explicitly from collapsing."
+                );
+
+                // Wait for unintended sync events.
+                Thread.Sleep(TimeSpan.FromSeconds(0.5));
+            }
+        }
+        finally
+        {
+            awaiter.Wait(0);
+            awaiter.Release();
+            awaiter.Dispose();
+            Awaited -= localOnAwaited;
+            _expectingAutoSyncEvents = false;
+        }
+    }
+
     /// <summary>
     /// Class for testing automatic type injection.
     /// </summary>
+    
+    [DataModel]
     private class Item : XBoundViewObjectImplementer { }
+
+
+    [DataModel(xname: "Item")]
+    private class ItemEx : XBoundViewObjectImplementer { }
 }

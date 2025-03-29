@@ -33,4 +33,12 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             ? Name
             : $"Name='{Name}'";
     }
+
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public class DataModelAttribute : Attribute
+    {
+        public DataModelAttribute(string xname = null)
+            => XName = xname;
+        public string XName { get; }
+    }
 }

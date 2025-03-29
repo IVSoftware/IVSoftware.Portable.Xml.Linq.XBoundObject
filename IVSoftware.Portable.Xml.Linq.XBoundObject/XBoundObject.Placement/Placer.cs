@@ -472,9 +472,17 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             {
                 if (!e.Xel.Has<T>())
                 {
+                    var type = typeof(T);
+                    string xname =
+                        type.GetCustomAttribute<DataModelAttribute>() is DataModelAttribute dmattr
+                        ? dmattr.XName
+                        : null;
+                    xname = xname ?? nameof(StdAttributeNameXBoundViewObject.datamodel);
                     var t = new T();
                     t.InitXEL(e.Xel);
-                    e.Xel.SetBoundAttributeValue(t);
+                    e.Xel.SetBoundAttributeValue(
+                        t, 
+                        name: xname);
                 }
                 onBeforeAdd?.Invoke( sender, e );
             }
@@ -804,12 +812,18 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     context.Items is IList items &&
                     items.GetType().GetGenericArguments().SingleOrDefault() is Type type)
                 {
+                    string xname = 
+                        type.GetCustomAttribute<DataModelAttribute>() is DataModelAttribute dmattr
+                        ? dmattr.XName 
+                        : null;
+                    xname = xname ?? nameof(StdAttributeNameXBoundViewObject.datamodel);
+
                     if (Activator.CreateInstance(type) is IXBoundObject xbo)
                     {
                         xbo.InitXEL(e.Xel);
                         e.Xel.SetBoundAttributeValue(
                             xbo,
-                            name: nameof(StdAttributeNameXBoundViewObject.datamodel));
+                            name: xname);
                     }
                     else Debug.Fail($"Expecting successful creation of type '{type.Name}'");
                 }

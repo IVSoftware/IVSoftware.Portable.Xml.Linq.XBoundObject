@@ -48,6 +48,6 @@
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="IVSoftware.Portable.Threading" Version="1.3.1" />
-		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="1.2.1" />
+		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="1.3.0-prerelease" />
 	</ItemGroup>
 </Project>
