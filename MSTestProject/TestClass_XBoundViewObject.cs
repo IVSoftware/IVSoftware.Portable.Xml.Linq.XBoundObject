@@ -213,7 +213,7 @@ public class TestClass_XBoundViewObject
       </xnode>
     </xnode>
   </xnode>
-  <xnode text=""B:(Floppy Disk)"" item=""[Item]"" />
+  <xnode text=""B:(Floppy Disk)"" datamodel=""[Item]"" />
 </root>";
 
             Assert.AreEqual(
@@ -244,7 +244,7 @@ public class TestClass_XBoundViewObject
       </xnode>
     </xnode>
   </xnode>
-  <xnode text=""B:(Floppy Disk)"" isvisible=""True"" item=""[Item]"" />
+  <xnode text=""B:(Floppy Disk)"" isvisible=""True"" datamodel=""[Item]"" />
 </root>";
 
             Assert.AreEqual(
@@ -258,7 +258,7 @@ public class TestClass_XBoundViewObject
             actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
             expected = @" 
 <root viewcontext=""[ViewContext]"">
-  <xnode text=""B:(Floppy Disk)"" isvisible=""True"" item=""[Item]"" />
+  <xnode text=""B:(Floppy Disk)"" isvisible=""True"" datamodel=""[Item]"" />
   <xnode text=""C:"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
     <xnode text=""Github"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
       <xnode text=""IVSoftware"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
@@ -309,7 +309,7 @@ public class TestClass_XBoundViewObject
             actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
             expected = @" 
 <root viewcontext=""[ViewContext]"">
-  <xnode text=""B:(Floppy Disk)"" isvisible=""True"" item=""[Item]"" />
+  <xnode text=""B:(Floppy Disk)"" isvisible=""True"" datamodel=""[Item]"" />
   <xnode text=""C:"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
     <xnode text=""Github"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
       <xnode text=""IVSoftware"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
@@ -353,7 +353,7 @@ C:
             actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
             expected = @" 
 <root viewcontext=""[ViewContext]"">
-  <xnode text=""B:(Floppy Disk)"" isvisible=""True"" item=""[Item]"" />
+  <xnode text=""B:(Floppy Disk)"" isvisible=""True"" datamodel=""[Item]"" />
   <xnode text=""C:"" isvisible=""True"" plusminus=""Collapsed"" datamodel=""[Item]"">
     <xnode text=""Github"" datamodel=""[Item]"">
       <xnode text=""IVSoftware"" datamodel=""[Item]"">
@@ -400,7 +400,7 @@ C:
             { }
             expected = @" 
 <root viewcontext=""[ViewContext]"">
-  <xnode text=""B:(Floppy Disk)"" isvisible=""True"" item=""[Item]"" />
+  <xnode text=""B:(Floppy Disk)"" isvisible=""True"" datamodel=""[Item]"" />
   <xnode text=""C:"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
     <xnode text=""Github"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
       <xnode text=""IVSoftware"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
@@ -424,9 +424,6 @@ C:
 
             context.SyncList();
             actual = context.ItemsToString();
-            actual.ToClipboard();
-            actual.ToClipboardExpected();
-            { }
             expected = @" 
   B:(Floppy Disk)
 - C:
@@ -522,22 +519,23 @@ C:
             actual = xroot.ToString();
             actual.ToClipboardExpected();
             { }
+
             expected = @" 
 <root viewcontext=""[ViewContext]"">
   <xnode datamodel=""[Item]"" text=""C:"" isvisible=""True"">
-    <xnode item=""[Item]"" text=""E"" />
-    <xnode item=""[Item]"" text=""F"" />
-    <xnode item=""[Item]"" text=""G"" />
+    <xnode datamodel=""[Item]"" text=""E"" />
+    <xnode datamodel=""[Item]"" text=""F"" />
+    <xnode datamodel=""[Item]"" text=""G"" />
   </xnode>
-  <xnode item=""[Item]"" text=""B:"">
-    <xnode item=""[Item]"" text=""A"" />
-    <xnode item=""[Item]"" text=""B"" />
-    <xnode item=""[Item]"" text=""C"" />
+  <xnode datamodel=""[Item]"" text=""B:"">
+    <xnode datamodel=""[Item]"" text=""A"" />
+    <xnode datamodel=""[Item]"" text=""B"" />
+    <xnode datamodel=""[Item]"" text=""C"" />
   </xnode>
-  <xnode item=""[Item]"" text=""D:"">
-    <xnode item=""[Item]"" text=""H"" />
-    <xnode item=""[Item]"" text=""I"" />
-    <xnode item=""[Item]"" text=""J"" />
+  <xnode datamodel=""[Item]"" text=""D:"">
+    <xnode datamodel=""[Item]"" text=""H"" />
+    <xnode datamodel=""[Item]"" text=""I"" />
+    <xnode datamodel=""[Item]"" text=""J"" />
   </xnode>
 </root>"
             ;
@@ -552,24 +550,27 @@ C:
             await awaiter.WaitAsync();
 
             actual = xroot.ToString();
+            actual.ToClipboardExpected();
+            { }
             expected = @" 
 <root viewcontext=""[ViewContext]"">
-  <xnode item=""[Item]"" text=""B:"">
-    <xnode item=""[Item]"" text=""A"" />
-    <xnode item=""[Item]"" text=""B"" />
-    <xnode item=""[Item]"" text=""C"" />
+  <xnode datamodel=""[Item]"" text=""B:"">
+    <xnode datamodel=""[Item]"" text=""A"" />
+    <xnode datamodel=""[Item]"" text=""B"" />
+    <xnode datamodel=""[Item]"" text=""C"" />
   </xnode>
   <xnode datamodel=""[Item]"" text=""C:"" isvisible=""True"">
-    <xnode item=""[Item]"" text=""E"" />
-    <xnode item=""[Item]"" text=""F"" />
-    <xnode item=""[Item]"" text=""G"" />
+    <xnode datamodel=""[Item]"" text=""E"" />
+    <xnode datamodel=""[Item]"" text=""F"" />
+    <xnode datamodel=""[Item]"" text=""G"" />
   </xnode>
-  <xnode item=""[Item]"" text=""D:"">
-    <xnode item=""[Item]"" text=""H"" />
-    <xnode item=""[Item]"" text=""I"" />
-    <xnode item=""[Item]"" text=""J"" />
+  <xnode datamodel=""[Item]"" text=""D:"">
+    <xnode datamodel=""[Item]"" text=""H"" />
+    <xnode datamodel=""[Item]"" text=""I"" />
+    <xnode datamodel=""[Item]"" text=""J"" />
   </xnode>
-</root>";
+</root>"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -592,20 +593,20 @@ C:
             actual = xroot.ToString();
             expected = @" 
 <root viewcontext=""[ViewContext]"">
-  <xnode item=""[Item]"" text=""D:"">
-    <xnode item=""[Item]"" text=""J"" />
-    <xnode item=""[Item]"" text=""I"" />
-    <xnode item=""[Item]"" text=""H"" />
+  <xnode datamodel=""[Item]"" text=""D:"">
+    <xnode datamodel=""[Item]"" text=""J"" />
+    <xnode datamodel=""[Item]"" text=""I"" />
+    <xnode datamodel=""[Item]"" text=""H"" />
   </xnode>
   <xnode datamodel=""[Item]"" text=""C:"" isvisible=""True"">
-    <xnode item=""[Item]"" text=""G"" />
-    <xnode item=""[Item]"" text=""F"" />
-    <xnode item=""[Item]"" text=""E"" />
+    <xnode datamodel=""[Item]"" text=""G"" />
+    <xnode datamodel=""[Item]"" text=""F"" />
+    <xnode datamodel=""[Item]"" text=""E"" />
   </xnode>
-  <xnode item=""[Item]"" text=""B:"">
-    <xnode item=""[Item]"" text=""C"" />
-    <xnode item=""[Item]"" text=""B"" />
-    <xnode item=""[Item]"" text=""A"" />
+  <xnode datamodel=""[Item]"" text=""B:"">
+    <xnode datamodel=""[Item]"" text=""C"" />
+    <xnode datamodel=""[Item]"" text=""B"" />
+    <xnode datamodel=""[Item]"" text=""A"" />
   </xnode>
 </root>"
             ;
@@ -850,8 +851,7 @@ C:
             var context = xroot.To<ViewContext>();
             Assert.IsNotNull(context);
             await awaiter.WaitAsync();
-            _eventQueue.DequeueSingle();
-            await Task.Delay(5000);
+
             foreach (var tmp in new[]
             {
                 Path.Combine("D:", "I"),
@@ -868,14 +868,9 @@ C:
                 xroot.FindOrCreate<Item>(tmp);
             }
             await awaiter.WaitAsync();
-            await Task.Delay(5000);
-            _eventQueue.DequeueSingle();
-
-            await awaiter.WaitAsync();
 
             actual = xroot.ToString();
             actual.ToClipboardExpected();
-            ;
             expected = @" 
 <root viewcontext=""[ViewContext]"">
   <xnode datamodel=""[Item]"" text=""B:"">
@@ -903,13 +898,20 @@ C:
             );
 
             path = Path.Combine("D:", "I");
+            _eventQueue.Clear();
             Assert.AreEqual(
                 PlacerResult.Exists,
                 xroot.Place(path, out xel),
                 "Expecting to find the existing node.");
 
-            await awaiter.WaitAsync();   
+            await Task.Delay(TimeSpan.FromSeconds(0.25));
 
+            // [Careful] Do not await the awaiter here!
+            Assert.AreEqual(
+                0, 
+                _eventQueue.Count,
+                $"Expecting Place (Exists) did 'not' make any changes to the XML."
+             );
 
             await subtestImplicitVisibleOnCollapse();
             async Task subtestImplicitVisibleOnCollapse()

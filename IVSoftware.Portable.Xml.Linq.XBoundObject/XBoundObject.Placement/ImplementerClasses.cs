@@ -1,4 +1,5 @@
-﻿using IVSoftware.Portable.Threading;
+﻿using IVSoftware.Portable.Disposable;
+using IVSoftware.Portable.Threading;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -431,6 +432,12 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         }
     }
 
+    /// <summary>
+    /// Represents a view model context that manages a synchronized relationship between
+    /// a root <see cref="XElement"/> and a bound <see cref="IList"/> of view objects.
+    /// Supports automatic synchronization, hierarchical indentation logic, and dynamic 
+    /// tracking of visible elements with positional mapping.
+    /// </summary>
     public class ViewContext : XBoundObjectImplementer
     {
         public int Indent { get; }
@@ -441,6 +448,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public bool AutoSyncEnabled { get; set; } = true;
 
         private readonly Dictionary<IXBoundObject, int> _o1 = null;
+
+        DisposableHost DHostSyncing { get; } = new DisposableHost();
 
         public ViewContext(
             IList items,
@@ -508,12 +517,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 };
             }
         }
-        /// <summary>
-        /// Represents a view model context that manages a synchronized relationship between
-        /// a root <see cref="XElement"/> and a bound <see cref="IList"/> of view objects.
-        /// Supports automatic synchronization, hierarchical indentation logic, and dynamic 
-        /// tracking of visible elements with positional mapping.
-        /// </summary>
         public ViewContext(
             XElement xel,
             IList items = null,
@@ -538,7 +541,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     {
                         return;
                     }
-                    WDTAutoSync.StartOrRestart();
+                    if (DHostSyncing.IsZero())
+                    {
+                        WDTAutoSync.StartOrRestart();
+                    }
                     _preFilter = now;
                 }
             };
@@ -556,66 +562,69 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// </exception>
         public void SyncList()
         {
-            if(SortingEnabled)
+            using (DHostSyncing.GetToken())
             {
-                XEL.Sort(CustomSorter);
-            }
-            var type = Items.GetType();
-            if (type.IsGenericType &&
-                type.GetGenericTypeDefinition() == typeof(ObservableCollection<>) &&
-                typeof(IXBoundViewObject).IsAssignableFrom(type.GetGenericArguments()[0]))
-            {
-                localSyncDynamic();
-            }
-            else throw new InvalidOperationException(
-                $"SyncList requires Items to be an ObservableCollection<T> where T implements IXBoundViewObject. " +
-                $"Actual type: {type.FullName}");
-
-            void localSyncDynamic()
-            {
-                var index = 0;
-                foreach (var xel in XEL.VisibleElements())
+                if (SortingEnabled)
                 {
-                    // Get the item that "should be" at this index
-                    if (xel.To<IXBoundObject>() is IXBoundObject sbAtIndex)
+                    XEL.Sort(CustomSorter);
+                }
+                var type = Items.GetType();
+                if (type.IsGenericType &&
+                    type.GetGenericTypeDefinition() == typeof(ObservableCollection<>) &&
+                    typeof(IXBoundViewObject).IsAssignableFrom(type.GetGenericArguments()[0]))
+                {
+                    localSyncDynamic();
+                }
+                else throw new InvalidOperationException(
+                    $"SyncList requires Items to be an ObservableCollection<T> where T implements IXBoundViewObject. " +
+                    $"Actual type: {type.FullName}");
+
+                void localSyncDynamic()
+                {
+                    var index = 0;
+                    foreach (var xel in XEL.VisibleElements())
                     {
-                        if (index < Items.Count)
+                        // Get the item that "should be" at this index
+                        if (xel.To<IXBoundObject>() is IXBoundObject sbAtIndex)
                         {
-                            var isAtIndex = Items[index];
-                            if (ReferenceEquals(isAtIndex, sbAtIndex))
+                            if (index < Items.Count)
                             {
-                                index++;
-                            }
-                            else
-                            {
-                                if (_o1.TryGetValue(sbAtIndex, out int currentIndex))
+                                var isAtIndex = Items[index];
+                                if (ReferenceEquals(isAtIndex, sbAtIndex))
                                 {
-                                    Debug.Assert(
-                                        currentIndex > index,
-                                        $"Expecting higher index otherwise it's 'eating its own'");
-                                    Items.RemoveAt(currentIndex);
-                                    Items.Insert(index++, sbAtIndex);
-                                    _o1[sbAtIndex] = index;
+                                    index++;
                                 }
                                 else
                                 {
-                                    Items.Insert(index++, sbAtIndex);
+                                    if (_o1.TryGetValue(sbAtIndex, out int currentIndex))
+                                    {
+                                        Debug.Assert(
+                                            currentIndex > index,
+                                            $"Expecting higher index otherwise it's 'eating its own'");
+                                        Items.RemoveAt(currentIndex);
+                                        Items.Insert(index++, sbAtIndex);
+                                        _o1[sbAtIndex] = index;
+                                    }
+                                    else
+                                    {
+                                        Items.Insert(index++, sbAtIndex);
+                                    }
                                 }
+                            }
+                            else
+                            {
+                                Items.Insert(index++, sbAtIndex);
                             }
                         }
                         else
                         {
-                            Items.Insert(index++, sbAtIndex);
+                            Debug.Fail($"Expecting {nameof(IXBoundObject)} instance is always bound to xel.");
                         }
                     }
-                    else
+                    while (index < Items.Count)
                     {
-                        Debug.Fail($"Expecting {nameof(IXBoundObject)} instance is always bound to xel.");
+                        Items.RemoveAt(index);
                     }
-                }
-                while(index < Items.Count)
-                {
-                    Items.RemoveAt(index);
                 }
             }
         }
