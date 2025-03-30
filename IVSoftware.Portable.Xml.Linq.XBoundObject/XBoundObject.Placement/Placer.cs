@@ -482,7 +482,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     t.InitXEL(e.Xel);
                     e.Xel.SetBoundAttributeValue(
                         t, 
-                        name: xname);
+                        name: xname.ToLower());
                 }
                 onBeforeAdd?.Invoke( sender, e );
             }
@@ -823,7 +823,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                         xbo.InitXEL(e.Xel);
                         e.Xel.SetBoundAttributeValue(
                             xbo,
-                            name: xname);
+                            name: xname.ToLower());
                     }
                     else Debug.Fail($"Expecting successful creation of type '{type.Name}'");
                 }

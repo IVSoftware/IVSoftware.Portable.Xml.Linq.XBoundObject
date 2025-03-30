@@ -568,16 +568,19 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 {
                     XEL.Sort(CustomSorter);
                 }
-                var type = Items.GetType();
-                if (type.IsGenericType &&
-                    type.GetGenericTypeDefinition() == typeof(ObservableCollection<>) &&
-                    typeof(IXBoundViewObject).IsAssignableFrom(type.GetGenericArguments()[0]))
+                Type 
+                    collectionType = Items.GetType(),
+                    genericType;
+                if (collectionType.IsGenericType &&
+                    collectionType.GetGenericTypeDefinition() == typeof(ObservableCollection<>) &&
+                    typeof(IXBoundViewObject).IsAssignableFrom(collectionType.GetGenericArguments()[0]))
                 {
+                    genericType = collectionType.GetGenericArguments()[0];
                     localSyncDynamic();
                 }
                 else throw new InvalidOperationException(
                     $"SyncList requires Items to be an ObservableCollection<T> where T implements IXBoundViewObject. " +
-                    $"Actual type: {type.FullName}");
+                    $"Actual type: {collectionType.FullName}");
 
                 void localSyncDynamic()
                 {
@@ -587,6 +590,14 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                         // Get the item that "should be" at this index
                         if (xel.To<IXBoundObject>() is IXBoundObject sbAtIndex)
                         {
+                            if (!genericType.IsInstanceOfType(sbAtIndex))
+                            {
+                                throw new InvalidCastException(
+                                    $"XElement at path '{xel.GetPath()}' is bound to an instance of type '{sbAtIndex.GetType().FullName}', " +
+                                    $"which is not assignable to the expected collection type '{genericType.FullName}'.\n" +
+                                    $"Ensure that all bound elements match the declared ObservableCollection<T> type."
+                                );
+                            }
                             if (index < Items.Count)
                             {
                                 var isAtIndex = Items[index];

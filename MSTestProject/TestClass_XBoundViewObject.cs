@@ -842,7 +842,6 @@ C:
             Awaited += localOnAwaited;
             _expectingAutoSyncEvents = true;
 
-
             await subtestDefaultAlphaNumericBuiltIn();
             await subtestDefaultCustomAlphaNumericReverse();
             #region S U B T E S T S
@@ -942,23 +941,26 @@ C:
                 }
             }
 
-
             async Task subtestDefaultCustomAlphaNumericReverse()
             {
                 var xroot =
                     new XElement("root")
                     .WithXBoundView(
-                        items: new ObservableCollection<Item>(),
+                        items: new ObservableCollection<ItemEx>(),
                         indent: 2,
-                        customSorter: (b, a)=> (
-                            a
-                            .Attribute(nameof(StdAttributeNameXBoundViewObject.text))
-                            ?.Value ?? string.Empty)
-                            .CompareTo(
-                            b
-                            .Attribute(nameof(StdAttributeNameXBoundViewObject.text))
-                            ?.Value ?? string.Empty)
-                );
+                        customSorter: (b, a)=>
+                            (
+                                a
+                                .Attribute(nameof(StdAttributeNameXBoundViewObject.text))
+                                ?.Value ?? string.Empty)
+                                .CompareTo(
+                                    b
+                                    .Attribute(nameof(StdAttributeNameXBoundViewObject.text))
+                                    ?.Value ?? string.Empty)
+                            );
+#if false
+
+#endif
                 var context = xroot.To<ViewContext>();
                 Assert.IsNotNull(context);
                 await awaiter.WaitAsync();
@@ -1001,7 +1003,6 @@ C:
     <xnode datamodel=""[Item]"" text=""A"" />
   </xnode>
 </root>"
-                ;
                 ;
 
                 Assert.AreEqual(
@@ -1070,5 +1071,11 @@ C:
 
 
     [DataModel(xname: "Item")]
-    private class ItemEx : XBoundViewObjectImplementer { }
+    private class ItemEx : XBoundViewObjectImplementer, IComparable<IXBoundViewObject>
+    {
+        public int CompareTo(IXBoundViewObject? other)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
