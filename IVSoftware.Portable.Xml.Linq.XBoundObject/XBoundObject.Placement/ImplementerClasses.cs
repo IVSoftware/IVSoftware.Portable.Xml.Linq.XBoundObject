@@ -524,16 +524,18 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             {
                 if (AutoSyncEnabled)
                 {
-                    var now = DateTime.Now;
-                    if(now - _preFilter < TimeSpan.FromMilliseconds(50))
-                    {
-                        return;
-                    }
                     if (DHostSyncing.IsZero())
                     {
+                        // This must stay inside the DHOST block. Otherwise
+                        // it's a bug race condition and UT hangs.
+                        var now = DateTime.Now;
+                        if (now - _preFilter < TimeSpan.FromMilliseconds(50))
+                        {
+                            return;
+                        }
                         WDTAutoSync.StartOrRestart();
+                        _preFilter = now;
                     }
-                    _preFilter = now;
                 }
             };
             return base.InitXEL(xel);
@@ -552,26 +554,16 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         {
             using (DHostSyncing.GetToken())
             {
+                if (DHostSyncing.Count > 1)
+                {
+                    Debug.Fail("Unexpected");
+                }
                 if (SortingEnabled)
                 {
                     XEL.Sort(CustomSorter);
                 }
                 Type type = Items.GetType();
-                Type genericType = null;
-
-                for (type = Items.GetType(); type != null; type = type.BaseType)
-                {
-                    if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ObservableCollection<>))
-                    {
-                        var candidateType = type.GetGenericArguments()[0];
-                        if (typeof(IXBoundViewObject).IsAssignableFrom(candidateType))
-                        {
-                            genericType = candidateType;
-                            break;
-                        }
-                    }
-                }
-                { }
+                Type genericType = Items.GetGenericArguments().Single();
 
                 if (genericType == null)
                 {

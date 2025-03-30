@@ -19,6 +19,7 @@ namespace XBoundObjectMSTest;
 public class TestClass_XBoundViewObject
 {
     static Queue<SenderEventPair> _eventQueue = new ();
+    static Queue<SenderEventPair> _eventQueueAutoSync = new ();
 
     static bool _expectingAutoSyncEvents = false;
     static string[] AllowedCallers = [];
@@ -89,7 +90,6 @@ public class TestClass_XBoundViewObject
         subtestExpandDemoNode();
         subtestCollapseC();
         subtestEnsureNoAutoSyncEvent();
-
         subtestExpandLeaf();
 
         #region S U B T E S T S
@@ -97,7 +97,7 @@ public class TestClass_XBoundViewObject
         void subtestShowPathSimpleThenSyncList()
         {
             // WinOS path in a WinOS test.
-            xroot.Show(origPath);
+            xroot.Show<Item>(origPath);
 
             actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
             actual.ToClipboard();
@@ -479,8 +479,9 @@ C:
                  );
             var context = xroot.To<ViewContext>();
             Assert.IsNotNull(context);
+            await awaiter.WaitAsync();
 
-            xroot.Show(@"C:\");
+            xroot.Show<Item>(@"C:\");
             await awaiter.WaitAsync();
 
             actual = xroot.ToString();
@@ -697,12 +698,13 @@ C:
                  );
             var context = xroot.To<ViewContext>();
             Assert.IsNotNull(context);
+            await awaiter.WaitAsync();
 
             string path =
                 @"C:\Github\IVSoftware\Demo\IVSoftware.Demo.CrossPlatform.FilesAndFolders\BasicPlacement.Maui\BasicPlacement.Maui.csproj"
                 .Replace('\\', Path.DirectorySeparatorChar);
             awaiter.Wait(0);
-            xroot.Show(path);
+            xroot.Show<Item>(path);
             await awaiter.WaitAsync();
 
             actual = context.ItemsToString();
@@ -1202,17 +1204,23 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
                     indent: 2
             );
             var context = xroot.To<ViewContext>();
-
-            xbvo =
-                xroot.FindOrCreate<DriveItem>("C:")
-                .XEL.FindOrCreate<FolderItem>("Users")
-                .XEL.FindOrCreate<FolderItem>("Documents")
-                .XEL.Show<FileItem>("README.md");
-
             await awaiter.WaitAsync();
+            await subtestFluentCreateFilesystem();
+            await subtestCollapsePath();
 
-            actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
-            expected = @" 
+            #region S U B T E S T S
+            async Task subtestFluentCreateFilesystem()
+            {
+                xbvo =
+                    xroot.FindOrCreate<DriveItem>("C:")
+                    .XEL.FindOrCreate<FolderItem>("Users")
+                    .XEL.FindOrCreate<FolderItem>("Documents")
+                    .XEL.Show<FileItem>("README.md");
+
+                await awaiter.WaitAsync();
+
+                actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
+                expected = @" 
 <root viewcontext=""[ViewContext]"">
   <xnode text=""C:"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[DriveItem]"">
     <xnode text=""Users"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[FolderItem]"">
@@ -1223,48 +1231,72 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
   </xnode>
 </root>";
 
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting fluent-configured folders and files."
-            );
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting fluent-configured folders and files."
+                );
 
-            actual = context.ItemsToString();
-            expected = @" 
+                actual = context.ItemsToString();
+                expected = @" 
 - C:
   - Users
     - Documents
         README.md";
 
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting filesystem view (expanded)."
-            );
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting filesystem view (expanded)."
+                );
+            }
 
-            xroot.Collapse(Path.Combine("C:", "Users"));
-            { }
+            async Task subtestCollapsePath()
+            {
+                xroot.Collapse(Path.Combine("C:", "Users"));
+                await awaiter.WaitAsync();
 
-            await awaiter.WaitAsync();
-            { }
-            actual = context.ItemsToString();
-            actual.ToClipboard();
-            actual.ToClipboardExpected();
-            actual.ToClipboardAssert();
-            { }
-            expected = @" 
+                actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
+
+                expected = @" 
+<root viewcontext=""[ViewContext]"">
+  <xnode text=""C:"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[DriveItem]"">
+    <xnode text=""Users"" isvisible=""True"" plusminus=""Collapsed"" datamodel=""[FolderItem]"">
+      <xnode text=""Documents"" datamodel=""[FolderItem]"">
+        <xnode text=""README.md"" datamodel=""[FileItem]"" />
+      </xnode>
+    </xnode>
+  </xnode>
+</root>";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting Users is collapsed with no visible items below it."
+                );
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting Users is collapsed with no visible items below it."
+                );
+
+                actual = context.ItemsToString();
+                expected = @" 
 - C:
   + Users"
-            ;
+                ;
 
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting values to match."
-            );
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting Users is collapsed with no visible items below it."
+                );
 
-            // Wait for unintended sync events.
-            Thread.Sleep(TimeSpan.FromSeconds(0.5));
+                // Wait for unintended sync events.
+                Thread.Sleep(TimeSpan.FromSeconds(0.5));
+            }
+            #endregion S U B T E S T S
         }
         finally
         {
@@ -1274,7 +1306,6 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
             Awaited -= localOnAwaited;
             _expectingAutoSyncEvents = false;
         }
-
     }
 
     /// <summary>
