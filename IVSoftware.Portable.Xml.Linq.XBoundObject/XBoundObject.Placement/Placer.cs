@@ -533,15 +533,28 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         }
 
 
-
         /// <summary>
         /// Find or create element at the specified path relative to @this and make it visible
         /// </summary>
-        public static XElement Show<T>(
+        public static T Show<T>(
                 this XElement @this,
                 string path,
-                Enum pathAttribute = null,
-                PlacerMode mode = PlacerMode.FindOrCreate) => throw new NotImplementedException();
+                Enum pathAttribute = null)
+            where T : class, IXBoundViewObject, new()
+        {
+            // Use FoT which auto-creates T.
+            if(@this.FindOrCreate<T>(path, pathAttribute) is T xbvo)
+            {
+                xbvo.IsVisible = true;
+                return xbvo;
+            }
+            else
+            {
+                path = Path.Combine(@this.GetPath(pathAttribute), path);
+                throw new InvalidOperationException(
+                    $"Element at path '{path}' is does not exist.");
+            }
+        }
 
         /// <summary>
         /// Expands the element at the specified path using the given <paramref name="mode"/> to locate or create it.

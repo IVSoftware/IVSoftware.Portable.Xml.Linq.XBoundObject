@@ -1072,66 +1072,10 @@ C:
     }
 
     [TestMethod]
-    public async Task Test_NonGenericSubclass()
-    {
-        string actual, expected;
-        XElement? xel;
-        Item item;
-        string path;
-
-        SemaphoreSlim awaiter = new SemaphoreSlim(0, 1);
-        void localOnAwaited(object? sender, AwaitedEventArgs e)
-        {
-            switch (e.Caller)
-            {
-                case nameof(WatchdogTimer.StartOrRestart):
-                    Debug.WriteLine($"ADVISORY {e.Caller}");
-                    break;
-                case "WDTAutoSync":
-                    Debug.WriteLine($"ADVISORY {e.Caller}");
-                    awaiter.Release();
-                    break;
-                default:
-                    break;
-            }
-        }
-        try
-        {
-            Awaited += localOnAwaited;
-            _expectingAutoSyncEvents = true;
-            var xroot =
-                new XElement("root")
-                .WithXBoundView(
-                    items: new ObservableCollectionFSI(),
-                    indent: 2
-            );
-            var context = xroot.To<ViewContext>();
-            xroot.Show("C:");
-            await awaiter.WaitAsync();
-
-
-            actual = context.ItemsToString();
-            actual.ToClipboard();
-            actual.ToClipboardExpected();
-            actual.ToClipboardAssert("Expecting msg");
-            { }
-
-            // Wait for unintended sync events.
-            Thread.Sleep(TimeSpan.FromSeconds(0.5));
-        }
-        finally
-        {
-            awaiter.Wait(0);
-            awaiter.Release();
-            awaiter.Dispose();
-            Awaited -= localOnAwaited;
-            _expectingAutoSyncEvents = false;
-        }
-    }
-    [TestMethod]
     public void Test_Show()
     {
         string actual, expected;
+        IXBoundViewObject xbvo;
 
         var xroot = new XElement("root");
         try
@@ -1184,12 +1128,159 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
                 "Expecting matching exception message."
             );
         }
+        xroot.RemoveAll();
+        xbvo = xroot.Show<DriveItem>("C:");
+
+        actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
+        expected = @" 
+<root>
+  <xnode text=""C:"" isvisible=""True"" datamodel=""[DriveItem]"" />
+</root>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting properly set up drive node."
+        );
+
+        xbvo = 
+            xbvo
+            .XEL.FindOrCreate<FolderItem>("Users")
+            .XEL.FindOrCreate<FolderItem>("Documents")
+            .XEL.Show<FileItem>("README.md");
+
+        actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
+
+        expected = @" 
+<root>
+  <xnode text=""C:"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[DriveItem]"">
+    <xnode text=""Users"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[FolderItem]"">
+      <xnode text=""Documents"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[FolderItem]"">
+        <xnode text=""README.md"" isvisible=""True"" datamodel=""[FileItem]"" />
+      </xnode>
+    </xnode>
+  </xnode>
+</root>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting fluent file structure creation."
+        );
+    }
+
+    [TestMethod]
+    public async Task Test_PolymorphousSync()
+    {
+        string actual, expected;
+        IXBoundViewObject xbvo;
+
+        SemaphoreSlim awaiter = new SemaphoreSlim(0, 1);
+        void localOnAwaited(object? sender, AwaitedEventArgs e)
+        {
+            switch (e.Caller)
+            {
+                case nameof(WatchdogTimer.StartOrRestart):
+                    Debug.WriteLine($"ADVISORY {e.Caller}");
+                    break;
+                case "WDTAutoSync":
+                    Debug.WriteLine($"ADVISORY {e.Caller}");
+                    awaiter.Release();
+                    break;
+                default:
+                    break;
+            }
+        }
+        try
+        {
+            Awaited += localOnAwaited;
+            _expectingAutoSyncEvents = true;
+            var xroot =
+                new XElement("root")
+                .WithXBoundView(
+                    items: new ObservableCollectionFSI(),
+                    indent: 2
+            );
+            var context = xroot.To<ViewContext>();
+
+            xbvo =
+                xroot.FindOrCreate<DriveItem>("C:")
+                .XEL.FindOrCreate<FolderItem>("Users")
+                .XEL.FindOrCreate<FolderItem>("Documents")
+                .XEL.Show<FileItem>("README.md");
+
+            await awaiter.WaitAsync();
+
+            actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
+            expected = @" 
+<root viewcontext=""[ViewContext]"">
+  <xnode text=""C:"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[DriveItem]"">
+    <xnode text=""Users"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[FolderItem]"">
+      <xnode text=""Documents"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[FolderItem]"">
+        <xnode text=""README.md"" isvisible=""True"" datamodel=""[FileItem]"" />
+      </xnode>
+    </xnode>
+  </xnode>
+</root>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting fluent-configured folders and files."
+            );
+
+            actual = context.ItemsToString();
+            expected = @" 
+- C:
+  - Users
+    - Documents
+        README.md";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting filesystem view (expanded)."
+            );
+
+            xroot.Collapse(Path.Combine("C:", "Users"));
+            { }
+
+            await awaiter.WaitAsync();
+            { }
+            actual = context.ItemsToString();
+            actual.ToClipboard();
+            actual.ToClipboardExpected();
+            actual.ToClipboardAssert();
+            { }
+            expected = @" 
+- C:
+  + Users"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting values to match."
+            );
+
+            // Wait for unintended sync events.
+            Thread.Sleep(TimeSpan.FromSeconds(0.5));
+        }
+        finally
+        {
+            awaiter.Wait(0);
+            awaiter.Release();
+            awaiter.Dispose();
+            Awaited -= localOnAwaited;
+            _expectingAutoSyncEvents = false;
+        }
+
     }
 
     /// <summary>
     /// Class for testing automatic type injection.
     /// </summary>
-    
+
     [DataModel]
     private class Item : XBoundViewObjectImplementer { }
 

@@ -48,6 +48,8 @@ namespace XBoundObjectMSTest.TestClassesForXBVO
         {
         }
     }
-    class FilesystemItem : XBoundViewObjectImplementer
-    { }
+    class FilesystemItem : XBoundViewObjectImplementer { }
+    class DriveItem : FilesystemItem { }
+    class FolderItem : FilesystemItem { }
+    class FileItem : FilesystemItem { }
 }
