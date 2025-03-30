@@ -958,9 +958,7 @@ C:
                                     .Attribute(nameof(StdAttributeNameXBoundViewObject.text))
                                     ?.Value ?? string.Empty)
                             );
-#if false
 
-#endif
                 var context = xroot.To<ViewContext>();
                 Assert.IsNotNull(context);
                 await awaiter.WaitAsync();
@@ -978,7 +976,7 @@ C:
                     Path.Combine("D:", "J"),
                 })
                 {
-                    xroot.FindOrCreate<Item>(tmp);
+                    xroot.FindOrCreate<ItemEx>(tmp);
                 }
                 await awaiter.WaitAsync();
 
@@ -987,20 +985,20 @@ C:
                 { }
                 expected = @" 
 <root viewcontext=""[ViewContext]"">
-  <xnode datamodel=""[Item]"" text=""D:"">
-    <xnode datamodel=""[Item]"" text=""J"" />
-    <xnode datamodel=""[Item]"" text=""I"" />
-    <xnode datamodel=""[Item]"" text=""H"" />
+  <xnode item=""[ItemEx]"" text=""D:"">
+    <xnode item=""[ItemEx]"" text=""J"" />
+    <xnode item=""[ItemEx]"" text=""I"" />
+    <xnode item=""[ItemEx]"" text=""H"" />
   </xnode>
-  <xnode datamodel=""[Item]"" text=""C:"">
-    <xnode datamodel=""[Item]"" text=""G"" />
-    <xnode datamodel=""[Item]"" text=""F"" />
-    <xnode datamodel=""[Item]"" text=""E"" />
+  <xnode item=""[ItemEx]"" text=""C:"">
+    <xnode item=""[ItemEx]"" text=""G"" />
+    <xnode item=""[ItemEx]"" text=""F"" />
+    <xnode item=""[ItemEx]"" text=""E"" />
   </xnode>
-  <xnode datamodel=""[Item]"" text=""B:"">
-    <xnode datamodel=""[Item]"" text=""C"" />
-    <xnode datamodel=""[Item]"" text=""B"" />
-    <xnode datamodel=""[Item]"" text=""A"" />
+  <xnode item=""[ItemEx]"" text=""B:"">
+    <xnode item=""[ItemEx]"" text=""C"" />
+    <xnode item=""[ItemEx]"" text=""B"" />
+    <xnode item=""[ItemEx]"" text=""A"" />
   </xnode>
 </root>"
                 ;
@@ -1030,7 +1028,7 @@ C:
                 await subtestImplicitVisibleOnCollapse();
                 async Task subtestImplicitVisibleOnCollapse()
                 {
-                    xel.To<Item>().Collapse();
+                    xel.To<ItemEx>().Collapse();
                     await awaiter.WaitAsync();
                     actual = context.ItemsToString();
 
