@@ -676,7 +676,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 return $"{spaces}{exp} {text}";
             }
         }
-        public string ItemsToString() =>
+        public override string ToString() =>
             string
             .Join(
                 Environment.NewLine,

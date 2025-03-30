@@ -128,7 +128,7 @@ public class TestClass_XBoundViewObject
             );
 
             context.SyncList();
-            actual = context.ItemsToString();
+            actual = context.ToString();
             expected = @" 
 - C:
   - Github
@@ -177,7 +177,7 @@ public class TestClass_XBoundViewObject
 
             // Apps may put this on a WDT...
             context.SyncList();
-            actual = context.ItemsToString();
+            actual = context.ToString();
             expected = @" 
 - C:
   - Github
@@ -285,7 +285,7 @@ public class TestClass_XBoundViewObject
 
 
             context.SyncList();
-            actual = context.ItemsToString();
+            actual = context.ToString();
 
             actual.ToClipboard();
             actual.ToClipboardExpected();
@@ -334,7 +334,7 @@ public class TestClass_XBoundViewObject
             );
 
             context.SyncList();
-            actual = context.ItemsToString();
+            actual = context.ToString();
             actual.ToClipboard();
             actual.ToClipboardExpected();
             { }
@@ -378,7 +378,7 @@ C:
             );
 
             context.SyncList();
-            actual = context.ItemsToString();
+            actual = context.ToString();
             expected = @" 
   B:(Floppy Disk)
 + C:"
@@ -425,7 +425,7 @@ C:
             );
 
             context.SyncList();
-            actual = context.ItemsToString();
+            actual = context.ToString();
             expected = @" 
   B:(Floppy Disk)
 - C:
@@ -614,7 +614,7 @@ C:
 </root>"
             ;
 
-            actual = context.ItemsToString();
+            actual = context.ToString();
 
             actual.ToClipboard();
             actual.ToClipboardExpected();
@@ -640,7 +640,7 @@ C:
                 xel.To<Item>().Expand();
                 await awaiter.WaitAsync();
 
-                actual = context.ItemsToString();
+                actual = context.ToString();
                 actual.ToClipboard();
                 actual.ToClipboardExpected();
                 actual.ToClipboardAssert();
@@ -707,7 +707,7 @@ C:
             xroot.Show<Item>(path);
             await awaiter.WaitAsync();
 
-            actual = context.ItemsToString();
+            actual = context.ToString();
             expected = @" 
 - C:
   - Github
@@ -732,7 +732,7 @@ C:
                 item.PlusMinus,
                 $"Expecting item collapsed after toggle command.");
             await awaiter.WaitAsync();
-            actual = context.ItemsToString();
+            actual = context.ToString();
             expected = @" 
 - C:
   - Github
@@ -753,7 +753,7 @@ C:
                 item = xroot.FindOrCreate<Item>(path);
                 Assert.IsInstanceOfType<Item>(item);
                 await awaiter.WaitAsync();
-                actual = context.ItemsToString();
+                actual = context.ToString();
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
@@ -761,7 +761,7 @@ C:
                 );
                 item.IsVisible = true;
                 await awaiter.WaitAsync();
-                actual = context.ItemsToString();
+                actual = context.ToString();
                 expected = @" 
 - C:
   - Github
@@ -779,7 +779,7 @@ C:
             Assert.IsInstanceOfType<Item>(item);
             parent.Expand();
             await awaiter.WaitAsync();
-            actual = context.ItemsToString();
+            actual = context.ToString();
 
 
             actual.ToClipboard();
@@ -927,7 +927,7 @@ C:
                 {
                     xel.To<Item>().Collapse();
                     await awaiter.WaitAsync();
-                    actual = context.ItemsToString();
+                    actual = context.ToString();
 
                     actual.ToClipboard();
                     expected = @" 
@@ -1043,7 +1043,7 @@ C:
                 {
                     xel.To<ItemEx>().Collapse();
                     await awaiter.WaitAsync();
-                    actual = context.ItemsToString();
+                    actual = context.ToString();
 
                     actual.ToClipboard();
                     expected = @" 
@@ -1207,6 +1207,7 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
             await awaiter.WaitAsync();
             await subtestFluentCreateFilesystem();
             await subtestCollapsePath();
+            await subtestExpandAgain();
 
             #region S U B T E S T S
             async Task subtestFluentCreateFilesystem()
@@ -1237,7 +1238,7 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
                     "Expecting fluent-configured folders and files."
                 );
 
-                actual = context.ItemsToString();
+                actual = context.ToString();
                 expected = @" 
 - C:
   - Users
@@ -1255,8 +1256,9 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
             {
                 xroot.Collapse(Path.Combine("C:", "Users"));
                 await awaiter.WaitAsync();
-
                 actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
+
+                await awaiter.WaitAsync();
 
                 expected = @" 
 <root viewcontext=""[ViewContext]"">
@@ -1281,7 +1283,7 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
                     "Expecting Users is collapsed with no visible items below it."
                 );
 
-                actual = context.ItemsToString();
+                actual = context.ToString();
                 expected = @" 
 - C:
   + Users"
@@ -1295,6 +1297,51 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
 
                 // Wait for unintended sync events.
                 Thread.Sleep(TimeSpan.FromSeconds(0.5));
+            }
+            async Task subtestExpandAgain()
+            {
+                await awaiter.WaitAsync();
+                { }
+                await awaiter.WaitAsync();
+                { }
+                xroot.Collapse("C:");
+                await awaiter.WaitAsync();
+                { }
+
+                actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
+                actual.ToClipboard();
+                actual.ToClipboardExpected();
+                actual.ToClipboardAssert("Expecting Expecting only C is visible.");
+                { }
+                expected = @" 
+<root viewcontext=""[ViewContext]"">
+  <xnode text=""C:"" isvisible=""True"" plusminus=""Collapsed"" datamodel=""[DriveItem]"">
+    <xnode text=""Users"" datamodel=""[FolderItem]"">
+      <xnode text=""Documents"" datamodel=""[FolderItem]"">
+        <xnode text=""README.md"" datamodel=""[FileItem]"" />
+      </xnode>
+    </xnode>
+  </xnode>
+</root>";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting Expecting only C is visible."
+                );
+                await awaiter.WaitAsync();
+                { }
+
+                actual = context.ToString();
+                expected = @" 
++ C:
+    Users";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting only C is visible"
+                );
             }
             #endregion S U B T E S T S
         }
