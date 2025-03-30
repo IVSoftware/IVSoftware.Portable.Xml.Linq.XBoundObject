@@ -153,6 +153,40 @@ public static void SetBoundAttributeValue(
 
 ___
 
+#### New fluent versions in release 2.0
+
+```
+/// <summary>
+/// Fluent version
+/// </summary>
+public static XElement WithBoundAttributeValue(
+    this XElement @this,
+    object tag,
+    string name = null,
+    string text = null,
+    SetOption options = SetOption.NameToLower){...}
+```
+
+___
+
+```
+/// <summary>
+/// Fluent version
+/// </summary>
+public static XElement WithBoundAttributeValue(
+    this XElement @this,
+    object tag,
+    Enum stdName,
+    string text = null,
+    SetOption options = SetOption.NameToLower)
+{
+    @this.SetBoundAttributeValue(tag, stdName, text, options);
+    return @this;
+}{...}
+```
+
+___
+
 ```
 /// <summary>
 /// Converts an XElement to its corresponding type T, based on bound XML attributes with an option to

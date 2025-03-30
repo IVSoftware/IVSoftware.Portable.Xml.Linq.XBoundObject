@@ -89,9 +89,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 if (_plusMinusToggleCommand is null)
                 {
                     _plusMinusToggleCommand = new CommandPCL<IXBoundViewObject>(
-                        execute: (xbvo)=>
+                        execute: (xbvo) =>
                         {
-                            switch (xbvo.PlusMinus)
+                            switch (xbvo?.PlusMinus)
                             {
                                 case PlusMinus.Collapsed:
                                     xbvo.Expand();
@@ -105,18 +105,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                                 default:
                                     // N O O P
                                     break;
-                            }
-                        }, 
-                        canExecute: (xbvo)=>
-                        {
-                            switch (xbvo.PlusMinus)
-                            {
-                                case PlusMinus.Collapsed:
-                                case PlusMinus.Partial:
-                                case PlusMinus.Expanded:
-                                    return true;
-                                default:
-                                    return false;
                             }
                         });
                 }
@@ -568,21 +556,29 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 {
                     XEL.Sort(CustomSorter);
                 }
-                Type 
-                    collectionType = Items.GetType(),
-                    genericType;
-                if (collectionType.IsGenericType &&
-                    collectionType.GetGenericTypeDefinition() == typeof(ObservableCollection<>) &&
-                    typeof(IXBoundViewObject).IsAssignableFrom(collectionType.GetGenericArguments()[0]))
-                {
-                    genericType = collectionType.GetGenericArguments()[0];
-                    localSyncDynamic();
-                }
-                else throw new InvalidOperationException(
-                    $"SyncList requires Items to be an ObservableCollection<T> where T implements IXBoundViewObject. " +
-                    $"Actual type: {collectionType.FullName}");
+                Type type = Items.GetType();
+                Type genericType = null;
 
-                void localSyncDynamic()
+                for (type = Items.GetType(); type != null; type = type.BaseType)
+                {
+                    if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ObservableCollection<>))
+                    {
+                        var candidateType = type.GetGenericArguments()[0];
+                        if (typeof(IXBoundViewObject).IsAssignableFrom(candidateType))
+                        {
+                            genericType = candidateType;
+                            break;
+                        }
+                    }
+                }
+                { }
+
+                if (genericType == null)
+                {
+                    throw new InvalidOperationException(
+                        $"SyncList requires Items to be (or inherit from) an ObservableCollection<T> where T implements IXBoundViewObject. ");
+                }
+                else
                 {
                     var index = 0;
                     foreach (var xel in XEL.VisibleElements())
@@ -590,7 +586,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                         // Get the item that "should be" at this index
                         if (xel.To<IXBoundObject>() is IXBoundObject sbAtIndex)
                         {
-                            if (!genericType.IsInstanceOfType(sbAtIndex))
+                            if (!genericType.IsAssignableFrom(sbAtIndex.GetType()))
                             {
                                 throw new InvalidCastException(
                                     $"XElement at path '{xel.GetPath()}' is bound to an instance of type '{sbAtIndex.GetType().FullName}', " +

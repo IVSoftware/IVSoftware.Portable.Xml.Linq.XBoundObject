@@ -48,6 +48,34 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                     options);
 
         /// <summary>
+        /// Fluent version
+        /// </summary>
+        public static XElement WithBoundAttributeValue(
+            this XElement @this,
+            object tag,
+            string name = null,
+            string text = null,
+            SetOption options = SetOption.NameToLower)
+        {
+            @this.SetBoundAttributeValue(tag, name, text, options);
+            return @this;
+        }
+
+        /// <summary>
+        /// Fluent version
+        /// </summary>
+        public static XElement WithBoundAttributeValue(
+            this XElement @this,
+            object tag,
+            Enum stdName,
+            string text = null,
+            SetOption options = SetOption.NameToLower)
+        {
+            @this.SetBoundAttributeValue(tag, stdName, text, options);
+            return @this;
+        }
+
+        /// <summary>
         /// Converts an XElement to its corresponding type T, based on bound XML attributes with an option to
         /// throw an exception if the conversion fails. Otherwise, this method silently returns null if 
         /// the conversion fails and T is a reference type or if nullable T? is explicitly requested.

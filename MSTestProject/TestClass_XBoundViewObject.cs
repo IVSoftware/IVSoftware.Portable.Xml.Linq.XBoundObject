@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Configuration.Internal;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -9,6 +10,7 @@ using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using IVSoftware.WinOS.MSTest.Extensions;
+using XBoundObjectMSTest.TestClassesForXBVO;
 using static IVSoftware.Portable.Threading.Extensions;
 
 namespace XBoundObjectMSTest;
@@ -1069,6 +1071,121 @@ C:
         }
     }
 
+    [TestMethod]
+    public async Task Test_NonGenericSubclass()
+    {
+        string actual, expected;
+        XElement? xel;
+        Item item;
+        string path;
+
+        SemaphoreSlim awaiter = new SemaphoreSlim(0, 1);
+        void localOnAwaited(object? sender, AwaitedEventArgs e)
+        {
+            switch (e.Caller)
+            {
+                case nameof(WatchdogTimer.StartOrRestart):
+                    Debug.WriteLine($"ADVISORY {e.Caller}");
+                    break;
+                case "WDTAutoSync":
+                    Debug.WriteLine($"ADVISORY {e.Caller}");
+                    awaiter.Release();
+                    break;
+                default:
+                    break;
+            }
+        }
+        try
+        {
+            Awaited += localOnAwaited;
+            _expectingAutoSyncEvents = true;
+            var xroot =
+                new XElement("root")
+                .WithXBoundView(
+                    items: new ObservableCollectionFSI(),
+                    indent: 2
+            );
+            var context = xroot.To<ViewContext>();
+            xroot.Show("C:");
+            await awaiter.WaitAsync();
+
+
+            actual = context.ItemsToString();
+            actual.ToClipboard();
+            actual.ToClipboardExpected();
+            actual.ToClipboardAssert("Expecting msg");
+            { }
+
+            // Wait for unintended sync events.
+            Thread.Sleep(TimeSpan.FromSeconds(0.5));
+        }
+        finally
+        {
+            awaiter.Wait(0);
+            awaiter.Release();
+            awaiter.Dispose();
+            Awaited -= localOnAwaited;
+            _expectingAutoSyncEvents = false;
+        }
+    }
+    [TestMethod]
+    public void Test_Show()
+    {
+        string actual, expected;
+
+        var xroot = new XElement("root");
+        try
+        {
+            xroot.Show("C:");
+            Assert.Fail($"Expecting {nameof(InvalidOperationException)} to be thrown. You shouldn't be here.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+            actual = ex.Message;
+            expected = @" 
+Element at path 'C:' is does not exist.";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting matching exception message."
+            );
+        }
+        try
+        {
+            xroot.FindOrCreate("C:");
+
+            actual = xroot.ToString();
+            expected = @" 
+<root>
+  <xnode text=""C:"" />
+</root>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting nod exists, but is NOT BOUND"
+            );
+
+            xroot.Show("C:");
+            Assert.Fail($"Expecting {nameof(InvalidOperationException)} to be thrown. You shouldn't be here.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Pass! This exception SHOULD BE THROWN. It's what we're testing.
+            actual = ex.Message;
+            expected = @" 
+Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure the element is correctly bound before calling Show()."
+            ;
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting matching exception message."
+            );
+        }
+    }
+
     /// <summary>
     /// Class for testing automatic type injection.
     /// </summary>
@@ -1086,4 +1203,5 @@ C:
         public int CompareTo(IXBoundViewObject? other)
             => ((other?.Text) ?? string.Empty).CompareTo(this.Text);
     }
+
 }

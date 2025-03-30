@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
@@ -489,105 +490,58 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         }
 
         /// <summary>
-        /// Retrieves the <see cref="XElement"/> at the specified <paramref name="path"/>, 
-        /// ensuring it is bound and visible. If the element lacks an <see cref="IXBoundViewObject"/> 
-        /// and a factory is registered for it, using <see cref="SetFactoryMethod{T}"/>, the factory 
-        /// is used. Otherwise, a default implementation is applied.
+        /// Finds an existing <see cref="IXBoundViewObject"/> element at the specified path 
+        /// relative to <paramref name="@this"/> and makes it visible. The target element must 
+        /// already exist and be bound to an object implementing <see cref="IXBoundViewObject"/>; 
+        /// otherwise, an <see cref="InvalidOperationException"/> is thrown.
+        /// </summary>
         public static XElement Show(
-                this XElement @this,
-                string path,
-                Enum pathAttribute = null,
-                PlacerMode mode = PlacerMode.FindOrCreate)
+            this XElement @this,
+            string path,
+            Enum pathAttribute = null)
         {
             pathAttribute = pathAttribute ?? StdAttributeNameInternal.text;
-
-            // Use Placer instance (instead of FindOrCreate) in
-            // order to to support the 'mode' argument.
             var placer = new Placer(
                 @this,
                 path,
-                onBeforeAdd: (sender, e) =>
-                {
-                    @this.internalOnBeforeAddViewObject(e);
-                },
                 pathAttributeName: pathAttribute?.ToString(),
-                mode: mode
+                mode: PlacerMode.FindOrPartial
             );
-            if (placer.XResult is XElement xel)
+            if (placer.PlacerResult == PlacerResult.Exists)
             {
-                xel.To<IXBoundViewObject>(@throw: true).IsVisible = true;
-            }
-            return placer.XResult;
-#if false
-            {
-                if(FindOrCreate(
-                @this,
-                path,
-                pathAttribute,
-                onBeforeAdd: (sender, e) =>
+                if (placer.XResult is XElement xel)
                 {
-                    if (!e.Xel.Has<IXBoundViewObject>())
+                    if (xel.To<IXBoundViewObject>() is IXBoundViewObject xbvo)
                     {
-                        if (e.Xel.Ancestors().Last()?.To<ViewContext>() is ViewContext context &&
-                            context.Items is IList items &&
-                            items.GetType().GetGenericArguments().SingleOrDefault() is object o)
-                        {
-
-                        }
-                        else
-                        {
-                            e.Xel.SetBoundAttributeValue(
-                                new XBoundViewObjectImplementer(e.Xel),
-                                name: nameof(StdAttributeNameXBoundViewObject.datamodel));
-                        }
+                        xbvo.IsVisible = true;
                     }
-                }) is XElement xel)
-            {
-                xel.SetAttributeValue(IsVisible.True);
-                return xel;
+                    else
+                    {
+                        throw new InvalidOperationException(
+                            $"Element at path '{path}' exists, but is not bound to an IXBoundViewObject. " +
+                            $"Ensure the element is correctly bound before calling Show().");
+                    }
+                }
+                return placer.XResult;
             }
             else
             {
-                Debug.Fail("Expecting no-fail create.");
-                return null;
+                path = Path.Combine(@this.GetPath(pathAttribute), path);
+                throw new InvalidOperationException(
+                    $"Element at path '{path}' is does not exist.");
             }
-#endif
         }
-#if false
+
+
+
         /// <summary>
-        /// Retrieves the <see cref="XElement"/> at the specified <paramref name="path"/>, 
-        /// ensuring it is bound and visible. If the element lacks an <see cref="IXBoundViewObject"/> 
-        /// and a factory is registered for it, using <see cref="SetFactoryMethod{T}"/>, the factory 
-        /// is used. Otherwise, a default implementation is applied.
+        /// Find or create element at the specified path relative to @this and make it visible
+        /// </summary>
         public static XElement Show<T>(
                 this XElement @this,
                 string path,
-                Enum pathAttribute = null)
-            where T : IXBoundViewObject, new()
-        {
-            if(FindOrCreate(
-                @this,
-                path,
-                pathAttribute,
-                onBeforeAdd: (sender, e) =>
-                {
-                    e.Xel.SetBoundAttributeValue(
-                        new T().InitXEL(e.Xel),
-                        name: nameof(StdAttributeNameXBoundViewObject.datamodel));
-                }) is XElement xel)
-            {
-                xel.SetAttributeValue(IsVisible.True);
-                xel.Parent?.SetAttributeValue(PlusMinus.Auto);
-                return xel;
-            }
-            else
-            {
-                Debug.Fail("Expecting no-fail create.");
-                return null;
-            }
-        }
-
-#endif
+                Enum pathAttribute = null,
+                PlacerMode mode = PlacerMode.FindOrCreate) => throw new NotImplementedException();
 
         /// <summary>
         /// Expands the element at the specified path using the given <paramref name="mode"/> to locate or create it.
@@ -807,10 +761,12 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         {
             if (!e.Xel.Has<IXBoundViewObject>())
             {
-                // [Careful] Use @this or other parented node, not the aspirant!
+                // [Careful]
+                // - Use @this or other parented node for ancestor search, not the aspirant!
+                // - Use items.GetGenericArguments() which is our extension NOT Type.GetGenericArguments()
                 if (@this.AncestorsAndSelf().Last()?.To<ViewContext>() is ViewContext context &&
                     context.Items is IList items &&
-                    items.GetType().GetGenericArguments().SingleOrDefault() is Type type)
+                    items.GetGenericArguments().SingleOrDefault() is Type type)
                 {
                     string xname = 
                         type.GetCustomAttribute<DataModelAttribute>() is DataModelAttribute dmattr
@@ -884,6 +840,25 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 throw new FormatException("Empty string not allowed.");
             return @this;
         }
+
+        /// <summary>
+        /// Returns the generic type arguments of the first generic type found in the inheritance chain of the object's runtime type.
+        /// If no generic base type is found, returns an empty array.
+        /// </summary>
+        public static Type[] GetGenericArguments(this object @this)
+        {
+            Type type;
+
+            for (type = @this.GetType(); type != null; type = type.BaseType)
+            {
+                if (type.IsGenericType)
+                {
+                    return type.GetGenericArguments();
+                }
+            }
+            return Array.Empty<Type>();
+        }
+
         [Obsolete]
         public static bool IsCreated(this XElement source, string path, out XElement xel, string name = null, object value = null, Enum id = null)
         {
