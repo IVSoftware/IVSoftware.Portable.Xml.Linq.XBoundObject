@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
+using System.Windows.Input;
 using System.Xml.Linq;
 
 namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
@@ -24,6 +25,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// Returns the hosting <see cref="XElement"/> to allow fluent chaining.
         /// </summary>
         XElement InitXEL(XElement xel);
+        XElement Parent { get; }
     }
 
     /// <summary>
@@ -31,9 +33,12 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     /// </summary>
     public interface IXBoundViewObject : IXBoundObject
     {
+        string Text { get; set; }
         bool IsVisible { get; set; }
+        int Space { get; }
         PlusMinus PlusMinus { get; }
         PlusMinus Expand(bool allowPartial = false);
-        PlusMinus Collapse();
+        PlusMinus Collapse(); 
+        ICommand PlusMinusToggleCommand { get; }
     }
 }

@@ -948,16 +948,26 @@ C:
                     .WithXBoundView(
                         items: new ObservableCollection<ItemEx>(),
                         indent: 2,
-                        customSorter: (b, a)=>
-                            (
-                                a
-                                .Attribute(nameof(StdAttributeNameXBoundViewObject.text))
-                                ?.Value ?? string.Empty)
-                                .CompareTo(
-                                    b
-                                    .Attribute(nameof(StdAttributeNameXBoundViewObject.text))
-                                    ?.Value ?? string.Empty)
-                            );
+                        customSorter: (a, b) =>
+                        {
+                            if (a.To<IXBoundViewObject>() is IComparable<IXBoundViewObject> xbvoa &&
+                                b.To<IXBoundViewObject>() is IXBoundViewObject xbvob)
+                            {
+                                return xbvoa.CompareTo(xbvob);
+                            }
+                            else
+                            {
+                                return
+                                 (a
+                                  .Attribute(nameof(StdAttributeNameXBoundViewObject.text))
+                                  ?.Value ?? string.Empty)
+                                  .CompareTo(
+                                        b
+                                        .Attribute(nameof(StdAttributeNameXBoundViewObject.text))
+                                        ?.Value ?? string.Empty);
+                            }
+                        }
+                    );
 
                 var context = xroot.To<ViewContext>();
                 Assert.IsNotNull(context);
@@ -981,8 +991,6 @@ C:
                 await awaiter.WaitAsync();
 
                 actual = xroot.ToString();
-                actual.ToClipboardExpected();
-                { }
                 expected = @" 
 <root viewcontext=""[ViewContext]"">
   <xnode item=""[ItemEx]"" text=""D:"">
@@ -1006,7 +1014,7 @@ C:
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting REVERSE SORTED with NONE VISIBLE."
+                    "Expecting REVERSE SORTED with NONE VISIBLE. The xname s.b. 'item' per [DataModel] attribute"
                 );
 
                 path = Path.Combine("D:", "I");
@@ -1024,6 +1032,7 @@ C:
                     _eventQueue.Count,
                     $"Expecting Place (Exists) did 'not' make any changes to the XML."
                  );
+
 
                 await subtestImplicitVisibleOnCollapse();
                 async Task subtestImplicitVisibleOnCollapse()
@@ -1071,9 +1080,10 @@ C:
     [DataModel(xname: "Item")]
     private class ItemEx : XBoundViewObjectImplementer, IComparable<IXBoundViewObject>
     {
+        /// <summary>
+        /// Do a reverse sort for no good reason except to test!
+        /// </summary>
         public int CompareTo(IXBoundViewObject? other)
-        {
-            throw new NotImplementedException();
-        }
+            => ((other?.Text) ?? string.Empty).CompareTo(this.Text);
     }
 }
