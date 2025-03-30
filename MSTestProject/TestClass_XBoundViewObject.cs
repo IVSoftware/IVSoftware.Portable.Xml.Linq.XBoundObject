@@ -29,6 +29,11 @@ public class TestClass_XBoundViewObject
         AllowedCallers = [];
     }
 
+    /// <summary>
+    /// Exhaustively verifies manual control over PlusMinus and IsVisible states without auto-sync. 
+    /// Exercises granular tree expansion, collapsing, adhoc node visibility, and sorting behavior. 
+    /// Tests precise effects of SyncList() and ensures no unintended AutoSync events.
+    /// </summary>
     [TestMethod]
     public void Test_PlusMinus()
     {
@@ -416,6 +421,11 @@ C:
         #endregion S U B T E S T S
     }
 
+    /// <summary>
+    /// Verifies Expand() and Collapse() method behavior on bound items, including trailing path normalization,
+    /// node provisioning, sorting (default and custom), and visibility effects. Confirms correct sync behavior
+    /// following structural changes.
+    /// </summary>
     [TestMethod]
     public async Task Test_ExpandCollapseMethods()
     {
@@ -603,7 +613,6 @@ C:
                 "Expecting ONLY the root is visible"
             );
 
-
             await subtestImplicitVisible();
 
             // Wait for unintended sync events.
@@ -641,6 +650,11 @@ C:
         }
     }
 
+    /// <summary>
+    /// Validates use of the PlusMinusToggleCommand to trigger expand/collapse behavior via ICommand, 
+    /// distinct from direct method or extension calls. Confirms UI-compatible toggling and subsequent 
+    /// visibility logic, including partial and full expansion sequences.
+    /// </summary>
     [TestMethod]
     public async Task Test_PlusMinusCommand()
     {
@@ -797,6 +811,11 @@ C:
         }
     }
 
+    /// <summary>
+    /// Verifies that sorting occurs automatically during sync without explicitly calling Sort(). 
+    /// Tests both default alphanumeric sorting with Item and a custom reverse sorter using ItemEx, 
+    /// ensuring correct order and visibility behavior with implicit sync triggers.
+    /// </summary>
     [TestMethod]
     public async Task Test_DefaultSorting()
     {
@@ -1057,6 +1076,11 @@ C:
         }
     }
 
+    /// <summary>
+    /// Tests both overloads of Show(): the non-generic read-only variant, which throws if the element is missing or unbound, 
+    /// and the generic FindOrCreate variant, which binds and returns a concrete IXBoundViewObject. 
+    /// Validates fluent creation of a file structure using DriveItem, FolderItem, and FileItem.
+    /// </summary>
     [TestMethod]
     public void Test_Show()
     {
@@ -1155,6 +1179,11 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
         );
     }
 
+    /// <summary>
+    /// Validates sync behavior using an ObservableCollection (T = FilesystemItem) subclass,
+    /// placing derived DriveItem, FolderItem, and FileItem instances. Verifies visibility updates,
+    /// collapse/expand behavior, and fluent creation across polymorphic IXBoundViewObject types.
+    /// </summary>
     [TestMethod]
     public async Task Test_PolymorphicSync()
     {
@@ -1338,6 +1367,11 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
         }
     }
 
+    /// <summary>
+    /// Ensures that SortAttributes() does not trigger unintended WDT AutoSync events by suppressing
+    /// XObjectChange notifications. Confirms that genuine structural updates, such as Show(), still
+    /// properly trigger synchronization.
+    /// </summary>
     [TestMethod]
     public async Task Test_AttributeSortArtifacts()
     {
