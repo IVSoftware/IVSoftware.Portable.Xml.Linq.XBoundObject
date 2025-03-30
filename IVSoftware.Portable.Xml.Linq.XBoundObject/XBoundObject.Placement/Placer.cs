@@ -962,7 +962,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             bool autoSyncEnabled = true,
             TimeSpan? autoSyncSettleDelay = null,
             bool sortingEnabled = true,
-            Func<object, object, int> customSorter = null)
+            Func<XElement, XElement, int> customSorter = null)
         {
             if (@this.Parent != null)
             {

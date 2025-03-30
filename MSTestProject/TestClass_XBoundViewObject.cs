@@ -841,37 +841,43 @@ C:
             AllowedCallers = new[] { "WDTAutoSync" };
             Awaited += localOnAwaited;
             _expectingAutoSyncEvents = true;
-            var xroot =
-                new XElement("root")
-                .WithXBoundView(
-                    items: new ObservableCollection<Item>(),
-                    indent: 2,
-                    autoSyncSettleDelay: TimeSpan.FromSeconds(1)
-            );
-            var context = xroot.To<ViewContext>();
-            Assert.IsNotNull(context);
-            await awaiter.WaitAsync();
 
-            foreach (var tmp in new[]
-            {
-                Path.Combine("D:", "I"),
-                Path.Combine("B:", "A"),
-                Path.Combine("B:", "B"),
-                Path.Combine("C:", "F"),
-                Path.Combine("B:", "C"),
-                Path.Combine("C:", "E"),
-                Path.Combine("C:", "G"),
-                Path.Combine("D:", "H"),
-                Path.Combine("D:", "J"),
-            })
-            {
-                xroot.FindOrCreate<Item>(tmp);
-            }
-            await awaiter.WaitAsync();
 
-            actual = xroot.ToString();
-            actual.ToClipboardExpected();
-            expected = @" 
+            await subtestDefaultAlphaNumericBuiltIn();
+            await subtestDefaultCustomAlphaNumericReverse();
+            #region S U B T E S T S
+            async Task subtestDefaultAlphaNumericBuiltIn()
+            {
+                var xroot =
+                    new XElement("root")
+                    .WithXBoundView(
+                        items: new ObservableCollection<Item>(),
+                        indent: 2
+                );
+                var context = xroot.To<ViewContext>();
+                Assert.IsNotNull(context);
+                await awaiter.WaitAsync();
+
+                foreach (var tmp in new[]
+                {
+                    Path.Combine("D:", "I"),
+                    Path.Combine("B:", "A"),
+                    Path.Combine("B:", "B"),
+                    Path.Combine("C:", "F"),
+                    Path.Combine("B:", "C"),
+                    Path.Combine("C:", "E"),
+                    Path.Combine("C:", "G"),
+                    Path.Combine("D:", "H"),
+                    Path.Combine("D:", "J"),
+                })
+                {
+                    xroot.FindOrCreate<Item>(tmp);
+                }
+                await awaiter.WaitAsync();
+
+                actual = xroot.ToString();
+                actual.ToClipboardExpected();
+                expected = @" 
 <root viewcontext=""[ViewContext]"">
   <xnode datamodel=""[Item]"" text=""B:"">
     <xnode datamodel=""[Item]"" text=""A"" />
@@ -889,51 +895,161 @@ C:
     <xnode datamodel=""[Item]"" text=""J"" />
   </xnode>
 </root>"
-            ;
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting DEFAULT SORTED with NONE VISIBLE."
-            );
-
-            path = Path.Combine("D:", "I");
-            _eventQueue.Clear();
-            Assert.AreEqual(
-                PlacerResult.Exists,
-                xroot.Place(path, out xel),
-                "Expecting to find the existing node.");
-
-            await Task.Delay(TimeSpan.FromSeconds(0.25));
-
-            // [Careful] Do not await the awaiter here!
-            Assert.AreEqual(
-                0, 
-                _eventQueue.Count,
-                $"Expecting Place (Exists) did 'not' make any changes to the XML."
-             );
-
-            await subtestImplicitVisibleOnCollapse();
-            async Task subtestImplicitVisibleOnCollapse()
-            {
-                xel.To<Item>().Collapse();
-                await awaiter.WaitAsync();
-                actual = context.ItemsToString();
-
-                actual.ToClipboard();
-                expected = @" 
-* D:
-    I";
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting node is shown explicitly from collapsing."
+                    "Expecting DEFAULT SORTED with NONE VISIBLE."
                 );
 
-                // Wait for unintended sync events.
-                Thread.Sleep(TimeSpan.FromSeconds(0.5));
+                path = Path.Combine("D:", "I");
+                _eventQueue.Clear();
+                Assert.AreEqual(
+                    PlacerResult.Exists,
+                    xroot.Place(path, out xel),
+                    "Expecting to find the existing node.");
+
+                await Task.Delay(TimeSpan.FromSeconds(0.25));
+
+                // [Careful] Do not await the awaiter here!
+                Assert.AreEqual(
+                    0,
+                    _eventQueue.Count,
+                    $"Expecting Place (Exists) did 'not' make any changes to the XML."
+                 );
+
+                await subtestImplicitVisibleOnCollapse();
+                async Task subtestImplicitVisibleOnCollapse()
+                {
+                    xel.To<Item>().Collapse();
+                    await awaiter.WaitAsync();
+                    actual = context.ItemsToString();
+
+                    actual.ToClipboard();
+                    expected = @" 
+* D:
+    I";
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting node is shown explicitly from collapsing."
+                    );
+
+                    // Wait for unintended sync events.
+                    Thread.Sleep(TimeSpan.FromSeconds(0.5));
+                }
             }
+
+
+            async Task subtestDefaultCustomAlphaNumericReverse()
+            {
+                var xroot =
+                    new XElement("root")
+                    .WithXBoundView(
+                        items: new ObservableCollection<Item>(),
+                        indent: 2,
+                        customSorter: (b, a)=> (
+                            a
+                            .Attribute(nameof(StdAttributeNameXBoundViewObject.text))
+                            ?.Value ?? string.Empty)
+                            .CompareTo(
+                            b
+                            .Attribute(nameof(StdAttributeNameXBoundViewObject.text))
+                            ?.Value ?? string.Empty)
+                );
+                var context = xroot.To<ViewContext>();
+                Assert.IsNotNull(context);
+                await awaiter.WaitAsync();
+
+                foreach (var tmp in new[]
+                {
+                    Path.Combine("D:", "I"),
+                    Path.Combine("B:", "A"),
+                    Path.Combine("B:", "B"),
+                    Path.Combine("C:", "F"),
+                    Path.Combine("B:", "C"),
+                    Path.Combine("C:", "E"),
+                    Path.Combine("C:", "G"),
+                    Path.Combine("D:", "H"),
+                    Path.Combine("D:", "J"),
+                })
+                {
+                    xroot.FindOrCreate<Item>(tmp);
+                }
+                await awaiter.WaitAsync();
+
+                actual = xroot.ToString();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<root viewcontext=""[ViewContext]"">
+  <xnode datamodel=""[Item]"" text=""D:"">
+    <xnode datamodel=""[Item]"" text=""J"" />
+    <xnode datamodel=""[Item]"" text=""I"" />
+    <xnode datamodel=""[Item]"" text=""H"" />
+  </xnode>
+  <xnode datamodel=""[Item]"" text=""C:"">
+    <xnode datamodel=""[Item]"" text=""G"" />
+    <xnode datamodel=""[Item]"" text=""F"" />
+    <xnode datamodel=""[Item]"" text=""E"" />
+  </xnode>
+  <xnode datamodel=""[Item]"" text=""B:"">
+    <xnode datamodel=""[Item]"" text=""C"" />
+    <xnode datamodel=""[Item]"" text=""B"" />
+    <xnode datamodel=""[Item]"" text=""A"" />
+  </xnode>
+</root>"
+                ;
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting REVERSE SORTED with NONE VISIBLE."
+                );
+
+                path = Path.Combine("D:", "I");
+                _eventQueue.Clear();
+                Assert.AreEqual(
+                    PlacerResult.Exists,
+                    xroot.Place(path, out xel),
+                    "Expecting to find the existing node.");
+
+                await Task.Delay(TimeSpan.FromSeconds(0.25));
+
+                // [Careful] Do not await the awaiter here!
+                Assert.AreEqual(
+                    0,
+                    _eventQueue.Count,
+                    $"Expecting Place (Exists) did 'not' make any changes to the XML."
+                 );
+
+                await subtestImplicitVisibleOnCollapse();
+                async Task subtestImplicitVisibleOnCollapse()
+                {
+                    xel.To<Item>().Collapse();
+                    await awaiter.WaitAsync();
+                    actual = context.ItemsToString();
+
+                    actual.ToClipboard();
+                    expected = @" 
+* D:
+    I";
+
+                    Assert.AreEqual(
+                        expected.NormalizeResult(),
+                        actual.NormalizeResult(),
+                        "Expecting node is shown explicitly from collapsing."
+                    );
+
+                    // Wait for unintended sync events.
+                    Thread.Sleep(TimeSpan.FromSeconds(0.5));
+                }
+            }
+
+            #endregion S U B T E S T S
         }
         finally
         {

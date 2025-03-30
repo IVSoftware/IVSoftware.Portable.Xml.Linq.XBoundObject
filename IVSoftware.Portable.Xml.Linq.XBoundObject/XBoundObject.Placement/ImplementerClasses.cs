@@ -444,7 +444,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public IList Items { get; }
         public TimeSpan AutoSyncSettleDelay { get; } = TimeSpan.FromSeconds(0.1);
         public bool SortingEnabled { get; }
-        public Func<object, object, int> CustomSorter { get; }
+        public Func<XElement, XElement, int> CustomSorter { get; }
         public bool AutoSyncEnabled { get; set; } = true;
 
         private readonly Dictionary<IXBoundObject, int> _o1 = null;
@@ -457,7 +457,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             bool autoSyncEnabled = true,
             TimeSpan? autoSyncSettleDelay = null,
             bool sortingEnabled = true,
-            Func<object, object, int> customSorter = null)
+            Func<XElement, XElement, int> customSorter = null)
         {
             Indent = indent;
             Items = items;
@@ -524,7 +524,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             bool autoSyncEnabled = true,
             TimeSpan? autoSyncSettleDelay = null,
             bool sortingEnabled = true,
-            Func<object, object, int> customSorter = null)
+            Func<XElement, XElement, int> customSorter = null)
             : this(items, indent, autoSyncEnabled, autoSyncSettleDelay, sortingEnabled, customSorter) => InitXEL(xel);
         public override XElement InitXEL(XElement xel)
         {
