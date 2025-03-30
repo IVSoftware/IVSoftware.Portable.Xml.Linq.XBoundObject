@@ -1445,6 +1445,119 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
         }
     }
 
+    [TestMethod]
+    public async Task Test_DiagnoseExpandDoesDescendantsInsteadOfElements()
+    {
+        string actual, expected;
+        IXBoundViewObject xbvo;
+
+        SemaphoreSlim awaiter = new SemaphoreSlim(0, 1);
+        void localOnAwaited(object? sender, AwaitedEventArgs e)
+        {
+            switch (e.Caller)
+            {
+                case "WDTAutoSync":
+                    switch (e.Args)
+                    {
+                        case "InitialAction":
+                            break;
+                        case "RanToCompletion":
+                            awaiter.Release();
+                            break;
+                        default: throw new NotImplementedException();
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        try
+        {
+            Awaited += localOnAwaited;
+            var xroot =
+                new XElement("root")
+                .WithXBoundView(
+                    items: new ObservableCollectionFSI(),
+                    indent: 2
+            );
+            xbvo =
+                xroot.FindOrCreate<DriveItem>("C:")
+                .XEL.FindOrCreate<FolderItem>("Users")
+                .XEL.FindOrCreate<FolderItem>("Documents")
+                .XEL.Show<FileItem>("README.md");
+            var context = xroot.To<ViewContext>();
+            await awaiter.WaitAsync();
+
+            xbvo = xbvo.Parent.To<IXBoundViewObject>();
+            xbvo.Collapse();
+            await awaiter.WaitAsync();
+            { }
+
+            xbvo = xbvo.Parent.To<IXBoundViewObject>();
+            xbvo.Collapse();
+            await awaiter.WaitAsync();
+
+            xbvo = xbvo.Parent.To<IXBoundViewObject>();
+            xbvo.Collapse();
+            await awaiter.WaitAsync();
+
+            actual = context.ToString();
+            expected = @" 
++ C:";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting collapsed to C."
+            );
+
+
+            actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
+            expected = @" 
+<root viewcontext=""[ViewContext]"">
+  <xnode text=""C:"" isvisible=""True"" plusminus=""Collapsed"" datamodel=""[DriveItem]"">
+    <xnode text=""Users"" datamodel=""[FolderItem]"">
+      <xnode text=""Documents"" datamodel=""[FolderItem]"">
+        <xnode text=""README.md"" datamodel=""[FileItem]"" />
+      </xnode>
+    </xnode>
+  </xnode>
+</root>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting child items vith null isvisible and plusminus attributes."
+            );
+
+            xbvo.Expand();
+            await awaiter.WaitAsync();
+            { }
+
+            actual = context.ToString();
+            actual.ToClipboard();
+            actual.ToClipboardExpected();
+            actual.ToClipboardAssert("Expecting only the first child is showing with PlusMinus.Collapsed.");
+            { }
+            expected = @" 
+- C:
+  + Users";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting only the first child is showing with PlusMinus.Collapsed."
+            );
+        }
+        finally
+        {
+            awaiter.Wait(0);
+            awaiter.Release();
+            awaiter.Dispose();
+            Awaited -= localOnAwaited;
+        }
+    }
+
     /// <summary>
     /// Class for testing automatic type injection.
     /// </summary>
@@ -1462,5 +1575,4 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
         public int CompareTo(IXBoundViewObject? other)
             => ((other?.Text) ?? string.Empty).CompareTo(this.Text);
     }
-
 }
