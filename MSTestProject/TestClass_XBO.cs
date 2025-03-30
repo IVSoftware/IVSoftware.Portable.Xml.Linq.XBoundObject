@@ -177,6 +177,31 @@ Clicked: QRCode";
 
             var xroot =
                 typeof(DiscoveryDemo).BuildNestedEnum();
+
+            actual = xroot.ToString();
+            actual.ToClipboard();
+            actual.ToClipboardExpected();
+            actual.ToClipboardAssert("Expecting nested enum struct.");
+            { }
+            expected = @" 
+<root type=""[DiscoveryDemo]"" dualkeylookup=""[DualKeyLookup]"">
+  <node id=""[DiscoveryDemo.Home]"" />
+  <node id=""[DiscoveryDemo.Scan]"">
+    <node id=""[Scan.QRCode]"" />
+    <node id=""[Scan.Barcode]"" />
+  </node>
+  <node id=""[DiscoveryDemo.Settings]"">
+    <node id=""[Settings.Apply]"" />
+    <node id=""[Settings.Cancel]"" />
+  </node>
+</root>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting nested enum struct."
+            );
+
             var dkl =
                 xroot.To<DualKeyLookup>(@throw: true);
             var node =

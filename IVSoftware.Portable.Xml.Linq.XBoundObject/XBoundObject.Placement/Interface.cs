@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IVSoftware.Portable.Disposable;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
@@ -40,5 +41,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         PlusMinus Expand(bool allowPartial = false);
         PlusMinus Collapse(); 
         ICommand PlusMinusToggleCommand { get; }
+    }
+
+    public interface IXObjectChangeEventSink
+    { 
+        DisposableHost DisableXObjectChangeEvents { get; }
     }
 }

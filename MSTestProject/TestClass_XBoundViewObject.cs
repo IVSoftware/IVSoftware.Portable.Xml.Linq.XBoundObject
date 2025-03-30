@@ -18,45 +18,14 @@ namespace XBoundObjectMSTest;
 [TestClass]
 public class TestClass_XBoundViewObject
 {
-    static Queue<SenderEventPair> _eventQueue = new ();
-    static Queue<SenderEventPair> _eventQueueAutoSync = new ();
+    static Queue<SenderEventPair> SenderEventQueue = new ();
 
-    static bool _expectingAutoSyncEvents = false;
     static string[] AllowedCallers = [];
-
-    private static void OnAwaited(object? sender, AwaitedEventArgs e)
-    {
-        switch (e.Caller)
-        {
-            case "OnPropertyChanged":
-                break;
-            case "WDTAutoSync":
-                Assert.IsTrue(
-                    _expectingAutoSyncEvents,
-                    "Expecting SyncList() only occurs when requested."
-                );
-                break;
-            default:
-                break;
-        }
-        if (!AllowedCallers.Any() || AllowedCallers.Contains(e.Caller))
-        {
-            _eventQueue.Enqueue(new SenderEventPair(sender, e));
-        }
-    }
-
-    [ClassInitialize]
-    public static void ClassInitialize(TestContext context)
-        => Awaited += OnAwaited;
-
-    [ClassCleanup]
-    public static void ClassCleanup() 
-        => Awaited -= OnAwaited;
 
     [TestInitialize]
     public void TestInitialize()
     {
-        _eventQueue.Clear();
+        SenderEventQueue.Clear();
         AllowedCallers = [];
     }
 
@@ -460,7 +429,15 @@ C:
             switch (e.Caller)
             {
                 case "WDTAutoSync":
-                    awaiter.Release();
+                    switch (e.Args)
+                    {
+                        case "InitialAction":
+                            break;
+                        case "RanToCompletion":
+                            awaiter.Release();
+                            break;
+                        default: throw new NotImplementedException();
+                    }
                     break;
                 default:
                     break;
@@ -468,7 +445,6 @@ C:
         }
         try
         {
-            _expectingAutoSyncEvents = true;
             Awaited += localOnAwaited;
             var xroot =
                 new XElement("root")
@@ -662,7 +638,6 @@ C:
             awaiter.Release();
             awaiter.Dispose();
             Awaited -= localOnAwaited;
-            _expectingAutoSyncEvents = false;
         }
     }
 
@@ -679,7 +654,15 @@ C:
             switch (e.Caller)
             {
                 case "WDTAutoSync":
-                    awaiter.Release();
+                    switch (e.Args)
+                    {
+                        case "InitialAction":
+                            break;
+                        case "RanToCompletion":
+                            awaiter.Release();
+                            break;
+                        default: throw new NotImplementedException();
+                    }
                     break;
                 default:
                     break;
@@ -687,7 +670,6 @@ C:
         }
         try
         {
-            _expectingAutoSyncEvents = true;
             Awaited += localOnAwaited;
             var xroot = 
                 new XElement("root")
@@ -812,7 +794,6 @@ C:
             awaiter.Release();
             awaiter.Dispose();
             Awaited -= localOnAwaited;
-            _expectingAutoSyncEvents = false;
         }
     }
 
@@ -821,7 +802,6 @@ C:
     {
         string actual, expected;
         XElement? xel;
-        Item item;
         string path;
 
         SemaphoreSlim awaiter = new SemaphoreSlim(0, 1);
@@ -829,12 +809,16 @@ C:
         {
             switch (e.Caller)
             {
-                case nameof(WatchdogTimer.StartOrRestart):
-                    Debug.WriteLine($"ADVISORY {e.Caller}");
-                    break;
                 case "WDTAutoSync":
-                    Debug.WriteLine($"ADVISORY {e.Caller}");
-                    awaiter.Release();
+                    switch (e.Args)
+                    {
+                        case "InitialAction":
+                            break;
+                        case "RanToCompletion":
+                            awaiter.Release();
+                            break;
+                        default: throw new NotImplementedException();
+                    }
                     break;
                 default:
                     break;
@@ -842,12 +826,12 @@ C:
         }
         try
         {
-            AllowedCallers = new[] { "WDTAutoSync" };
+            AllowedCallers = new[] { "WDTAutoSync.RanToCompletion" }; // Artifact!
             Awaited += localOnAwaited;
-            _expectingAutoSyncEvents = true;
 
             await subtestDefaultAlphaNumericBuiltIn();
             await subtestDefaultCustomAlphaNumericReverse();
+
             #region S U B T E S T S
             async Task subtestDefaultAlphaNumericBuiltIn()
             {
@@ -907,7 +891,7 @@ C:
                 );
 
                 path = Path.Combine("D:", "I");
-                _eventQueue.Clear();
+                SenderEventQueue.Clear();
                 Assert.AreEqual(
                     PlacerResult.Exists,
                     xroot.Place(path, out xel),
@@ -918,7 +902,7 @@ C:
                 // [Careful] Do not await the awaiter here!
                 Assert.AreEqual(
                     0,
-                    _eventQueue.Count,
+                    SenderEventQueue.Count,
                     $"Expecting Place (Exists) did 'not' make any changes to the XML."
                  );
 
@@ -926,6 +910,7 @@ C:
                 async Task subtestImplicitVisibleOnCollapse()
                 {
                     xel.To<Item>().Collapse();
+
                     await awaiter.WaitAsync();
                     actual = context.ToString();
 
@@ -1022,7 +1007,7 @@ C:
                 );
 
                 path = Path.Combine("D:", "I");
-                _eventQueue.Clear();
+                SenderEventQueue.Clear();
                 Assert.AreEqual(
                     PlacerResult.Exists,
                     xroot.Place(path, out xel),
@@ -1033,7 +1018,7 @@ C:
                 // [Careful] Do not await the awaiter here!
                 Assert.AreEqual(
                     0,
-                    _eventQueue.Count,
+                    SenderEventQueue.Count,
                     $"Expecting Place (Exists) did 'not' make any changes to the XML."
                  );
 
@@ -1069,7 +1054,6 @@ C:
             awaiter.Release();
             awaiter.Dispose();
             Awaited -= localOnAwaited;
-            _expectingAutoSyncEvents = false;
         }
     }
 
@@ -1172,7 +1156,7 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
     }
 
     [TestMethod]
-    public async Task Test_PolymorphousSync()
+    public async Task Test_PolymorphicSync()
     {
         string actual, expected;
         IXBoundViewObject xbvo;
@@ -1182,12 +1166,16 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
         {
             switch (e.Caller)
             {
-                case nameof(WatchdogTimer.StartOrRestart):
-                    Debug.WriteLine($"ADVISORY {e.Caller}");
-                    break;
                 case "WDTAutoSync":
-                    Debug.WriteLine($"ADVISORY {e.Caller}");
-                    awaiter.Release();
+                    switch (e.Args)
+                    {
+                        case "InitialAction":
+                            break;
+                        case "RanToCompletion":
+                            awaiter.Release();
+                            break;
+                        default: throw new NotImplementedException();
+                    }
                     break;
                 default:
                     break;
@@ -1196,7 +1184,6 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
         try
         {
             Awaited += localOnAwaited;
-            _expectingAutoSyncEvents = true;
             var xroot =
                 new XElement("root")
                 .WithXBoundView(
@@ -1256,9 +1243,9 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
             {
                 xroot.Collapse(Path.Combine("C:", "Users"));
                 await awaiter.WaitAsync();
+
                 actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
 
-                await awaiter.WaitAsync();
 
                 expected = @" 
 <root viewcontext=""[ViewContext]"">
@@ -1300,10 +1287,6 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
             }
             async Task subtestExpandAgain()
             {
-                await awaiter.WaitAsync();
-                { }
-                await awaiter.WaitAsync();
-                { }
                 xroot.Collapse("C:");
                 await awaiter.WaitAsync();
                 { }
@@ -1329,13 +1312,14 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
                     actual.NormalizeResult(),
                     "Expecting Expecting only C is visible."
                 );
-                await awaiter.WaitAsync();
-                { }
 
                 actual = context.ToString();
+
+                actual.ToClipboardExpected();
+                { }
                 expected = @" 
-+ C:
-    Users";
++ C:"
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -1351,7 +1335,79 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
             awaiter.Release();
             awaiter.Dispose();
             Awaited -= localOnAwaited;
-            _expectingAutoSyncEvents = false;
+        }
+    }
+
+    [TestMethod]
+    public async Task Test_AttributeSortArtifacts()
+    {
+        string actual, expected;
+        IXBoundViewObject xbvo;
+        bool localIsSorting = false;
+
+        SemaphoreSlim awaiter = new SemaphoreSlim(0, 1);
+        void localOnAwaited(object? sender, AwaitedEventArgs e)
+        {
+            if (localIsSorting)
+            {
+                Assert.Fail($"Expecting to SortAttributes without a sync event.");
+            }
+            else
+            {
+                switch (e.Caller)
+                {
+                    case "WDTAutoSync":
+                        switch (e.Args)
+                        {
+                            case "InitialAction":
+                                break;
+                            case "RanToCompletion":
+                                awaiter.Release();
+                                break;
+                            default: throw new NotImplementedException();
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        try
+        {
+            Awaited += localOnAwaited;
+            var xroot =
+                new XElement("root")
+                .WithXBoundView(
+                    items: new ObservableCollectionFSI(),
+                    indent: 2
+            );
+            var context = xroot.To<ViewContext>();
+            await awaiter.WaitAsync();
+
+            xbvo =
+                xroot.FindOrCreate<DriveItem>("C:")
+                .XEL.FindOrCreate<FolderItem>("Users")
+                .XEL.FindOrCreate<FolderItem>("Documents")
+                .XEL.Show<FileItem>("README.md");
+            await awaiter.WaitAsync();
+
+            // Sort events. This should NOT make an auto sync event.
+            localIsSorting = true;
+            xbvo.XEL.SortAttributes<StdAttributeNameXBoundViewObject>();
+            await Task.Delay(TimeSpan.FromSeconds(0.5));
+            localIsSorting = false;
+
+            // This should make an autosync however!
+            xroot.Show<FileItem>(Path.Combine("C:", "Users", "Documents", "dotnet_bot.png"));
+            await awaiter.WaitAsync();
+            { }
+        }
+        finally
+        {
+            awaiter.Wait(0);
+            awaiter.Release();
+            awaiter.Dispose();
+            Awaited -= localOnAwaited;
         }
     }
 

@@ -872,6 +872,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             return Array.Empty<Type>();
         }
 
+        public static IXObjectChangeEventSink GetXObjectChangeEventSink(this XElement @this)
+            => @this.AncestorsAndSelf().Last().To<IXObjectChangeEventSink>();
+
         [Obsolete]
         public static bool IsCreated(this XElement source, string path, out XElement xel, string name = null, object value = null, Enum id = null)
         {

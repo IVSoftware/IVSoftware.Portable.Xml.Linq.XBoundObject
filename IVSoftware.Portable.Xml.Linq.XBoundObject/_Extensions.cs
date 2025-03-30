@@ -440,6 +440,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         {
             if (@throw)
             {
+                Debug.WriteLine($"ADVISORY: Type not found is {typeof(T).Name}");
                 return
                     includeSelf
                     ? @this.AncestorsAndSelf().First(_ => _.Has<T>()).To<T>()
@@ -577,43 +578,58 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             );
 
         /// <summary>
-        /// Sorts the attributes of the given <see cref="XElement"/> and its descendants based on the names of an enum type.
-        /// The attribute order follows the sequence of names in the specified enum.
-        /// The sort order is determined using <see cref="Enum.GetNames(Type)"/> for the specified enum type.
+        /// Fluent sort the attributes of the given <see cref="XElement"/> and its descendants 
+        /// based on the sequence of names in the specified enum.
         /// </summary>
         /// <typeparam name="T">An enum type whose names define the attribute order.</typeparam>
-        /// <param name="this">The <see cref="XElement"/> whose attributes will be sorted.</param>
-        /// <returns>The <see cref="XElement"/> with sorted attributes.</returns>
         public static XElement SortAttributes<T>(this XElement @this) where T : Enum
         {
-            lock (_lock)
+            IDisposable disp = null;
+            try
             {
-                IsSorting = true;
-                var dict = @this
-                    .Attributes()
-                    .ToDictionary(
-                    attr => attr.Name.LocalName,
-                    comparer: StringComparer.OrdinalIgnoreCase);
-                @this.RemoveAttributes();
-                foreach (var key in Enum.GetNames(typeof(T)))
+                disp = (@this.GetXObjectChangeEventSink()?.DisableXObjectChangeEvents.GetToken());
+
+                lock (_lock)
                 {
-                    if (dict.TryGetValue(key, out var xattr))
+                    IsSorting = true;
+                    var dict = @this
+                        .Attributes()
+                        .ToDictionary(
+                        attr => attr.Name.LocalName,
+                        comparer: StringComparer.OrdinalIgnoreCase);
+                    @this.RemoveAttributes();
+                    foreach (var key in Enum.GetNames(typeof(T)))
                     {
-                        @this.Add(xattr);
-                        dict.Remove(key);
+                        if (dict.TryGetValue(key, out var xattr))
+                        {
+                            @this.Add(xattr);
+                            dict.Remove(key);
+                        }
                     }
+                    @this.Add(dict.Values);
+                    foreach (var xel in @this.Elements())
+                    {
+                        xel.SortAttributes<T>();
+                    }
+                    IsSorting = false;
                 }
-                @this.Add(dict.Values);
-                foreach (var xel in @this.Elements())
-                {
-                    xel.SortAttributes<T>();
-                }
-                IsSorting = false;
-                return @this;
             }
+            catch (Exception ex)
+            {
+                Debug.Fail(ex.Message);
+            }
+            finally
+            {
+                disp?.Dispose();
+            }
+            return @this;
         }
+        // =================================================        
+        // These ARE USED by NotifyOnDescendants so DFWI.
+        // (XBOV keeps thinking they're not necessary..)     
         private static object _lock = new object();
         internal static bool IsSorting { get; private set; }
+        // =================================================
         internal static string InvalidOperationNotFoundMessage<T>() => $"No valid {typeof(T).Name} found. To handle cases where an enum attribute might not exist, use a nullable version: To<{typeof(T).Name}?>() or check @this.Has<{typeof(T).Name}>() first.";
         internal static string InvalidOperationMultipleFoundMessage<T>() => $@"Multiple valid {typeof(T).Name} found. To disambiguate them, obtain the attribute by name: Attributes().OfType<XBoundAttribute>().Single(_=>_.name=""targetName""";
 

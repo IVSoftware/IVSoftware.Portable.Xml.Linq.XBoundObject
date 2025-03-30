@@ -426,7 +426,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     /// Supports automatic synchronization, hierarchical indentation logic, and dynamic 
     /// tracking of visible elements with positional mapping.
     /// </summary>
-    public class ViewContext : XBoundObjectImplementer
+    public class ViewContext : XBoundObjectImplementer, IXObjectChangeEventSink
     {
         public int Indent { get; }
         public IList Items { get; }
@@ -437,7 +437,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 
         private readonly Dictionary<IXBoundObject, int> _o1 = null;
 
-        DisposableHost DHostSyncing { get; } = new DisposableHost();
+        public DisposableHost DisableXObjectChangeEvents { get; } = new DisposableHost();
 
         public ViewContext(
             IList items,
@@ -522,9 +522,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             }
             xel.Changed += (sender, e) =>
             {
-                if (AutoSyncEnabled)
+                if (DisableXObjectChangeEvents.IsZero())
                 {
-                    if (DHostSyncing.IsZero())
+                    if (AutoSyncEnabled)
                     {
                         // This must stay inside the DHOST block. Otherwise
                         // it's a bug race condition and UT hangs.
@@ -552,9 +552,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// </exception>
         public void SyncList()
         {
-            using (DHostSyncing.GetToken())
+            using (DisableXObjectChangeEvents.GetToken())
             {
-                if (DHostSyncing.Count > 1)
+                if (DisableXObjectChangeEvents.Count > 1)
                 {
                     Debug.Fail("Unexpected");
                 }
@@ -694,7 +694,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     _wdtAutoSync = new WatchdogTimer (
                         defaultInitialAction: () =>
                         {
-                            this.OnAwaited(caller: $"{nameof(WatchdogTimer.StartOrRestart)}");
+                            this.OnAwaited(
+                                new AwaitedEventArgs(
+                                    args: "InitialAction", 
+                                    caller: $"{nameof(WDTAutoSync)}"));
                         })
                     { Interval = AutoSyncSettleDelay };
                     _wdtAutoSync.RanToCompletion += async (sender, e) =>
@@ -703,7 +706,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                         try
                         {
                             SyncList();
-                            this.OnAwaited(caller: nameof(WDTAutoSync));
+                            this.OnAwaited(new AwaitedEventArgs(
+                                args: "RanToCompletion", 
+                                caller: $"{nameof(WDTAutoSync)}"));
                         }
                         finally
                         {
