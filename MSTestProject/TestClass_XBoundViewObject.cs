@@ -34,11 +34,87 @@ public class TestClass_XBoundViewObject
     class FolderItem : XBoundViewObjectImplementer { }
     class FileItem : XBoundViewObjectImplementer { }
 
+    [TestMethod]
+    public void Test_RawPlacerClassUsage()
+    {
+        string actual, expected;
+
+        string winPath = @"C:\Users\Public\Documents";
+        XElement xroot = new XElement("root");
+
+        // Options explained
+        var placer = new Placer(
+            xSource: xroot,
+            fqpath: winPath,
+            // optional
+            onBeforeAdd: (sender, e) =>
+            {
+                // Modify, substitute, or cancel new `XElement`
+                // nodes before they are added.
+                if(e.IsPathMatch)
+                {
+                    // The final destination node.
+                }
+                else 
+                { 
+                    // Ad hoc nodes added to achieve the full path.
+                }
+            },            
+            // optional
+            onAfterAdd: (sender, e) =>
+            {
+                // Work with 
+            },
+            // optional
+            onIterate: (sender, e) =>
+            {
+                // Work with the traversal regardless of whether
+                // new nodes are being created.
+            },
+            // The default mode is FindOrCreate.
+            mode: PlacerMode.FindOrCreate,
+            // Dictates which XAttribute value to use for constructing paths.
+            pathAttributeName: "text");
+
+
+        switch (placer.PlacerResult)
+        {
+            case PlacerResult.Created:
+                break;
+            case PlacerResult.NotFound:
+            case PlacerResult.Partial:
+            case PlacerResult.Exists:
+            case PlacerResult.Assert:
+            case PlacerResult.Throw:
+                Assert.Fail("Expecting Created");
+                break;
+        }
+        actual = xroot.ToString();
+        actual.ToClipboardAssert("Expecting path is 2D tree now.");
+        { }
+        expected = @" 
+<root>
+  <xnode text=""C:"">
+    <xnode text=""Users"">
+      <xnode text=""Public"">
+        <xnode text=""Documents"" />
+      </xnode>
+    </xnode>
+  </xnode>
+</root>";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting path is 2D tree now."
+        );
+    }
+
     /// <summary>
     /// Basic File System manipulations.
     /// </summary>
     [TestMethod]
-    public void Test_BasicUsageExamples_101()
+    public void Test_BasicFindShowExtensionExamples_101()
     {
         string actual, expected;
         FolderItem currentFolder = null;
