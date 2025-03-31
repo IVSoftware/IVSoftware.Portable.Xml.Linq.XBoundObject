@@ -484,8 +484,8 @@ C:
             xel = xroot.Descendants().First();
             item = xel.To<Item>();
             Assert.IsInstanceOfType<Item>(item);
-            Assert.AreEqual(PlusMinus.Leaf, item.Expand());
-            Assert.AreEqual(PlusMinus.Leaf, item.Expand(allowPartial: true));
+            Assert.AreEqual(PlusMinus.Leaf, item.Expand(ExpandDirection.ToItems));
+            Assert.AreEqual(PlusMinus.Leaf, item.Expand(ExpandDirection.FromItems));
             Assert.AreEqual(PlusMinus.Leaf, item.Collapse());
 
             foreach (var tmp in new[]
@@ -622,7 +622,7 @@ C:
             async Task subtestImplicitVisible()
             {
                 xel = xroot.Descendants().Skip(7).First();
-                xel.To<Item>().Expand();
+                xel.To<Item>().Expand(ExpandDirection.ToItems);
                 await awaiter.WaitAsync();
 
                 actual = context.ToString();
@@ -773,7 +773,7 @@ C:
             }
             var parent = item.Parent.To<Item>();
             Assert.IsInstanceOfType<Item>(item);
-            parent.Expand();
+            parent.Expand(ExpandDirection.ToItems);
             await awaiter.WaitAsync();
             actual = context.ToString();
 
@@ -1530,9 +1530,31 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
                 "Expecting child items vith null isvisible and plusminus attributes."
             );
 
-            xbvo.Expand();
+            xbvo.Expand(ExpandDirection.ToItems);
             await awaiter.WaitAsync();
             { }
+
+            actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
+
+            actual.ToClipboardExpected();
+            { }
+            actual.ToClipboardAssert("Expecting only the first child is showing with PlusMinus.Collapsed.");
+            expected = @" 
+<root viewcontext=""[ViewContext]"">
+  <xnode text=""C:"" isvisible=""True"" plusminus=""Collapsed"" datamodel=""[DriveItem]"">
+    <xnode text=""Users"" isvisible=""True"" plusminus=""Collapsed"" datamodel=""[FolderItem]"">
+      <xnode text=""Documents"" datamodel=""[FolderItem]"">
+        <xnode text=""README.md"" datamodel=""[FileItem]"" />
+      </xnode>
+    </xnode>
+  </xnode>
+</root>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting only the first child is showing with User = Collapsed."
+            );
 
             actual = context.ToString();
             actual.ToClipboard();

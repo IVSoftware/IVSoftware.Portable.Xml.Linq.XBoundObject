@@ -94,7 +94,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                             switch (xbvo?.PlusMinus)
                             {
                                 case PlusMinus.Collapsed:
-                                    xbvo.Expand();
+                                    xbvo.Expand(ExpandDirection.ToItems);
                                     break;
                                 case PlusMinus.Partial:
                                     Debug.Fail("TODO");
@@ -186,7 +186,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                             // [Careful]
                             // These must be set as INPC Properties not as XATTR!
                             pxbo.IsVisible = true;
-                            pxbo.Expand(allowPartial: true);
+
+                            pxbo.Expand(ExpandDirection.FromItems);
                         }
                     }
                     else
@@ -208,7 +209,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 XEL.TryGetAttributeValue(out PlusMinus value)
                 ? value
                 : PlusMinus.Leaf;
-            internal set
+
+            // XBVOs can only set their own expander icon!
+            private set
             {
                 if (!Equals(PlusMinus, value))
                 {
@@ -239,29 +242,38 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                         // - In fact, this is probably being called in response to IsVisible = true.
                         // - Point is, we're dealing with this level only!
                         var elements = XEL.Elements().ToArray();
-                        var elementsCount = elements.Length;
-                        var visibleCount =
+                        var visibleElements =
                             elements
-                            .Count(_ =>
+                            .Where(_ =>
                                 _
                                 .Attribute(nameof(StdAttributeNameXBoundViewObject.isvisible))
-                                ?.Value.ToLower() == "true");
+                                ?.Value.ToLower() == "true")
+                                .ToArray();
 
                         // In each case, set backing store first so that
                         // the attribute change doesn't cause reentry.
                         if (elements.Any())
                         {
-                            if (elementsCount == visibleCount)
+                            if (visibleElements.Any())
                             {
-                                XEL.SetAttributeValue(PlusMinus.Expanded);
+                                if (elements.Length == visibleElements.Length)
+                                {
+                                    XEL.SetAttributeValue(PlusMinus.Expanded);
+                                }
+                                else
+                                {
+                                    XEL.SetAttributeValue(PlusMinus.Partial);
+                                }
                             }
                             else
                             {
-                                XEL.SetAttributeValue(PlusMinus.Partial);
+                                // HAS elements. NONE visible
+                                XEL.SetAttributeValue(PlusMinus.Collapsed);
                             }
                         }
                         else
                         {
+                            // Has no elements at all
                             XEL.SetAttributeValueNull<PlusMinus>();
                         }
                     }
@@ -390,24 +402,37 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     break;
             }
         }
-
-        public PlusMinus Expand(bool allowPartial = false)
+        
+        public PlusMinus Expand(ExpandDirection direction)
         {
             IsVisible = true;
-            if (!allowPartial)
+            switch (direction)
             {
-                foreach (
-                    var item in
-                    XEL
-                    .Descendants()
-                    .Reverse()
-                    .Select(_ => _.To<IXBoundViewObject>())
-                    .Where(_ => _ != null))
-                {
-                    item.IsVisible = true;
-                }
+                case ExpandDirection.ToItems:
+                    // Make all children visible.
+                    if (XEL.HasElements)
+                    {
+                        foreach (
+                            var child in
+                            XEL
+                            .Elements())
+                        {
+                            child.SetAttributeValue(Placement.IsVisible.True); 
+                            // Must call method. An element can invoke its own expander.
+                            child.To<IXBoundViewObject>().Expand(ExpandDirection.FromItems);
+                        }
+                    }
+                    // This property will downgrade itself to leaf if necessary.
+                    PlusMinus = PlusMinus.Expanded;
+                    break;
+                case ExpandDirection.FromItems:
+                    // Do not alter item visibility. Set PlusMinus based on
+                    // their state. An element can invoke its own expander.
+                    PlusMinus = PlusMinus.Auto;
+                    break;
+                default:
+                    break;
             }
-            PlusMinus = PlusMinus.Auto;
             Debug.Assert(!Equals(PlusMinus, PlusMinus.Auto));
             return PlusMinus; // The result is 'not' necessarily the same.
         }

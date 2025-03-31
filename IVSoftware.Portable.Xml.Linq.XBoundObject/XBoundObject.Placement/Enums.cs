@@ -60,4 +60,19 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         True,
         False,
     }
+    public enum ExpandDirection
+    {
+        /// <summary>
+        /// Make child items visible if they exist.
+        /// PlusMinus will be Expanded or Leaf only when done.
+        /// </summary>
+        ToItems,
+
+        /// <summary>
+        /// Determine expandion state based on the presence
+        /// and or visibility of child items.
+        /// PlusMinus can be Expanded, Partial or Leaf when done.
+        /// </summary>
+        FromItems,
+    }
 }

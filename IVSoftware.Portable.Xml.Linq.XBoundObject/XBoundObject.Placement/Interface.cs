@@ -38,7 +38,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         bool IsVisible { get; set; }
         int Space { get; }
         PlusMinus PlusMinus { get; }
-        PlusMinus Expand(bool allowPartial = false);
+        PlusMinus Expand(ExpandDirection direction);
         PlusMinus Collapse(); 
         ICommand PlusMinusToggleCommand { get; }
     }

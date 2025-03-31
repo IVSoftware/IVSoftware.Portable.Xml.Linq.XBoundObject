@@ -600,7 +600,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     cxbvo.IsVisible = true;
                 }
                 var xbvo = xel.To<IXBoundViewObject>(@throw: true);
-                xbvo.Expand(allowPartial: true);
+                xbvo.Expand(ExpandDirection.FromItems);
                 xbvo.IsVisible = true;
             }
             return placer.XResult;
