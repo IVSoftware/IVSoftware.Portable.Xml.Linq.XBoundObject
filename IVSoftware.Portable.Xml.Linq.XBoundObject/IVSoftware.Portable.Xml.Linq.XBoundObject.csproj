@@ -29,7 +29,7 @@
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
 		<BaseVersion>2.0.0</BaseVersion>
-		<VersionPrefix>$(BaseVersion)-local10</VersionPrefix>
+		<VersionPrefix>$(BaseVersion)-local11</VersionPrefix>
 	</PropertyGroup>
 	<ItemGroup>
 	  <Compile Remove="Screenshots\**" />

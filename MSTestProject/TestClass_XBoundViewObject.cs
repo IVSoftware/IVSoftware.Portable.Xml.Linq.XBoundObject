@@ -1666,60 +1666,38 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
     }
 
     [TestMethod]
-    public async Task Test_PortableInitFileSystem()
+    public void Test_PortableInitFileSystem()
     {
         string actual, expected;
         IXBoundViewObject xbvo;
 
-        SemaphoreSlim awaiter = new SemaphoreSlim(0, 1);
-        void localOnAwaited(object? sender, AwaitedEventArgs e)
-        {
-            switch (e.Caller)
-            {
-                case "WDTAutoSync":
-                    switch (e.Args)
-                    {
-                        case "InitialAction":
-                            break;
-                        case "RanToCompletion":
-                            awaiter.Release();
-                            break;
-                        default: throw new NotImplementedException();
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-        try
-        {
-            Awaited += localOnAwaited;
-            var xroot =
-                new XElement("root")
-                .WithXBoundView(
-                    items: new ObservableCollection<FilesystemItem>(),
-                    indent: 2
+        var xroot =
+            new XElement("root")
+            .WithXBoundView(
+                items: new ObservableCollection<FilesystemItem>(),
+                indent: 2,
+                autoSyncEnabled: false
             );
-            var context = xroot.To<ViewContext>();
-            foreach (var drive in Directory.GetLogicalDrives())
-            {
-                xroot.Show<DriveItem>(drive);
-            }
-            foreach (var path in
-                     Enum.GetValues<Environment.SpecialFolder>()
-                     .Select(_ => Environment.GetFolderPath(_))
-                     .Where(_ => !string.IsNullOrWhiteSpace(_) && Directory.Exists(_)))
-            {
-                xroot.FindOrCreate<FolderItem>(path);
-            }
-            foreach (var drive in xroot.Elements().Select(_ => _.To<DriveItem>()))
-            {
-                drive.Expand(ExpandDirection.FromItems);
-            }
-            await awaiter.WaitAsync();
+        var context = xroot.To<ViewContext>();
+        foreach (var drive in Directory.GetLogicalDrives())
+        {
+            xroot.Show<DriveItem>(drive);
+        }
+        foreach (var path in
+                 Enum.GetValues<Environment.SpecialFolder>()
+                 .Select(_ => Environment.GetFolderPath(_))
+                 .Where(_ => !string.IsNullOrWhiteSpace(_) && Directory.Exists(_)))
+        {
+            xroot.FindOrCreate<FolderItem>(path);
+        }
+        foreach (var drive in xroot.Elements().Select(_ => _.To<DriveItem>()))
+        {
+            drive.Expand(ExpandDirection.FromItems);
+        }
 
-            actual = context.ToString();
-            expected = @" 
+        context.SyncList();
+        actual = context.ToString();
+        expected = @" 
 + C:
   D:
   E:
@@ -1727,25 +1705,25 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
   G:
   Z:";
 
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting logical drives where C: and F: are not empty."
-            );
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting logical drives where C: and F: are not empty."
+        );
 
-            // View the results in a debugger watch window here.
-            actual = 
-                xroot
-                .SortAttributes<StdAttributeNameXBoundViewObject>()
-                .ToString();
+        // View the results in a debugger watch window here.
+        actual =
+            xroot
+            .SortAttributes<StdAttributeNameXBoundViewObject>()
+            .ToString();
 
-            var cDrive = xroot.FindOrCreate<DriveItem>("C:");
-            cDrive.PlusMinusToggleCommand?.Execute(cDrive);
+        var cDrive = xroot.FindOrCreate<DriveItem>("C:");
+        cDrive.PlusMinusToggleCommand?.Execute(cDrive);
 
-            await awaiter.WaitAsync();
-            actual = context.ToString();
+        context.SyncList();
+        actual = context.ToString();
 
-            expected = @" 
+        expected = @" 
 - C:
   + Program Files
   + Program Files (x86)
@@ -1758,15 +1736,12 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
   G:
   Z:";
 
-            var programFiles = cDrive.XEL.FindOrCreate<FolderItem>("Program Files");
-            programFiles.PlusMinusToggleCommand?.Execute(programFiles);
-            await awaiter.WaitAsync();
+        var programFiles = cDrive.XEL.FindOrCreate<FolderItem>("Program Files");
+        programFiles.PlusMinusToggleCommand?.Execute(programFiles);
 
-            actual = context.ToString();
-
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
+        context.SyncList();
+        actual = context.ToString();
+        expected = @" 
 - C:
   - Program Files
       Common Files
@@ -1779,19 +1754,19 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
 + F:
   G:
   Z:"
-            ;
+        ;
 
-            context.AutoSyncEnabled = false;
-            programFiles.PlusMinusToggleCommand?.Execute(programFiles);
+        context.AutoSyncEnabled = false;
+        programFiles.PlusMinusToggleCommand?.Execute(programFiles);
 
-            // View the results in a debugger watch window here.
-            actual =
-                xroot
-                .SortAttributes<StdAttributeNameXBoundViewObject>()
-                .ToString();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
+        // View the results in a debugger watch window here.
+        actual =
+            xroot
+            .SortAttributes<StdAttributeNameXBoundViewObject>()
+            .ToString();
+        actual.ToClipboardExpected();
+        { }
+        expected = @" 
 <root viewcontext=""[ViewContext]"">
   <xnode text=""C:"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[DriveItem]"">
     <xnode text=""Program Files"" isvisible=""True"" plusminus=""Collapsed"" datamodel=""[FolderItem]"">
@@ -1878,20 +1853,27 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
   <xnode text=""G:"" isvisible=""True"" datamodel=""[DriveItem]"" />
   <xnode text=""Z:"" isvisible=""True"" datamodel=""[DriveItem]"" />
 </root>"
-            ;
+        ;
 
-            // Manual
-            context.SyncList();
+        context.SyncList();
 
-        }
-        finally
-        {
-            awaiter.Wait(0);
-            awaiter.Release();
-            awaiter.Dispose();
-            Awaited -= localOnAwaited;
-        }
-
+        context.SyncList();
+        actual = context.ToString();
+        actual.ToClipboardExpected();
+        { }
+        expected = @" 
+- C:
+  + Program Files
+  + Program Files (x86)
+  + ProgramData
+  + Users
+  + WINDOWS
+  D:
+  E:
++ F:
+  G:
+  Z:"
+        ;
     }
 
     /// <summary>
