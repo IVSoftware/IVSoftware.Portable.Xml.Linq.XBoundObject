@@ -268,6 +268,8 @@ These screenshots show how a non-recursive data template that indents the text l
 
 ___
 
+**Data Model (XAML)**
+
 Here's the shared xaml for these views.
 
 ```
