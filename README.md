@@ -5,7 +5,6 @@ A lightweight extension for `System.Xml.Linq` that provides a `Tag` property for
 ##### Overview
 **XBoundAttribute** enhances `XAttribute` by introducing a **runtime-only** `Tag` property, allowing attributes to store and retrieve objects in a type-safe manner using `xel.To<T>()`. Note that while the `Tag` property can be visualized in-memory (e.g., when printed), it is not intended to be serializable. That is, objects attached at runtime are not reconstructed when the file is read back.
 
-
 ___
 
 ##### Features
@@ -22,6 +21,15 @@ ___
 - **Cross-Platform Backing Store for Hierarchical Views** – Seamlessly models TreeView-like structures across WinForms, WPF, MAUI, Xamarin, and Web UIs.
 
 XBoundAttribute bridges the gap between XML structures and runtime logic, making XML more powerful and adaptive in modern applications.
+___
+
+## New Changes in Release 2.0
+
+- High level extensions `FindOrCreate()` and `FindOrCreate<T>()` for `Placer` class put it on steroids.
+
+- `ViewContext` class and `IXBoundViewObject` interface make direct-linking to an `ObservableCollection<T>` possible for platform-agnostic view sources.
+
+- High level _View_ extensions `Show()`, `Show<T>()`, `Expand()`, and `Collapse()` for `Placer` class to fasttrack UI development for Maui, WinForms, WPF, etc.
 
 ___
 
@@ -62,7 +70,7 @@ public void TestBasicPlacement()
 ```
 
 
-The content of the newly created `XElement` can be modified using optional parameters to streamline this process. The content can be supplied direcly in the `Place` call using any number of optional parameters suppied in any order. See the [Optional Parameters](#optional-parameters) section for a quick-start guide to using this feature.
+The content of the newly created `XElement` can be modified using optional parameters to streamline this process. The content can be supplied directly in the `Place` call using any number of optional parameters supplied in any order. See the [Optional Parameters](#optional-parameters) section for a quick-start guide to using this feature.
 ___
 
 ### Enhancements: Working with `Enum` and `enum` Attribute Values
@@ -104,7 +112,7 @@ ___
 So the question is, what happens if this nullable operator is left out accidentally? In previous versions, the way this edge case behaves is:
 
 1. The `To<T>()` method returns `default(T)` for a non-existent attribute, possibly deceiving us into thinking it exists.
-2. Since the default is to 'not' throw, previous versions would act as though the call succeeded because the method was returning an instance of `T` even though the default value it was returning wan't meaningful.
+2. Since the default is to 'not' throw, previous versions would act as though the call succeeded because the method was returning an instance of `T` even though the default value it was returning wasn't meaningful.
  
 For previous versions to ever allow this without a debug assert is a bug, and this release fixes it. The developer will now be notified when this happens, but only when running in `Debug` mode because (out of an abundance of caution) the reporting level is `Debug.Assert` not `throw`. This is a tradeoff of course. Most importantly, the new release isn't allowed to actually _crash_ your app by throwing new exceptions where it wasn't before. And the presence of a debug assert should allow your Unit Testing to detect occurrences where previously it couldn't. But the thing is, this _will_ require a little bit of testing, because in `Release` mode (where debug asserts are ignored) this is still essentially a silent spurious failure in this narrow edge case. 
 

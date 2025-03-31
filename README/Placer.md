@@ -3,9 +3,101 @@
 
 ## Placer Class Overview
 
-The `Placer` class is designed to project a flat string path onto a new or existing node within an XML hierarchy, effectively managing intermediate paths and their creation as necessary.
+The `Placer` class is designed to project a flat string path onto a new or existing node within an XML hierarchy, effectively managing intermediate paths and their creation as necessary. Using this class directly provides access to options and callbacks, but in many cases (like the file viewer below) there are high-level extensions that make using the `Placer` class more convenient and accessible.
 
-### Basic Usage
+The MSTest example in the snippet below is part of this repo, which can be cloned and run to facilitate "hands-on" learning.
+
+```
+/// <summary>
+/// Place nodes using Placer.DefaultNewXElementName.
+/// </summary>    
+[TestMethod]
+// <PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="2.0.*" />
+public void Test_RawPlacerClassUsage()
+{
+    string actual, expected;
+
+    string winPath = @"C:\Users\Public\Documents";
+    XElement xroot = new XElement("root");
+
+    // Options explained
+    var placer = new Placer(
+        xSource: xroot,
+        fqpath: winPath,
+        // optional
+        onBeforeAdd: (sender, e) =>
+        {
+            // Modify, substitute, or cancel new `XElement`
+            // nodes before they are added.
+            if(e.IsPathMatch)
+            {
+                // The final destination node.
+            }
+            else 
+            { 
+                // Ad hoc nodes added to achieve the full path.
+            }
+        },            
+        // optional
+        onAfterAdd: (sender, e) =>
+        {
+            // Work with 
+        },
+        // optional
+        onIterate: (sender, e) =>
+        {
+            // Work with the traversal regardless of whether
+            // new nodes are being created.
+        },
+        // The default mode is FindOrCreate.
+        mode: PlacerMode.FindOrCreate,
+        // Dictates which XAttribute value to use for constructing paths.
+        pathAttributeName: "text");
+
+
+    switch (placer.PlacerResult)
+    {
+        case PlacerResult.Created:
+            break;
+        case PlacerResult.NotFound:
+        case PlacerResult.Partial:
+        case PlacerResult.Exists:
+        case PlacerResult.Assert:
+        case PlacerResult.Throw:
+            Assert.Fail("Expecting Created");
+            break;
+    }
+    actual = xroot.ToString();
+    actual.ToClipboardAssert("Expecting path is 2D tree now.");
+    { }
+    expected = @" 
+<root>
+  <xnode text=""C:"">
+    <xnode text=""Users"">
+      <xnode text=""Public"">
+        <xnode text=""Documents"" />
+      </xnode>
+    </xnode>
+  </xnode>
+</root>";
+    // Uses IVSoftware.WinOS.MSTest.Extensions.NormalizeResult() for whitespace tolerance.
+    Assert.AreEqual(
+        expected.NormalizeResult(),
+        actual.NormalizeResult(),
+        "Expecting path is 2D tree now."
+    );
+}
+```
+
+### Introduction to Placer Extensions
+
+This intro will focus on four extensions. The first two apply to any `T`.
+1. `FindOrCreate()` - Ensures that an element of `DefaultNewXElementName` exists at the specified path.
+2. `FindOrCreate<T>()` - Binds an instance of `T` to the destination node, and to any passing node that doesn't already have a `T`.
+
+The second two apply when `T is IXBoundViewObject`:
+3. `Show()` - Makes the target element visible by running `Placer` in `FindOrThrow` mode (i.e. `InvalidOperationException` if not found).
+4. `Show<T>()` - Follows the rules of `FindOrCreate<T>()` then sets `IXBoundViewObject.IsVisible` to true.
 
 Consider something like a File System Viewer which would be a good example of hierarchal data that may need to be displayed not only in MAUI but also in frameworks like WinForms or WPF. There will also be a need to manipulate this data (e.g. Drag Drop) while keeping it decoupled from the UI. This can be facilitated using an inherently recursive runtime data structure like `System.Xml.Linq.XElement` that is a universal in all of .NET and so brings portability to the solution.
 

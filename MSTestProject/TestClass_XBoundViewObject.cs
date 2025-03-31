@@ -29,12 +29,11 @@ public class TestClass_XBoundViewObject
         AllowedCallers = [];
     }
 
-
-    class DriveItem : XBoundViewObjectImplementer { }
-    class FolderItem : XBoundViewObjectImplementer { }
-    class FileItem : XBoundViewObjectImplementer { }
-
+    /// <summary>
+    /// Place nodes using Placer.DefaultNewXElementName.
+    /// </summary>    
     [TestMethod]
+    // <PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="2.0.*" />
     public void Test_RawPlacerClassUsage()
     {
         string actual, expected;
@@ -102,7 +101,7 @@ public class TestClass_XBoundViewObject
     </xnode>
   </xnode>
 </root>";
-
+        // Uses IVSoftware.WinOS.MSTest.Extensions.NormalizeResult() for whitespace tolerance.
         Assert.AreEqual(
             expected.NormalizeResult(),
             actual.NormalizeResult(),
@@ -110,6 +109,9 @@ public class TestClass_XBoundViewObject
         );
     }
 
+    class DriveItem : XBoundViewObjectImplementer { }
+    class FolderItem : XBoundViewObjectImplementer { }
+    class FileItem : XBoundViewObjectImplementer { }
     /// <summary>
     /// Basic File System manipulations.
     /// </summary>
