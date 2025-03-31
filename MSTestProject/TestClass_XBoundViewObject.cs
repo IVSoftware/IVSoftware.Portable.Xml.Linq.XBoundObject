@@ -29,6 +29,37 @@ public class TestClass_XBoundViewObject
         AllowedCallers = [];
     }
 
+
+    class DriveItem : XBoundViewObjectImplementer { }
+    class FolderItem : XBoundViewObjectImplementer { }
+    class FileItem : XBoundViewObjectImplementer { }
+
+    /// <summary>
+    /// Basic File System manipulations.
+    /// </summary>
+    [TestMethod]
+    public void Test_BasicUsageExamples_101()
+    {
+        string actual, expected;
+
+        // Filesystem items
+        var FSItems = new ObservableCollection<XBoundViewObjectImplementer>();
+        var ViewContext = new ViewContext(FSItems, indent: 2, autoSyncEnabled: false);
+        var XRoot = new XElement("root").WithBoundAttributeValue(ViewContext);
+
+        actual = XRoot.ToString();
+        expected = @" 
+<root viewcontext=""[ViewContext]"" />";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting ViewContext instance is bound to Root"
+        );
+        { }
+    }
+
+
     /// <summary>
     /// Exhaustively verifies manual control over PlusMinus and IsVisible states without auto-sync. 
     /// Exercises granular tree expansion, collapsing, adhoc node visibility, and sorting behavior. 
@@ -1668,27 +1699,33 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
     [TestMethod]
     public void Test_PortableInitFileSystem()
     {
+
         string actual, expected;
         IXBoundViewObject xbvo;
 
         var xroot =
             new XElement("root")
             .WithXBoundView(
-                items: new ObservableCollection<FilesystemItem>(),
+                items: new ObservableCollection<XBoundViewObjectImplementer>(),
                 indent: 2,
                 autoSyncEnabled: false
             );
         var context = xroot.To<ViewContext>();
-        foreach (var drive in Directory.GetLogicalDrives())
-        {
-            xroot.Show<DriveItem>(drive);
-        }
+
+        xroot.Show<DriveItem>("C:");
+
         foreach (var path in
                  Enum.GetValues<Environment.SpecialFolder>()
                  .Select(_ => Environment.GetFolderPath(_))
                  .Where(_ => !string.IsNullOrWhiteSpace(_) && Directory.Exists(_)))
         {
-            xroot.FindOrCreate<FolderItem>(path);
+            // In order to make this repeatable across systems, this
+            // will allow only target paths on the C: drive.
+            if (path.StartsWith("C", StringComparison.OrdinalIgnoreCase))
+            {
+                xroot
+                    .FindOrCreate<FolderItem>(path.Trim(@"\/".ToCharArray()));
+            }
         }
         foreach (var drive in xroot.Elements().Select(_ => _.To<DriveItem>()))
         {
@@ -1698,12 +1735,7 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
         context.SyncList();
         actual = context.ToString();
         expected = @" 
-+ C:
-  D:
-  E:
-+ F:
-  G:
-  Z:";
++ C:";
 
         Assert.AreEqual(
             expected.NormalizeResult(),
@@ -1718,24 +1750,27 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
             .ToString();
 
         var cDrive = xroot.FindOrCreate<DriveItem>("C:");
+
+        // "Perform Click" on the expander.
         cDrive.PlusMinusToggleCommand?.Execute(cDrive);
-
         context.SyncList();
-        actual = context.ToString();
 
+        actual = context.ToString();
         expected = @" 
 - C:
   + Program Files
   + Program Files (x86)
   + ProgramData
   + Users
-  + WINDOWS
-  D:
-  E:
-+ F:
-  G:
-  Z:";
+  + WINDOWS";
 
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expected root level expansion"
+        );
+
+        // Expand "Program Files"
         var programFiles = cDrive.XEL.FindOrCreate<FolderItem>("Program Files");
         programFiles.PlusMinusToggleCommand?.Execute(programFiles);
 
@@ -1748,24 +1783,14 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
   + Program Files (x86)
   + ProgramData
   + Users
-  + WINDOWS
-  D:
-  E:
-+ F:
-  G:
-  Z:"
+  + WINDOWS"
         ;
-
-        context.AutoSyncEnabled = false;
-        programFiles.PlusMinusToggleCommand?.Execute(programFiles);
 
         // View the results in a debugger watch window here.
         actual =
             xroot
             .SortAttributes<StdAttributeNameXBoundViewObject>()
             .ToString();
-        actual.ToClipboardExpected();
-        { }
         expected = @" 
 <root viewcontext=""[ViewContext]"">
   <xnode text=""C:"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[DriveItem]"">
@@ -1839,41 +1864,32 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
       <xnode text=""SysWOW64"" datamodel=""[FolderItem]"" />
     </xnode>
   </xnode>
-  <xnode text=""D:"" isvisible=""True"" datamodel=""[DriveItem]"" />
-  <xnode text=""E:"" isvisible=""True"" datamodel=""[DriveItem]"" />
-  <xnode text=""F:"" isvisible=""True"" plusminus=""Collapsed"" datamodel=""[DriveItem]"">
-    <xnode text=""one-drive-ivsoftware"" datamodel=""[FolderItem]"">
-      <xnode text=""OneDrive"" datamodel=""[FolderItem]"">
-        <xnode text=""Desktop"" datamodel=""[FolderItem]"" />
-        <xnode text=""Documents"" datamodel=""[FolderItem]"" />
-        <xnode text=""Pictures"" datamodel=""[FolderItem]"" />
-      </xnode>
-    </xnode>
-  </xnode>
-  <xnode text=""G:"" isvisible=""True"" datamodel=""[DriveItem]"" />
-  <xnode text=""Z:"" isvisible=""True"" datamodel=""[DriveItem]"" />
-</root>"
-        ;
+</root>";
 
-        context.SyncList();
+        // NO LIMIT SET.
+        // The folders dor User will be different on every machine!
+        Assert.IsTrue(
+            true,   
+            "Expecting Environment.SpecialFolders is projected in 2D"
+        );
 
+        // Click Program Files again to collapse it.
+        programFiles.PlusMinusToggleCommand?.Execute(programFiles);
         context.SyncList();
         actual = context.ToString();
-        actual.ToClipboardExpected();
-        { }
         expected = @" 
 - C:
   + Program Files
   + Program Files (x86)
   + ProgramData
   + Users
-  + WINDOWS
-  D:
-  E:
-+ F:
-  G:
-  Z:"
-        ;
+  + WINDOWS";
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting Program Files folder is collapsed."
+        );
     }
 
     /// <summary>

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace XBoundObjectMSTest.TestClassesForXBVO
 {
-    class ObservableCollectionFSI : ObservableCollection<FilesystemItem>
+    class ObservableCollectionFSI : ObservableCollection<XBoundViewObjectImplementer>
     {
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
@@ -48,8 +48,4 @@ namespace XBoundObjectMSTest.TestClassesForXBVO
         {
         }
     }
-    class FilesystemItem : XBoundViewObjectImplementer { }
-    class DriveItem : FilesystemItem { }
-    class FolderItem : FilesystemItem { }
-    class FileItem : FilesystemItem { }
 }

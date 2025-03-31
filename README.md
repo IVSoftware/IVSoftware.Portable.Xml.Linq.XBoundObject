@@ -5,6 +5,9 @@ A lightweight extension for `System.Xml.Linq` that provides a `Tag` property for
 ##### Overview
 **XBoundAttribute** enhances `XAttribute` by introducing a **runtime-only** `Tag` property, allowing attributes to store and retrieve objects in a type-safe manner using `xel.To<T>()`. Note that while the `Tag` property can be visualized in-memory (e.g., when printed), it is not intended to be serializable. That is, objects attached at runtime are not reconstructed when the file is read back.
 
+
+___
+
 ##### Features
 
 - **Extended XAttribute Functionality** – Introduces a `Tag` property for `XAttribute`, enabling metadata enrichment
@@ -22,7 +25,7 @@ XBoundAttribute bridges the gap between XML structures and runtime logic, making
 
 ___
 
-## New in Release 1.4
+### Changes in Release 1.4
 
 This release introduces a new XML placement feature and extended support for named enums. It also adds a new debug assertion for detecting an edge case that can occur when using named enums in conjunction with the `To<T>()` method.
 
@@ -191,7 +194,8 @@ ___
 /// <summary>
 /// Converts an XElement to its corresponding type T, based on bound XML attributes with an option to
 /// throw an exception if the conversion fails. Otherwise, this method silently returns null if 
-/// the conversion fails and T is a reference type or if nullable T? is explicitly requested.
+/// the conversion fails and T is a reference type or if nullable T? is explicitly requested. Most commonly
+/// success is checked inline with `is` e.g. in C# 12 it might be if(xel.To<MyClass>() is { } myClass)){ ... }
 /// </summary>
 /// <typeparam name="T">The type to which the XElement is to be converted.</typeparam>
 /// <param name="xel">The XElement to convert.</param>
@@ -210,7 +214,7 @@ public static T To<T>(this XElement xel, bool @throw = false){...}
 
 ___
 
-#### New in release 1.4
+#### New in Release 1.4
 
 ```
 /// <summary>
