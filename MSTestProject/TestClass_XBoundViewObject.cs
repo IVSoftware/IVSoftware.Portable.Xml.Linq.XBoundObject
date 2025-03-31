@@ -41,11 +41,15 @@ public class TestClass_XBoundViewObject
     public void Test_BasicUsageExamples_101()
     {
         string actual, expected;
+        FolderItem currentFolder = null;
 
         // Filesystem items
         var FSItems = new ObservableCollection<XBoundViewObjectImplementer>();
-        var ViewContext = new ViewContext(FSItems, indent: 2, autoSyncEnabled: false);
-        var XRoot = new XElement("root").WithBoundAttributeValue(ViewContext);
+        var XRoot = new XElement("root");
+        var ViewContext = new ViewContext(XRoot, FSItems, indent: 2, autoSyncEnabled: false);
+
+        // Bind the ViewContext to the root element.
+        XRoot.SetBoundAttributeValue(ViewContext);
 
         actual = XRoot.ToString();
         expected = @" 
@@ -54,9 +58,99 @@ public class TestClass_XBoundViewObject
         Assert.AreEqual(
             expected.NormalizeResult(),
             actual.NormalizeResult(),
-            "Expecting ViewContext instance is bound to Root"
+            "Expecting ViewContext instance is bound to Root."
         );
+        Assert.IsInstanceOfType<ViewContext>(
+            XRoot.To<ViewContext>(),
+            "Expecting loopback of the ViewContext instance.");
+
+        // Get Environment.SpecialFolder locations on C: drive only
+        var specialFolderPaths =
+            Enum
+            .GetValues<Environment.SpecialFolder>()
+            .Select(_ => Environment.GetFolderPath(_))
+            .Where(_ => _.StartsWith("C", StringComparison.OrdinalIgnoreCase))
+            .ToList();
         { }
+
+        // Set a DriveItem at the root level.
+        XRoot.Show<DriveItem>("C:");
+
+        // Place the folder paths in the XML hierarchy.
+        specialFolderPaths
+            .ForEach(_ => XRoot.FindOrCreate<FolderItem>(_));
+
+        // Now that the filesystem is populated, update the +/-
+        // based on the nested (but not visible) folder items.
+        DriveItem cDrive = XRoot.FindOrCreate<DriveItem>("C:");
+
+        
+        Assert.AreEqual(
+            PlusMinus.Collapsed,
+            cDrive.Expand(ExpandDirection.FromItems),
+            "Expecting found folders result in Collapsed (not Leaf) state.");
+
+        // Manually synchronize the observable collection.
+        // This is necessary because we initialized AutoSyncEnabled to false.
+        ViewContext.SyncList();
+
+        // View the observable collection, synchronized to Visible Items.
+        actual = ViewContext.ToString();
+        actual.ToClipboardExpected();
+        expected = @" 
++ C:"
+        ;
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting collapsed C: drive"
+        );
+
+        // Perform a click on the C drive to expand the node.
+        cDrive.PlusMinusToggleCommand?.Execute(cDrive);
+
+        // View the observable collection, synchronized to Visible Items.
+        ViewContext.SyncList();
+        actual = ViewContext.ToString();
+        expected = @" 
+- C:
+  + Program Files
+  + Program Files (x86)
+  + ProgramData
+  + Users
+  + WINDOWS"
+        ;
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting C: is now expanded at root."
+        );
+
+        // Navigate to Program Files and "click" on it to expand.
+        currentFolder = XRoot
+            .FindOrCreate<FolderItem>(Path.Combine("C:", "Program Files"));
+        currentFolder?.PlusMinusToggleCommand.Execute(currentFolder);
+
+        // View the observable collection, synchronized to Visible Items.
+        ViewContext.SyncList();
+        actual = ViewContext.ToString();
+
+        expected = @" 
+- C:
+  - Program Files
+      Common Files
+  + Program Files (x86)
+  + ProgramData
+  + Users
+  + WINDOWS"
+        ;
+
+        Assert.AreEqual(
+            expected.NormalizeResult(),
+            actual.NormalizeResult(),
+            "Expecting expanded Program Files to have a child folder that is a Leaf i.e. empty."
+        );
     }
 
 
@@ -1699,7 +1793,6 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
     [TestMethod]
     public void Test_PortableInitFileSystem()
     {
-
         string actual, expected;
         IXBoundViewObject xbvo;
 
