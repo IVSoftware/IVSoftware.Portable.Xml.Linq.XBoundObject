@@ -7,333 +7,204 @@ The `Placer` class is designed to project a flat string path onto a new or exist
 
 ### Basic Usage
 
-Files and Folders are a good example of hierarchal data that may need to be displayed not only in MAUI but also in frameworks like WinForms or WPF. There will also be a need to manipulate this data (e.g. Drag Drop) while keeping it decoupled from the UI. This can be facilitated using an inherently recursive runtime data structure like `System.Xml.Linq.XElement` that is a universal in all of .NET and so brings portability to the solution.
+Consider something like a File System Viewer which would be a good example of hierarchal data that may need to be displayed not only in MAUI but also in frameworks like WinForms or WPF. There will also be a need to manipulate this data (e.g. Drag Drop) while keeping it decoupled from the UI. This can be facilitated using an inherently recursive runtime data structure like `System.Xml.Linq.XElement` that is a universal in all of .NET and so brings portability to the solution.
 
-Let's jump right in by declaring our "tree".
+For something like a filesystem, the view doesn't need to recurse just because the data does. We're just looking for an accurate representation without actually coupling the data to the view. A runtime `System.Xml.Linq.XElement` is a good fit to hold the actual data. This snippet is _portable_ code. It actually runs in an MSTest project. It demonstrates the use of helper extensions from [XBoundObject](https://www.nuget.org/packages/IVSoftware.Portable.Xml.Linq.XBoundObject/2.0.0) to achieve three basic objectives:
 
-`XElement XRoot {get;} = new ("root")`;
+1. Converts flat file paths to a 2D representation on a standard `System.Xml.Linq.XElement`.
+2. Uses `ViewContext.SyncList()` to synchronize an observable collection (this will be the `CollectionView` source) to the visible items in the `XElement` hierarchy.
+3. For testing purposes, uses the `ViewContext.ToString()` to "print out" the observable collection.
+
+This code also exercises the `PlusMinusToggleCommand`.
+
+So lets start with the portable (Maui, WinForms, WPF) view of things, then below it I'll show the non-recursive `DataTemplate` that would be plug-and-play with the `FSItems` observable collection shown.
+
 ___
 
-### Recursion in a Tree Model not in the View
-
-The `XElement` instance comes with a built-in method to traverse the entire tree (which won't always be empty):
 ```
-foreach(XElement xel in XRoot.Descendants())
+class DriveItem : XBoundViewObjectImplementer { }
+class FolderItem : XBoundViewObjectImplementer { }
+class FileItem : XBoundViewObjectImplementer { }
+
+/// <summary>
+/// Basic File System manipulations.
+/// </summary>
+[TestMethod]
+public void Test_BasicUsageExamples_101()
 {
-    // Interact with the XElement
-}
-```
-___
+    string actual, expected;
+    FolderItem currentFolder = null;
 
-#### Projecting a Flat Path to Two Dimensions
+    // Filesystem items
+    var FSItems = new ObservableCollection<XBoundViewObjectImplementer>();
+    var XRoot = new XElement("root");
+    var ViewContext = new ViewContext(XRoot, FSItems, indent: 2, autoSyncEnabled: false);
 
-The first requirement is to take a "flat" representation (i.e. the file path) and efficiently place it relative to the root `XElement`. One of many ways to do this is to use the NuGet package for [XBoundObject](https://www.nuget.org/packages/IVSoftware.Portable.Xml.Linq.XBoundObject/1.4.1-rc). Here we'll take the project path and "project" it to 2D using the `Place` extension.
+    // Bind the ViewContext to the root element.
+    XRoot.SetBoundAttributeValue(ViewContext);
 
-```
-// <PackageReference 
-//     Include = "IVSoftware.Portable.Xml.Linq.XBoundObject" 
-//     Version="1.4.1-rc" />
+    actual = XRoot.ToString();
+    expected = @" 
+<root viewcontext=""[ViewContext]"" />";
 
-XElement xroot = new XElement("root"); 
+    Assert.AreEqual(
+        expected.NormalizeResult(),
+        actual.NormalizeResult(),
+        "Expecting ViewContext instance is bound to Root."
+    );
+    Assert.IsInstanceOfType<ViewContext>(
+        XRoot.To<ViewContext>(),
+        "Expecting loopback of the ViewContext instance.");
 
-string path =
-    @"C:\Github\IVSoftware\Demo\IVSoftware.Demo.CrossPlatform.FilesAndFolders\BasicPlacement.Maui\BasicPlacement.Maui.csproj"
-    .Replace('\\', Path.DirectorySeparatorChar); // Real code uses Path.Combine()
+    // Get Environment.SpecialFolder locations on C: drive only
+    var specialFolderPaths =
+        Enum
+        .GetValues<Environment.SpecialFolder>()
+        .Select(_ => Environment.GetFolderPath(_))
+        .Where(_ => _.StartsWith("C", StringComparison.OrdinalIgnoreCase))
+        .ToList();
+    { }
 
-xroot.Place(path);
-var expected = xroot.ToString();
-```
+    // Set a DriveItem at the root level.
+    XRoot.Show<DriveItem>("C:");
 
-Inspecting the value of `expected` now shows the path as a tree.
+    // Place the folder paths in the XML hierarchy.
+    specialFolderPaths
+        .ForEach(_ => XRoot.FindOrCreate<FolderItem>(_));
 
-```xml
-<root>
-  <xnode text="C:">
-    <xnode text="files-and-folders">
-      <xnode text="FilesAndFolders">
-        <xnode text="FilesAndFolders.csproj" />
-      </xnode>
-    </xnode>
-  </xnode>
-</root>
-```
-___
+    // Now that the filesystem is populated, update the +/-
+    // based on the nested (but not visible) folder items.
+    DriveItem cDrive = XRoot.FindOrCreate<DriveItem>("C:");
 
-#### From Tree Model to View
+        
+    Assert.AreEqual(
+        PlusMinus.Collapsed,
+        cDrive.Expand(ExpandDirection.FromItems),
+        "Expecting found folders result in Collapsed (not Leaf) state.");
 
-Now just use standard `System.Xml.Linq` to traverse this, adding a `FileItem` to `FileItems` for each node. For example, a data template for MAUI `CollectionView` can simply provide a spacer whose _width_ is bound to the _depth_ of the node, creating the smoke and mirrors illusion of a tree.
+    // Manually synchronize the observable collection.
+    // This is necessary because we initialized AutoSyncEnabled to false.
+    ViewContext.SyncList();
 
-```
-foreach (var xel in BindingContext.XRoot.Descendants())
-{
-    FileItems.Add(new FileItem
-    {
-        Text = xel.Attribute("text")?.Value ?? "Error",
-        PlusMinus = 
-        ReferenceEquals(xel, newXel)
-            ? string.Empty
-            : "-",
-        Space = 10 * xel.Ancestors().Skip(1).Count(),
-    });
-}
-```
+    // View the observable collection, synchronized to Visible Items.
+    actual = ViewContext.ToString();
+    actual.ToClipboardExpected();
+    expected = @" 
++ C:"
+    ;
+    Assert.AreEqual(
+        expected.NormalizeResult(),
+        actual.NormalizeResult(),
+        "Expecting collapsed C: drive"
+    );
 
-[![android screenshot](https://stackoverflowteams.com/c/sqdev/images/s/6ac025ff-00ed-4e00-b19f-690014b6c83d.png)](https://stackoverflowteams.com/c/sqdev/images/s/6ac025ff-00ed-4e00-b19f-690014b6c83d.png)
-___
+    // Perform a click on the C drive to expand the node.
+    cDrive.PlusMinusToggleCommand?.Execute(cDrive);
 
-#### Data Template
+    // View the observable collection, synchronized to Visible Items.
+    ViewContext.SyncList();
+    actual = ViewContext.ToString();
+    expected = @" 
+- C:
++ Program Files
++ Program Files (x86)
++ ProgramData
++ Users
++ WINDOWS"
+    ;
 
-There is no need for recursion here. The width of the `BoxView` creates the 2-dimensional effect.
+    Assert.AreEqual(
+        expected.NormalizeResult(),
+        actual.NormalizeResult(),
+        "Expecting C: is now expanded at root."
+    );
 
-```xaml
- <DataTemplate>
-    <Grid ColumnDefinitions="Auto,40,*" RowDefinitions="40" >
-        <BoxView 
-            Grid.Column="0" 
-            WidthRequest="{Binding Space}"
-            BackgroundColor="{
-                Binding BackgroundColor, 
-                Source={x:Reference FileCollectionView}}"/>
-        <Button 
-            Grid.Column="1" 
-            Text="{Binding PlusMinusGlyph}" 
-            TextColor="Black"
-            Command="{
-                Binding PlusMinusToggleCommand, 
-                Source={x:Reference MainPageViewModel}}"
-            CommandParameter="{Binding .}"
-            FontSize="16"
-            FontFamily="file-and-folder-icons"
-            BackgroundColor="Transparent"
-            Padding="0"
-            BorderWidth="0"
-            VerticalOptions="Fill"
-            HorizontalOptions="Fill"
-            MinimumHeightRequest="0"
-            MinimumWidthRequest="0"
-            CornerRadius="0"/>
-        <Label 
-            Grid.Column="2"
-            Text="{Binding Text}" 
-            VerticalTextAlignment="Center" Padding="2,0,0,0"/>
-    </Grid>
-</DataTemplate>
-```
-#### Data Model
+    // Navigate to Program Files and "click" on it to expand.
+    currentFolder = XRoot
+        .FindOrCreate<FolderItem>(Path.Combine("C:", "Program Files"));
+    currentFolder?.PlusMinusToggleCommand.Execute(currentFolder);
 
-The `Space` property controls the indentation shown on the view.
+    // View the observable collection, synchronized to Visible Items.
+    ViewContext.SyncList();
+    actual = ViewContext.ToString();
 
-```
-class FileItem : INotifyPropertyChanged
-{
-    public FileItem(XElement xel)
-    {
-        XEL = xel;
-        xel.SetBoundAttributeValue(this);
-    }
-    public XElement XEL { get; }
+    expected = @" 
+- C:
+- Program Files
+    Common Files
++ Program Files (x86)
++ ProgramData
++ Users
++ WINDOWS"
+    ;
 
-    public string Text
-    {
-        get => _text;
-        set
-        {
-            if (!Equals(_text, value))
-            {
-                _text = value;
-                OnPropertyChanged();
-            }
-        }
-    }
-    string _text = string.Empty;
-
-    public string PlusMinus
-    {
-        get => _plusMinus;
-        set
-        {
-            if (!Equals(_plusMinus, value))
-            {
-                _plusMinus = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(PlusMinusGlyph));
-            }
-        }
-    }
-    string _plusMinus = "+";
-
-    public string PlusMinusGlyph
-    {
-        get
-        {
-            switch (PlusMinus)
-            {
-                case "+":
-                    return "\uE803";
-                case "-":
-                    return "\uE804";
-                default:
-                    return "\uE805";
-            }
-        }
-    }
-
-    public int Space
-    {
-        get => _space;
-        set
-        {
-            if (!Equals(_space, value))
-            {
-                _space = value;
-                OnPropertyChanged();
-            }
-        }
-    }
-
-    int _space = default;
-
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    public event PropertyChangedEventHandler? PropertyChanged;
-}
-```
-___
-
-## Manipulating the Tree Model (PlusMinus)
-
-When the time comes to do something meaningful, like collapsing the node, the `PlusMinusToggleCommand` will require access to the corresponding `XElement`. So first, add an `XEL` property to `FileItem` that gets initialized in its CTOR and then bind the instance of `FileItem` to XEL using `XBoundObject`.
-
-```
-class FileItem : INotifyPropertyChanged
-{
-    public FileItem(XElement xel)
-    {
-        XEL = xel;
-        xel.SetBoundAttributeValue(this);
-    }
-    public XElement XEL { get; }
-    .
-    .
-    .
+    Assert.AreEqual(
+        expected.NormalizeResult(),
+        actual.NormalizeResult(),
+        "Expecting expanded Program Files to have a child folder that is a Leaf i.e. empty."
+    );
 }
 ```
 
-Then, implement the command in the `MainPageViewModel`. If the current value is `-` it indicates that the node is currently expanded and that descendant `FileItem` models in the `FileItems` collection should be removed. If the value is `+` then descendant items need to be recursively added back in where an item's visibility is true if its parent item's `PlusMinus` is `-`;
+**Non-Recursive DataTemplate for Maui.Windows and Maui.Android**
 
-```
-public ICommand PlusMinusToggleCommand
-{
-    get
-    {
-        if (_plusMinusToggleCommand is null)
-        {
-            _plusMinusToggleCommand = new Command<FileItem>((fileItem) =>
-            {
-                switch (fileItem.PlusMinus)
-                {
-                    case "+":
-                        try
-                        {
-                            IsBusy = true;
-                            var index = 0;
-                            fileItem.PlusMinus = "-";
-                            foreach (var xel in XRoot.VisibleElements())
-                            {
-                                var currentFileItem = xel.To<FileItem>();
-                                var currentIndex = FileItems.IndexOf(currentFileItem);
-                                if (index < FileItems.Count)
-                                {
-                                    var current = FileItems[index];
-                                    if (ReferenceEquals(current, currentFileItem))
-                                    {   /* G T K */
-                                        // Item exists at the correct index.
-                                    }
-                                    else
-                                    {
-                                        if (currentIndex == -1)
-                                        {
-                                            FileItems.Insert(index, currentFileItem);
-                                        }
-                                        else
-                                        {
-                                            Debug.Fail("First Time! Make sure this works.");
-                                            FileItems.Move(currentIndex, index);
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    FileItems.Insert(index, currentFileItem);
-                                }
-                                index++;
-                            }
-                        }
-                        finally
-                        {
-                            IsBusy = false;
-                        }
-                        break;
-                    case "-":
-                        foreach (var desc in fileItem.XEL.Descendants())
-                        {
-                            if (desc.To<FileItem>() is { } remove)
-                            {
-                                FileItems.Remove(remove);
-                            }
-                        }
-                        fileItem.PlusMinus = "+";
-                        break;
-                    default:
-                        Debug.Fail("Unexpected");
-                        break;
-                }
-            });
-        }
-        return _plusMinusToggleCommand;
-    }
-}
-ICommand? _plusMinusToggleCommand = null;
-```
+
+These screenshots show how a non-recursive data template that indents the text label based on the current depth in the XML tree create the "smoke-and-mirrors" illusion of depth. To review, we started with flat file path strings, we are maintaining that data in a functional `XElement` tree hierarchy that is _not_ visible, but we iterate the visible items of `XRoot.Descendants()` to maintain an observable collection that _is_ flat but _appears to be_ 2D.
+
+
+[ ]    [ ]
+
 ___
 
-### Visible Items Enumerator
-
-The `XRoot.VisibleElements()` enumerator is implemented as shown.
+Here's the shared xaml for these views.
 
 ```
-public static IEnumerable<XElement> VisibleElements(this XElement @this)
-{
-    Debug.Assert(@this.Name.LocalName == "root");
-    foreach (var element in localAddChildItems(@this.Elements()))
-    {
-        yield return element;
-    }
-    IEnumerable<XElement> localAddChildItems(IEnumerable<XElement> elements)
-    {
-        foreach (var element in elements)
-        {
-            if (element.To<FileItem>() is { } fileItem)
-            {
-                yield return element;
-                if (fileItem.PlusMinus == "-")
-                {
-                    foreach (var childElement in localAddChildItems(element.Elements()))
-                    {
-                        yield return childElement;
-                    }
-                }
-            }
-        }
-    }
-}
+<CollectionView 
+    x:Name="FileCollectionView" 
+    ItemsSource="{Binding FSItems}" 
+    SelectionMode="None"
+    SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+    BackgroundColor="AliceBlue"
+    Margin="1">
+    <CollectionView.ItemsLayout>
+        <LinearItemsLayout Orientation="Vertical" ItemSpacing="2" />
+    </CollectionView.ItemsLayout>
+    <CollectionView.ItemTemplate>
+        <DataTemplate>
+            <Grid ColumnDefinitions="Auto,40,*" RowDefinitions="40" >
+                <BoxView 
+                    Grid.Column="0" 
+                    WidthRequest="{Binding Space}"
+                    BackgroundColor="{
+                        Binding BackgroundColor, 
+                        Source={x:Reference FileCollectionView}}"/>
+                <Button 
+                    Grid.Column="1" 
+                    Text="{Binding PlusMinusGlyph}" 
+                    FontSize="16"
+                    FontFamily="file-folder-drive-icons"
+                    BackgroundColor="Transparent"
+                    Padding="0"
+                    VerticalOptions="Fill"
+                    HorizontalOptions="Fill"
+                    MinimumHeightRequest="0"
+                    MinimumWidthRequest="0"
+                    CornerRadius="0"
+                    Command="{Binding PlusMinusToggleCommand}"
+                    CommandParameter="{Binding .}">
+                    <Button.TextColor>
+                        <MultiBinding Converter="{StaticResource ColorConversions}">
+                            <Binding />
+                            <Binding Path="PlusMinus"/>
+                        </MultiBinding>
+                    </Button.TextColor>
+                </Button>
+                <Label 
+                    Grid.Column="2"
+                    Text="{Binding Text}" 
+                    VerticalTextAlignment="Center" Padding="2,0,0,0"/>
+            </Grid>
+        </DataTemplate>
+    </CollectionView.ItemTemplate>
+</CollectionView>
 ```
-___
-
-
-
-## In-Depth Example Code
-
-The [FilesAndFolders]() repo contains a functional file browser example that uses the same portable backend tree for Maui (tested for Android and Windows) and for WinForms.
-
-
