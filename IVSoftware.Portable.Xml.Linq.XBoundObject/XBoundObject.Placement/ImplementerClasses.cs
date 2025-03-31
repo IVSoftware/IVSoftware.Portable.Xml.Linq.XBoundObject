@@ -410,29 +410,25 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             {
                 case ExpandDirection.ToItems:
                     // Make all children visible.
-                    if (XEL.HasElements)
+                    foreach (
+                        var child in
+                        XEL
+                        .Elements())
                     {
-                        foreach (
-                            var child in
-                            XEL
-                            .Elements())
-                        {
-                            child.SetAttributeValue(Placement.IsVisible.True); 
-                            // Must call method. An element can invoke its own expander.
-                            child.To<IXBoundViewObject>().Expand(ExpandDirection.FromItems);
-                        }
+                        child.SetAttributeValue(Placement.IsVisible.True); 
+                        // Must call method. An element can invoke its own expander.
+                        child.To<IXBoundViewObject>().Expand(ExpandDirection.FromItems);
                     }
-                    // This property will downgrade itself to leaf if necessary.
-                    PlusMinus = PlusMinus.Expanded;
                     break;
                 case ExpandDirection.FromItems:
                     // Do not alter item visibility. Set PlusMinus based on
                     // their state. An element can invoke its own expander.
-                    PlusMinus = PlusMinus.Auto;
                     break;
                 default:
                     break;
             }
+            // EITHER WAY it's auto in the end because we may have expanded 0 items!!!
+            PlusMinus = PlusMinus.Auto;
             Debug.Assert(!Equals(PlusMinus, PlusMinus.Auto));
             return PlusMinus; // The result is 'not' necessarily the same.
         }

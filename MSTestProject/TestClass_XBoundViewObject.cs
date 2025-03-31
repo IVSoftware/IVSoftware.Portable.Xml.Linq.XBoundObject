@@ -1501,6 +1501,13 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
             xbvo.Collapse();
             await awaiter.WaitAsync();
 
+
+
+#if false
+            Debug.Assert(DateTime.Now.Date == new DateTime(2025, 3, 30).Date, "Don't forget disabled");
+            context.AutoSyncEnabled = false;
+#endif
+
             actual = context.ToString();
             expected = @" 
 + C:";
@@ -1538,22 +1545,23 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
 
             actual.ToClipboardExpected();
             { }
-            actual.ToClipboardAssert("Expecting only the first child is showing with PlusMinus.Collapsed.");
+
             expected = @" 
 <root viewcontext=""[ViewContext]"">
-  <xnode text=""C:"" isvisible=""True"" plusminus=""Collapsed"" datamodel=""[DriveItem]"">
+  <xnode text=""C:"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[DriveItem]"">
     <xnode text=""Users"" isvisible=""True"" plusminus=""Collapsed"" datamodel=""[FolderItem]"">
       <xnode text=""Documents"" datamodel=""[FolderItem]"">
         <xnode text=""README.md"" datamodel=""[FileItem]"" />
       </xnode>
     </xnode>
   </xnode>
-</root>";
+</root>"
+            ;
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
-                "Expecting only the first child is showing with User = Collapsed."
+                "Expecting only the first child is showing with PlusMinus.Collapsed."
             );
 
             actual = context.ToString();
