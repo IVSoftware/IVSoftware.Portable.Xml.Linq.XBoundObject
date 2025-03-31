@@ -89,6 +89,26 @@ public void Test_RawPlacerClassUsage()
 }
 ```
 
+Where:
+
+```
+public enum ExpandDirection
+{
+    /// <summary>
+    /// Make child items visible if they exist.
+    /// PlusMinus will be Expanded or Leaf only when done.
+    /// </summary>
+    ToItems,
+
+    /// <summary>
+    /// Determine expandion state based on the presence
+    /// and or visibility of child items.
+    /// PlusMinus can be Expanded, Partial or Leaf when done.
+    /// </summary>
+    FromItems,
+}
+```
+
 ### Introduction to Placer Extensions
 
 This intro will focus on four extensions. The first two apply to any `T`.
@@ -244,7 +264,7 @@ public void Test_BasicUsageExamples_101()
 These screenshots show how a non-recursive data template that indents the text label based on the current depth in the XML tree create the "smoke-and-mirrors" illusion of depth. To review, we started with flat file path strings, we are maintaining that data in a functional `XElement` tree hierarchy that is _not_ visible, but we iterate the visible items of `XRoot.Descendants()` to maintain an observable collection that _is_ flat but _appears to be_ 2D.
 
 
-[ ]    [ ]
+![Maui Screenshots](./img/screenshots-maui.png)
 
 ___
 
