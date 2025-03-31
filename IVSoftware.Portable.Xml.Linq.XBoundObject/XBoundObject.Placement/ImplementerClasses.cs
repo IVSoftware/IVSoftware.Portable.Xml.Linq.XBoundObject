@@ -594,6 +594,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 else
                 {
                     var index = 0;
+                    IXBoundViewObject isAtIndex = null;
                     foreach (var xel in XEL.VisibleElements())
                     {
                         // Get the item that "should be" at this index
@@ -609,12 +610,23 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                             }
                             if (index < Items.Count)
                             {
-                                var isAtIndex = Items[index];
+                                while (index < Items.Count)
+                                {
+                                    isAtIndex = (IXBoundViewObject)Items[index];
+                                    if(isAtIndex.IsVisible)
+                                    {
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        Items.Remove(isAtIndex);
+                                    }
+                                }                                
                                 if (ReferenceEquals(isAtIndex, sbAtIndex))
                                 {
                                     index++;
                                 }
-                                else
+                                else 
                                 {
                                     if (_o1.TryGetValue(sbAtIndex, out int currentIndex))
                                     {

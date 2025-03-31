@@ -1665,6 +1665,235 @@ Element at path 'C:' exists, but is not bound to an IXBoundViewObject. Ensure th
         }
     }
 
+    [TestMethod]
+    public async Task Test_PortableInitFileSystem()
+    {
+        string actual, expected;
+        IXBoundViewObject xbvo;
+
+        SemaphoreSlim awaiter = new SemaphoreSlim(0, 1);
+        void localOnAwaited(object? sender, AwaitedEventArgs e)
+        {
+            switch (e.Caller)
+            {
+                case "WDTAutoSync":
+                    switch (e.Args)
+                    {
+                        case "InitialAction":
+                            break;
+                        case "RanToCompletion":
+                            awaiter.Release();
+                            break;
+                        default: throw new NotImplementedException();
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        try
+        {
+            Awaited += localOnAwaited;
+            var xroot =
+                new XElement("root")
+                .WithXBoundView(
+                    items: new ObservableCollection<FilesystemItem>(),
+                    indent: 2
+            );
+            var context = xroot.To<ViewContext>();
+            foreach (var drive in Directory.GetLogicalDrives())
+            {
+                xroot.Show<DriveItem>(drive);
+            }
+            foreach (var path in
+                     Enum.GetValues<Environment.SpecialFolder>()
+                     .Select(_ => Environment.GetFolderPath(_))
+                     .Where(_ => !string.IsNullOrWhiteSpace(_) && Directory.Exists(_)))
+            {
+                xroot.FindOrCreate<FolderItem>(path);
+            }
+            foreach (var drive in xroot.Elements().Select(_ => _.To<DriveItem>()))
+            {
+                drive.Expand(ExpandDirection.FromItems);
+            }
+            await awaiter.WaitAsync();
+
+            actual = context.ToString();
+            expected = @" 
++ C:
+  D:
+  E:
++ F:
+  G:
+  Z:";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting logical drives where C: and F: are not empty."
+            );
+
+            // View the results in a debugger watch window here.
+            actual = 
+                xroot
+                .SortAttributes<StdAttributeNameXBoundViewObject>()
+                .ToString();
+
+            var cDrive = xroot.FindOrCreate<DriveItem>("C:");
+            cDrive.PlusMinusToggleCommand?.Execute(cDrive);
+
+            await awaiter.WaitAsync();
+            actual = context.ToString();
+
+            expected = @" 
+- C:
+  + Program Files
+  + Program Files (x86)
+  + ProgramData
+  + Users
+  + WINDOWS
+  D:
+  E:
++ F:
+  G:
+  Z:";
+
+            var programFiles = cDrive.XEL.FindOrCreate<FolderItem>("Program Files");
+            programFiles.PlusMinusToggleCommand?.Execute(programFiles);
+            await awaiter.WaitAsync();
+
+            actual = context.ToString();
+
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+- C:
+  - Program Files
+      Common Files
+  + Program Files (x86)
+  + ProgramData
+  + Users
+  + WINDOWS
+  D:
+  E:
++ F:
+  G:
+  Z:"
+            ;
+
+            context.AutoSyncEnabled = false;
+            programFiles.PlusMinusToggleCommand?.Execute(programFiles);
+
+            // View the results in a debugger watch window here.
+            actual =
+                xroot
+                .SortAttributes<StdAttributeNameXBoundViewObject>()
+                .ToString();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<root viewcontext=""[ViewContext]"">
+  <xnode text=""C:"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[DriveItem]"">
+    <xnode text=""Program Files"" isvisible=""True"" plusminus=""Collapsed"" datamodel=""[FolderItem]"">
+      <xnode text=""Common Files"" datamodel=""[FolderItem]"" />
+    </xnode>
+    <xnode text=""Program Files (x86)"" isvisible=""True"" plusminus=""Collapsed"" datamodel=""[FolderItem]"">
+      <xnode text=""Common Files"" datamodel=""[FolderItem]"" />
+    </xnode>
+    <xnode text=""ProgramData"" isvisible=""True"" plusminus=""Collapsed"" datamodel=""[FolderItem]"">
+      <xnode text=""Microsoft"" datamodel=""[FolderItem]"">
+        <xnode text=""Windows"" datamodel=""[FolderItem]"">
+          <xnode text=""Start Menu"" datamodel=""[FolderItem]"">
+            <xnode text=""Programs"" datamodel=""[FolderItem]"">
+              <xnode text=""Administrative Tools"" datamodel=""[FolderItem]"" />
+              <xnode text=""Startup"" datamodel=""[FolderItem]"" />
+            </xnode>
+          </xnode>
+          <xnode text=""Templates"" datamodel=""[FolderItem]"" />
+        </xnode>
+      </xnode>
+    </xnode>
+    <xnode text=""Users"" isvisible=""True"" plusminus=""Collapsed"" datamodel=""[FolderItem]"">
+      <xnode text=""Public"" datamodel=""[FolderItem]"">
+        <xnode text=""Desktop"" datamodel=""[FolderItem]"" />
+        <xnode text=""Documents"" datamodel=""[FolderItem]"" />
+        <xnode text=""Music"" datamodel=""[FolderItem]"" />
+        <xnode text=""Pictures"" datamodel=""[FolderItem]"" />
+        <xnode text=""Videos"" datamodel=""[FolderItem]"" />
+      </xnode>
+      <xnode text=""tgreg"" datamodel=""[FolderItem]"">
+        <xnode text=""AppData"" datamodel=""[FolderItem]"">
+          <xnode text=""Local"" datamodel=""[FolderItem]"">
+            <xnode text=""Microsoft"" datamodel=""[FolderItem]"">
+              <xnode text=""Windows"" datamodel=""[FolderItem]"">
+                <xnode text=""Burn"" datamodel=""[FolderItem]"">
+                  <xnode text=""Burn"" datamodel=""[FolderItem]"" />
+                </xnode>
+                <xnode text=""History"" datamodel=""[FolderItem]"" />
+                <xnode text=""INetCache"" datamodel=""[FolderItem]"" />
+                <xnode text=""INetCookies"" datamodel=""[FolderItem]"" />
+              </xnode>
+            </xnode>
+          </xnode>
+          <xnode text=""Roaming"" datamodel=""[FolderItem]"">
+            <xnode text=""Microsoft"" datamodel=""[FolderItem]"">
+              <xnode text=""Windows"" datamodel=""[FolderItem]"">
+                <xnode text=""Network Shortcuts"" datamodel=""[FolderItem]"" />
+                <xnode text=""Recent"" datamodel=""[FolderItem]"" />
+                <xnode text=""SendTo"" datamodel=""[FolderItem]"" />
+                <xnode text=""Start Menu"" datamodel=""[FolderItem]"">
+                  <xnode text=""Programs"" datamodel=""[FolderItem]"">
+                    <xnode text=""Administrative Tools"" datamodel=""[FolderItem]"" />
+                    <xnode text=""Startup"" datamodel=""[FolderItem]"" />
+                  </xnode>
+                </xnode>
+                <xnode text=""Templates"" datamodel=""[FolderItem]"" />
+              </xnode>
+            </xnode>
+          </xnode>
+        </xnode>
+        <xnode text=""Favorites"" datamodel=""[FolderItem]"" />
+        <xnode text=""Music"" datamodel=""[FolderItem]"" />
+        <xnode text=""Videos"" datamodel=""[FolderItem]"" />
+      </xnode>
+    </xnode>
+    <xnode text=""WINDOWS"" isvisible=""True"" plusminus=""Collapsed"" datamodel=""[FolderItem]"">
+      <xnode text=""Fonts"" datamodel=""[FolderItem]"" />
+      <xnode text=""resources"" datamodel=""[FolderItem]"" />
+      <xnode text=""system32"" datamodel=""[FolderItem]"" />
+      <xnode text=""SysWOW64"" datamodel=""[FolderItem]"" />
+    </xnode>
+  </xnode>
+  <xnode text=""D:"" isvisible=""True"" datamodel=""[DriveItem]"" />
+  <xnode text=""E:"" isvisible=""True"" datamodel=""[DriveItem]"" />
+  <xnode text=""F:"" isvisible=""True"" plusminus=""Collapsed"" datamodel=""[DriveItem]"">
+    <xnode text=""one-drive-ivsoftware"" datamodel=""[FolderItem]"">
+      <xnode text=""OneDrive"" datamodel=""[FolderItem]"">
+        <xnode text=""Desktop"" datamodel=""[FolderItem]"" />
+        <xnode text=""Documents"" datamodel=""[FolderItem]"" />
+        <xnode text=""Pictures"" datamodel=""[FolderItem]"" />
+      </xnode>
+    </xnode>
+  </xnode>
+  <xnode text=""G:"" isvisible=""True"" datamodel=""[DriveItem]"" />
+  <xnode text=""Z:"" isvisible=""True"" datamodel=""[DriveItem]"" />
+</root>"
+            ;
+
+            // Manual
+            context.SyncList();
+
+        }
+        finally
+        {
+            awaiter.Wait(0);
+            awaiter.Release();
+            awaiter.Dispose();
+            Awaited -= localOnAwaited;
+        }
+
+    }
+
     /// <summary>
     /// Class for testing automatic type injection.
     /// </summary>
