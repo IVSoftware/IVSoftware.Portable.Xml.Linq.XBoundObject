@@ -660,7 +660,7 @@ C:
     {
         string actual, expected;
         XElement? xel;
-        Item item;
+        Item xbvo;
 
         SemaphoreSlim awaiter = new SemaphoreSlim(0, 1);
         void localOnAwaited(object? sender, AwaitedEventArgs e)
@@ -720,12 +720,12 @@ C:
                 "Expecting tree expanded to '.csproj' file"
             );
             xel = xroot.Descendants().Skip(3).First();
-            item = xel.To<Item>();
-            Assert.AreEqual("Demo", item.Text);
-            item.PlusMinusToggleCommand?.Execute(item);
+            xbvo = xel.To<Item>();
+            Assert.AreEqual("Demo", xbvo.Text);
+            xbvo.PlusMinusToggleCommand?.Execute(xbvo);
             Assert.AreEqual(
                 PlusMinus.Collapsed, 
-                item.PlusMinus,
+                xbvo.PlusMinus,
                 $"Expecting item collapsed after toggle command.");
             await awaiter.WaitAsync();
             actual = context.ToString();
@@ -742,21 +742,122 @@ C:
                 "Expecting collapsed Demo node"
             );
 
+            Assert.IsInstanceOfType<Item>(
+                xbvo.Parent.To<Item>(),
+                $"Nevermind. Not using parent after all but nice to know it works as advertised.."
+            );
+
+            // Expand Demo again. Now it should just have direct child showing.
+            xbvo.Expand(ExpandDirection.ToItems);
+            await awaiter.WaitAsync();
+
+
+            actual = context.ToString();
+            actual.ToClipboard();
+            actual.ToClipboardExpected();
+            { }
+
+            expected = @" 
+- C:
+  - Github
+    - IVSoftware
+      - Demo
+        + IVSoftware.Demo.CrossPlatform.FilesAndFolders"
+            ;
+
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting all (2) direct children of Demo node are visible."
+            );
+            // So far the only...
             await subtestPartialExpand();
+
+            #region S U B T E S T S
             async Task subtestPartialExpand()
             {
+                // Add a new file
                 path = Path.Combine(xel.GetPath(), "README.md");
-                item = xroot.FindOrCreate<Item>(path);
-                Assert.IsInstanceOfType<Item>(item);
+
+                xbvo = xroot.FindOrCreate<Item>(path);
+
+                Assert.IsInstanceOfType<Item>(xbvo);
                 await awaiter.WaitAsync();
-                actual = context.ToString();
+
+                actual = xroot.SortAttributes<StdAttributeNameXBoundViewObject>().ToString();
+                expected = @" 
+<root viewcontext=""[ViewContext]"">
+  <xnode text=""C:"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+    <xnode text=""Github"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+      <xnode text=""IVSoftware"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+        <xnode text=""Demo"" isvisible=""True"" plusminus=""Expanded"" datamodel=""[Item]"">
+          <xnode text=""IVSoftware.Demo.CrossPlatform.FilesAndFolders"" isvisible=""True"" plusminus=""Collapsed"" datamodel=""[Item]"">
+            <xnode text=""BasicPlacement.Maui"" datamodel=""[Item]"">
+              <xnode text=""BasicPlacement.Maui.csproj"" datamodel=""[Item]"" />
+            </xnode>
+          </xnode>
+          <xnode text=""README.md"" datamodel=""[Item]"" />
+        </xnode>
+      </xnode>
+    </xnode>
+  </xnode>
+</root>";
+
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
+                    "Expecting new file"
+                );
+
+                actual = context.ToString();
+                expected = @" 
+- C:
+  - Github
+    - IVSoftware
+      - Demo
+        + IVSoftware.Demo.CrossPlatform.FilesAndFolders"
+                ;
+                Assert.AreEqual(
+                    expected.NormalizeResult(), // Matches the SAME context as B4
+                    actual.NormalizeResult(),
                     "Expecting no change to expected data. The new node is not visible."
                 );
-                item.IsVisible = true;
+
+                xbvo.IsVisible = true;
                 await awaiter.WaitAsync();
+                actual = context.ToString();
+                expected = @" 
+- C:
+  - Github
+    - IVSoftware
+      - Demo
+        + IVSoftware.Demo.CrossPlatform.FilesAndFolders
+          README.md";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting peers."
+                );
+                // Already shown. but this gets it.
+                xel = xroot.Collapse("C:");
+                await awaiter.WaitAsync();
+
+                actual = context.ToString();
+                expected = @" 
++ C:"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting values to match."
+                );
+
+                xbvo.IsVisible = true;
+                await awaiter.WaitAsync();
+
                 actual = context.ToString();
                 expected = @" 
 - C:
@@ -771,32 +872,8 @@ C:
                     "Expecting partial expansion."
                 );
             }
-            var parent = item.Parent.To<Item>();
-            Assert.IsInstanceOfType<Item>(item);
-            parent.Expand(ExpandDirection.ToItems);
-            await awaiter.WaitAsync();
-            actual = context.ToString();
-
-
-            actual.ToClipboard();
-            actual.ToClipboardExpected();
             { }
-            expected = @" 
-- C:
-  - Github
-    - IVSoftware
-      - Demo
-        - IVSoftware.Demo.CrossPlatform.FilesAndFolders
-          - BasicPlacement.Maui
-              BasicPlacement.Maui.csproj
-          README.md"
-            ;
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting full expansion of Demo node."
-            );
+            #endregion S U B T E S T S
         }
         catch
         {
