@@ -25,7 +25,7 @@ ___
 
 ## New Changes in Release 2.0
 
-- High level extensions `FindOrCreate()` and `FindOrCreate<T>()` for `Placer` class put it on steroids.
+- High level extensions `FindOrCreate()` and `FindOrCreate<T>()` for `Placer` class put `XBoundObject` on steroids.
 
 - `ViewContext` class and `IXBoundViewObject` interface make direct-linking to an `ObservableCollection<T>` possible for platform-agnostic view sources.
 
