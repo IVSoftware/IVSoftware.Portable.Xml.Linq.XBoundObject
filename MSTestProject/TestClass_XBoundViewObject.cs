@@ -119,10 +119,10 @@ public class TestClass_XBoundViewObject
     public void Test_BasicFindShowExtensionExamples_101()
     {
         string actual, expected;
-        FolderItem currentFolder = null;
+        FolderItem? currentFolder = null;
 
         // Filesystem items
-        var FSItems = new ObservableCollection<XBoundViewObjectImplementer>();
+        var FSItems = new ObservableCollection<IXBoundViewObject>();
         var XRoot = new XElement("root");
         var ViewContext = new ViewContext(XRoot, FSItems, indent: 2, autoSyncEnabled: false);
 
@@ -161,11 +161,15 @@ public class TestClass_XBoundViewObject
         // Now that the filesystem is populated, update the +/-
         // based on the nested (but not visible) folder items.
         DriveItem cDrive = XRoot.FindOrCreate<DriveItem>("C:");
+        var plusMinus = cDrive.Expand(ExpandDirection.FromItems);
 
-        
+        // Using the `ExpandDirection.FromItems` argument for `Expand` means
+        // that the presence or absence of visible children will determine
+        // whether to show the expander icon as Collapsed, Expanded, Leaf 
+        // or Partial (meaning that only some of the child items are visible).  
         Assert.AreEqual(
             PlusMinus.Collapsed,
-            cDrive.Expand(ExpandDirection.FromItems),
+            plusMinus,
             "Expecting found folders result in Collapsed (not Leaf) state.");
 
         // Manually synchronize the observable collection.

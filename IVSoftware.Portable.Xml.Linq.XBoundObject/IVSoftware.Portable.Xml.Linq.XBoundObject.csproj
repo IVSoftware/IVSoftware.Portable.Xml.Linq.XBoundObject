@@ -28,8 +28,8 @@
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
-		<BaseVersion>2.0.0</BaseVersion>
-		<VersionPrefix>$(BaseVersion)</VersionPrefix>
+		<BaseVersion>2.0.1</BaseVersion>
+		<VersionPrefix>$(BaseVersion)-local0</VersionPrefix>
 	</PropertyGroup>
 	<ItemGroup>
 	  <Compile Remove="Screenshots\**" />
