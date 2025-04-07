@@ -23,6 +23,7 @@ namespace IVSoftware.Portable.Xml.Linq
     /// - Supports dynamic modification with add, remove, and clear operations.
     /// </summary>
 
+    [DebuggerDisplay("{Count}")]
     public class DualKeyLookup
     {
         private readonly Dictionary<Enum, XElement> _id2x = new Dictionary<Enum, XElement>();
