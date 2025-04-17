@@ -412,7 +412,7 @@ Settings.Apply.Selected";
             void subtestThrowWhereEnumAttributeDoesNotExist()
             {
                 Assert.IsFalse(
-                     _ = xel.TryGetSingleBoundAttributeByType(
+                     _ = xel.TryGetSingleBoundObjectByType(
                          out NotFoundTypeForTest na,
                          out TrySingleStatus status),
                      $"Expecting returns false and doesn't throw");
@@ -512,32 +512,32 @@ Settings.Apply.Selected";
             XElement xel = new XElement("xel");
 
             // structs with [Placement]
-            Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out LocalXAttrEnum a));
+            Assert.IsFalse(xel.TryGetSingleBoundObjectByType(out LocalXAttrEnum a));
             Assert.AreEqual(LocalXAttrEnum.Default, a, "Expecting default because the call does not use nullable");
 
-            Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out LocalXBAEnum b));
+            Assert.IsFalse(xel.TryGetSingleBoundObjectByType(out LocalXBAEnum b));
             Assert.AreEqual(LocalXBAEnum.Default, b, "Expecting default because the call does not use nullable");
 
             // structs without [Placement]
-            Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out NodeType n));
+            Assert.IsFalse(xel.TryGetSingleBoundObjectByType(out NodeType n));
             Assert.AreEqual(NodeType.drive, n, "Expecting default because the call does not use nullable");
 
             // Nullable
-            Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out LocalXAttrEnum? c));
+            Assert.IsFalse(xel.TryGetSingleBoundObjectByType(out LocalXAttrEnum? c));
             Assert.IsNull(c, "Expecting null because the call uses nullable");
 
-            Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out LocalXBAEnum? d));
+            Assert.IsFalse(xel.TryGetSingleBoundObjectByType(out LocalXBAEnum? d));
             Assert.IsNull(d, "Expecting null because the call uses nullable");
 
             // structs without [Placement]
-            Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out NodeType? nn));
+            Assert.IsFalse(xel.TryGetSingleBoundObjectByType(out NodeType? nn));
             Assert.IsNull(nn, "Expecting null because the call uses nullable");
 
             // Class and Nullable Class
-            Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out LocalClass e));
+            Assert.IsFalse(xel.TryGetSingleBoundObjectByType(out LocalClass e));
             Assert.IsNull(e, "Expecting null because default(T) is null");
 
-            Assert.IsFalse(xel.TryGetSingleBoundAttributeByType(out LocalClass? f));
+            Assert.IsFalse(xel.TryGetSingleBoundObjectByType(out LocalClass? f));
             Assert.IsNull(f, "Expecting null because default(T) is null");
 
             xel.SetAttributeValue(LocalXAttrEnum.NonDefault);
@@ -556,24 +556,24 @@ Settings.Apply.Selected";
             );
 
             // struct
-            Assert.IsTrue(xel.TryGetSingleBoundAttributeByType(out LocalXAttrEnum aa));
+            Assert.IsTrue(xel.TryGetSingleBoundObjectByType(out LocalXAttrEnum aa));
             Assert.AreEqual(LocalXAttrEnum.NonDefault, aa);
 
-            Assert.IsTrue(xel.TryGetSingleBoundAttributeByType(out LocalXBAEnum bb));
+            Assert.IsTrue(xel.TryGetSingleBoundObjectByType(out LocalXBAEnum bb));
             Assert.AreEqual(LocalXBAEnum.NonDefault, bb);
 
             // Nullable
-            Assert.IsTrue(xel.TryGetSingleBoundAttributeByType(out LocalXAttrEnum? cc));
+            Assert.IsTrue(xel.TryGetSingleBoundObjectByType(out LocalXAttrEnum? cc));
             Assert.AreEqual(LocalXAttrEnum.NonDefault, cc);
 
-            Assert.IsTrue(xel.TryGetSingleBoundAttributeByType(out LocalXBAEnum? dd));
+            Assert.IsTrue(xel.TryGetSingleBoundObjectByType(out LocalXBAEnum? dd));
             Assert.AreEqual(LocalXBAEnum.NonDefault, dd);
 
             // Class and Nullable Class
-            Assert.IsTrue(xel.TryGetSingleBoundAttributeByType(out LocalClass ee));
+            Assert.IsTrue(xel.TryGetSingleBoundObjectByType(out LocalClass ee));
             Assert.IsTrue(ee is LocalClass, "Expecting non-null correctly typed instance." );
 
-            Assert.IsTrue(xel.TryGetSingleBoundAttributeByType(out LocalClass? ff));
+            Assert.IsTrue(xel.TryGetSingleBoundObjectByType(out LocalClass? ff));
             Assert.IsTrue(ff is LocalClass, "Expecting non-null correctly typed instance." );
 
             // There's just one more thing...

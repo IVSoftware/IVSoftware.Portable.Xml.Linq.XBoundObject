@@ -280,7 +280,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             return false;
         }
 
-#if false
         #region N E W    M E T H O D    W I T H    O U T    O B J E C T    O N L Y
         /// <summary>
         /// Attempts to retrieve a single bound attribute of type T from the specified XElement without providing detailed status of the result.
@@ -368,7 +367,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             return false;
         }
         #endregion N E W    M E T H O D s    W I T H    O U T    O B J E C T    O N L Y    
-#endif
 
         #region N E W    M E T H O D S    W I T H    O U T    X B A    A N D    O B J E C T
         /// <summary>
