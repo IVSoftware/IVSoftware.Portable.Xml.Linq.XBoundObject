@@ -582,14 +582,16 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         {
             var type = value.GetType();
             PlacementAttribute pattr = @type.GetCustomAttribute<PlacementAttribute>();
+            string attrName = useLowerCaseName
+                ? pattr?.Name?.ToLower() ?? type.Name.ToLower()
+                : pattr?.Name ?? type.Name;
+
             if (pattr != null && pattr.Placement == EnumPlacement.UseXBoundAttribute) 
             {
                 @this
                 .SetBoundAttributeValue(
                     tag: value,
-                    name: useLowerCaseName
-                        ? pattr.Name?.ToLower() ?? type.Name.ToLower()
-                        : pattr.Name ?? type.Name,
+                    name: attrName,
                     text: $"[{value.ToFullKey()}]"); // XBAs always use FullKey for this.
             }
             else
@@ -606,9 +608,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                 }
                 @this
                 .SetAttributeValue(
-                    useLowerCaseName
-                    ? pattr?.Name?.ToLower() ?? type.Name.ToLower()
-                    : pattr?.Name ?? type.Name,
+                    attrName,
                     attrValue);                   
             }
         }
