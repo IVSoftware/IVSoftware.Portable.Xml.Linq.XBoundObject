@@ -506,7 +506,7 @@ Settings.Apply.Selected";
         }
 
         [TestMethod]
-        public void Test_TryGetSingleBoundAttributeByType()
+        public void Test_TryGetSingleBoundObjectByType()
         {
             string actual, expected;
             XElement xel = new XElement("xel");

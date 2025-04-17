@@ -280,6 +280,164 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             return false;
         }
 
+#if false
+        #region N E W    M E T H O D    W I T H    O U T    O B J E C T    O N L Y
+        /// <summary>
+        /// Attempts to retrieve a single bound attribute of type T from the specified XElement without providing detailed status of the result.
+        /// This overload simplifies the interface for scenarios where only the presence of a single attribute is of concern, returning a boolean indicating success. It is suited for situations where detailed result enumeration is not required, streamlining attribute retrieval while still leveraging the robust handling and precision control of the primary method.
+        /// </summary>
+        /// <typeparam name="T">The expected type of the Tag property of the XBoundAttribute.</typeparam>
+        /// <param name="xel">The XElement from which to try and retrieve the attribute.</param>
+        /// <param name="o">The output parameter that will contain the value of the Tag if one attribute is found; otherwise, it will be default.</param>
+        /// <returns>True if exactly one attribute was found and successfully retrieved; otherwise, false.</returns>
+        /// <remarks>
+        /// This method calls the more detailed overload, discarding the status result, to provide a simplified interface.
+        /// </remarks>
+        public static bool TryGetSingleBoundObjectByType<T>(
+                this XElement xel,
+                out T o
+            ) => TryGetSingleBoundObjectByType<T>(xel, out o, out TrySingleStatus _);
+
+        /// <summary>
+        /// Attempts to retrieve a single bound attribute of type T from the specified XElement, encapsulating the result's status in a structured manner.
+        /// This method improves handling scenarios where the attribute may not be found or multiple matches may occur, returning a boolean indicating success and an enumeration for detailed status. It is designed to support robust error handling and precise control over attribute retrieval outcomes, facilitating migration and compatibility with different application versions.
+        /// </summary>
+        /// <typeparam name="T">The expected type of the Tag property of the XBoundAttribute.</typeparam>
+        /// <param name="xel">The XElement from which to try and retrieve the attribute.</param>
+        /// <param name="o">The output parameter that will contain the value of the Tag if one attribute is found; otherwise, it will be default.</param>
+        /// <param name="result">An output parameter indicating the result of the attempt, such as FoundOne, FoundNone, or FoundMany, providing clear feedback on the operation's outcome.</param>
+        /// <returns>True if exactly one attribute was found and successfully retrieved; otherwise, false.</returns>
+        /// <remarks>
+        /// The method enforces strict rules for attribute retrieval and differentiates clearly between scenarios of single and multiple attribute occurrences to maintain data integrity and prevent erroneous usage. The use of the TrySingleStatus enumeration provides additional clarity on the operation outcome, enhancing error handling and debugging capabilities.
+        /// </remarks>
+        public static bool TryGetSingleBoundObjectByType<T>(
+                this XElement xel,
+                out T o,
+                out TrySingleStatus result
+            )
+        {
+            var xbas = xel
+               .Attributes()
+               .OfType<XBoundAttribute>()
+               .Where(_ => _.Tag is T)
+               .ToArray();
+            switch (xbas.Length)
+            {
+                case 0:
+                    break;
+                case 1:
+                    o = (T)xbas[0].Tag;
+                    result = TrySingleStatus.FoundOne;
+                    return true;
+                default:
+                    result = TrySingleStatus.FoundMany;
+                    o = default;
+                    return false;
+            }
+            var type = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+
+            // - This option strictly requires [Placement(EnumPlacement.EnumUseXAttribute)]
+            // - If enabled, provides for enum parsing from string.
+            if (type.GetCustomAttribute<PlacementAttribute>() is PlacementAttribute pattr &&
+                pattr.Placement == EnumPlacement.UseXAttribute)
+            {
+                var name = pattr.Name ?? type.Name.ToLower();
+                if (xel.Attribute(name) is XAttribute xattr)
+                {
+                    if (xattr.Value is string stringValue)
+                    {
+                        foreach (var enumValue in type.GetEnumValues())
+                        {
+                            // Allow for splitting a FullKey JUST IN CASE we decide to allow this.
+                            if (string.Equals(stringValue.Split('.').Last(), enumValue.ToString()))
+                            {
+                                o = (T)enumValue;
+                                result = TrySingleStatus.FoundOne;
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            // In a 'try' method this is not considered a failure condition!
+            // - The returned boolean is false. This is correct.
+            // - Yes, its true that a non-nullable enum will hold its default
+            //   value. We're supposed to check the bool. That's the point.
+            o = default;
+            result = TrySingleStatus.FoundNone;
+            return false;
+        }
+        #endregion N E W    M E T H O D s    W I T H    O U T    O B J E C T    O N L Y    
+#endif
+
+        #region N E W    M E T H O D S    W I T H    O U T    X B A    A N D    O B J E C T
+        /// <summary>
+        /// Attempts to retrieve a single bound attribute of type T from the specified XElement without providing detailed status of the result.
+        /// This overload simplifies the interface for scenarios where only the presence of a single attribute is of concern, returning a boolean indicating success. It is suited for situations where detailed result enumeration is not required, streamlining attribute retrieval while still leveraging the robust handling and precision control of the primary method.
+        /// </summary>
+        /// <typeparam name="T">The expected type of the Tag property of the XBoundAttribute.</typeparam>
+        /// <param name="xel">The XElement from which to try and retrieve the attribute.</param>
+        /// <param name="o">The output parameter that will contain the value of the Tag if one attribute is found; otherwise, it will be default.</param>
+        /// <returns>True if exactly one attribute was found and successfully retrieved; otherwise, false.</returns>
+        /// <remarks>
+        /// This method calls the more detailed overload, discarding the status result, to provide a simplified interface.
+        /// </remarks>
+        public static bool TryGetSingleBoundAttributeByType<T>(
+                this XElement xel,
+                out XBoundAttribute xba,
+                out T o
+            ) => TryGetSingleBoundAttributeByType<T>(xel, out xba, out o, out TrySingleStatus _);
+
+        /// <summary>
+        /// Attempts to retrieve a single bound attribute of type T from the specified XElement, encapsulating the result's status in a structured manner.
+        /// This method improves handling scenarios where the attribute may not be found or multiple matches may occur, returning a boolean indicating success and an enumeration for detailed status. It is designed to support robust error handling and precise control over attribute retrieval outcomes, facilitating migration and compatibility with different application versions.
+        /// </summary>
+        /// <typeparam name="T">The expected type of the Tag property of the XBoundAttribute.</typeparam>
+        /// <param name="xel">The XElement from which to try and retrieve the attribute.</param>
+        /// <param name="o">The output parameter that will contain the value of the Tag if one attribute is found; otherwise, it will be default.</param>
+        /// <param name="result">An output parameter indicating the result of the attempt, such as FoundOne, FoundNone, or FoundMany, providing clear feedback on the operation's outcome.</param>
+        /// <returns>True if exactly one attribute was found and successfully retrieved; otherwise, false.</returns>
+        /// <remarks>
+        /// The method enforces strict rules for attribute retrieval and differentiates clearly between scenarios of single and multiple attribute occurrences to maintain data integrity and prevent erroneous usage. The use of the TrySingleStatus enumeration provides additional clarity on the operation outcome, enhancing error handling and debugging capabilities.
+        /// </remarks>
+        public static bool TryGetSingleBoundAttributeByType<T>(
+                this XElement xel, 
+                out XBoundAttribute xba,
+                out T o,
+                out TrySingleStatus result
+            )
+        {
+            var xbas = xel
+               .Attributes()
+               .OfType<XBoundAttribute>()
+               .Where(_ => _.Tag is T)
+               .ToArray();
+            switch (xbas.Length)
+            {
+                case 0:
+                    // In a 'try' method this is not considered a failure condition!
+                    // - The returned boolean is false. This is correct.
+                    // - Yes, its true that a non-nullable enum will hold its default
+                    //   value. We're supposed to check the bool. That's the point.
+                    o = default;
+                    result = TrySingleStatus.FoundNone;
+                    xba = null;
+                    return false;
+                case 1:
+                    xba = xbas[0];
+                    o = (T)xba.Tag;
+                    result = TrySingleStatus.FoundOne;
+                    return true;
+                default:
+                    result = TrySingleStatus.FoundMany;
+                    o = default;
+                    xba = null;
+                    return false;
+            }
+        }
+        #endregion N E W    M E T H O D S    W I T H    O U T    X B A    A N D    O B J E C T
+
+        #region L E G A C Y    M E T H O D S    W I T H    O U T    O B J E C T    O N L Y
         /// <summary>
         /// Attempts to retrieve a single bound attribute of type T from the specified XElement without providing detailed status of the result.
         /// This overload simplifies the interface for scenarios where only the presence of a single attribute is of concern, returning a boolean indicating success. It is suited for situations where detailed result enumeration is not required, streamlining attribute retrieval while still leveraging the robust handling and precision control of the primary method.
@@ -365,6 +523,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             result = TrySingleStatus.FoundNone;
             return false;
         }
+        #endregion L E G A C Y    M E T H O D S    W I T H    O U T    O B J E C T    O N L Y 
+
 
         /// <summary>
         /// Try get named enum value.
@@ -375,7 +535,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             this XElement xel, out T enumValue)
             where T : struct, Enum
             => xel.TryGetAttributeValue(out enumValue, EnumParsingOption.FindUsingLowerCaseNameThenParseValue);
-
 
         /// <summary>
         /// Try get named enum value.

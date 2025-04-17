@@ -17,6 +17,8 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageReleaseNotes>
+			Minor changes in 2.0.1:
+			- 
 			New in 2.0:
 			- Added Placer extensions for path-based XML element placement.
 			- Enhanced enum support with safety asserts for non-nullable named enum types in edge cases.
@@ -29,7 +31,7 @@
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
 		<BaseVersion>2.0.1</BaseVersion>
-		<VersionPrefix>$(BaseVersion)-local0</VersionPrefix>
+		<VersionPrefix>$(BaseVersion)-prerelease</VersionPrefix>
 	</PropertyGroup>
 	<ItemGroup>
 	  <Compile Remove="Screenshots\**" />
