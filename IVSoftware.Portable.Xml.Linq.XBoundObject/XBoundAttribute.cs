@@ -74,7 +74,6 @@ namespace IVSoftware.Portable.Xml.Linq
             return getNameForType(tag);
         }
 
-
         internal void RaiseObjectBound(XElement xel) =>
             ObjectBound?.Invoke(xel, new ObjectBoundEventArgs(this));
 

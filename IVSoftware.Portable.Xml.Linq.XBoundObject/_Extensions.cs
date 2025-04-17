@@ -226,7 +226,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         ///   as determined using strict rules.
         /// </summary>
         public static bool Has<T>(this XElement xel)
-            => xel.TryGetSingleBoundAttributeByType<T>(out T _);
+            => xel.TryGetSingleBoundObjectByType<T>(out T _);
 
         /// <summary>
         /// Determines whether the XElement has an attribute representing type T, with an option to
@@ -243,7 +243,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                 Debug.WriteLine($"ADVISORY: Ignoring {nameof(EnumParsingOption)} for non-enum type");
                 return xel.Has<T>();
             }
-            if (xel.TryGetSingleBoundAttributeByType<T>(out T _, out TrySingleStatus status))
+            if (xel.TryGetSingleBoundObjectByType<T>(out T _, out TrySingleStatus status))
             {
                 return true;
             }
@@ -267,7 +267,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                         break;
                     default:
                         Debug.Fail("Unexpected please report.");
-                        return default;
+                        return false;
                 }
                 foreach (var value in type.GetEnumValues())
                 {
