@@ -1,6 +1,7 @@
 ﻿using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using System;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace IVSoftware.Portable.Xml.Linq
 {
@@ -41,7 +42,7 @@ namespace IVSoftware.Portable.Xml.Linq
         // Attribute value will be written as a lower-case string.
         ValueToLower = 0x2,
 
-        // The default is to make boolean values lowercase
+        [Obsolete("This library no longer concerns itself with raw bool values.")]
         AllowUppercaseBool = 0x4,
 
         // Attribute value will be written as a lower-case string.

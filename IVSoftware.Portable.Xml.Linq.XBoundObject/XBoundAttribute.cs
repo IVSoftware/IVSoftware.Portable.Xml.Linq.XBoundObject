@@ -16,16 +16,8 @@ namespace IVSoftware.Portable.Xml.Linq
             string text = null,
             SetOption options = SetOption.NameToLower)
         : base(
-              name: 
-                  Equals(options, SetOption.NameToLower)
-                  ? name.LocalName.ToLower()
-                  : name,
-              value: 
-                text is null
-                ? tag is null
-                    ? throw new ArgumentNullException("tag")
-                    : getNameForType(tag)
-                : text)
+              name: getSafeName(name, tag, text, options),
+              value: getSafeValue(tag, text, options))
         {
             if (tag == null) throw new ArgumentNullException("tag");
             switch (options)
@@ -39,6 +31,49 @@ namespace IVSoftware.Portable.Xml.Linq
             }
             Tag = tag;
         }
+        private static string getSafeName(
+            XName xname,
+            object tag,
+            string text = null,
+            SetOption options = SetOption.NameToLower)
+        {
+            var name = xname?.LocalName;
+            if (name == null || string.IsNullOrWhiteSpace(name))
+            {
+                if (tag == null)
+                {
+                    throw new ArgumentNullException(nameof(tag), "Cannot infer name from null tag.");
+                }
+
+                name = tag.GetType().Name.Split('`')[0];
+            }
+
+            return options.HasFlag(SetOption.NameToLower)
+                ? name.ToLower()
+                : name;
+        }
+
+        private static string getSafeValue(
+           object tag,
+           string text = null,
+           SetOption options = SetOption.NameToLower)
+        {
+            if (tag == null)
+            {
+                throw new ArgumentNullException(nameof(tag));
+            }
+
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                return options.HasFlag(SetOption.ValueToLower)
+                    ? text.ToLower()
+                    : text;
+            }
+
+            // Default fallback: derive from tag
+            return getNameForType(tag);
+        }
+
 
         internal void RaiseObjectBound(XElement xel) =>
             ObjectBound?.Invoke(xel, new ObjectBoundEventArgs(this));
