@@ -18,7 +18,7 @@
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageReleaseNotes>
 			Minor changes in 2.0.1:
-			- 
+			- Non-breaking change obsoletes TryGetBoundAttributeOfType(out T object) in favor of TryGetBoundObjectOfType(out T object) and TryGetBoundAttributeOfType(out XBoundAttribute, out T object)
 			New in 2.0:
 			- Added Placer extensions for path-based XML element placement.
 			- Enhanced enum support with safety asserts for non-nullable named enum types in edge cases.

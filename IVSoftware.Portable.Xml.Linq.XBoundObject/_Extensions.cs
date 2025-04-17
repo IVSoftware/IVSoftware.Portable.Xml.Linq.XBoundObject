@@ -693,10 +693,14 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             );
 
         /// <summary>
-        /// Fluent sort the attributes of the given <see cref="XElement"/> and its descendants 
-        /// based on the sequence of names in the specified enum.
+        /// Fluent sort of the attributes on the given <see cref="XElement"/> and its descendants,
+        /// ordered by the sequence of names in the specified enum.
         /// </summary>
-        /// <typeparam name="T">An enum type whose names define the attribute order.</typeparam>
+        /// <remarks>
+        /// Sorting is cosmetic. Change notifications are suppressed to avoid triggering reactive listeners.
+        /// </remarks>
+        /// <typeparam name="T">Enum whose names define the attribute order.</typeparam>
+
         public static XElement SortAttributes<T>(this XElement @this) where T : Enum
         {
             IDisposable disp = null;
@@ -749,14 +753,14 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         internal static string InvalidOperationMultipleFoundMessage<T>() => $@"Multiple valid {typeof(T).Name} found. To disambiguate them, obtain the attribute by name: Attributes().OfType<XBoundAttribute>().Single(_=>_.name=""targetName""";
 
         /// <summary>
-        /// Recursively sorts the child elements of all descendant nodes within the given <see cref="XElement"/>.
+        /// Fluent sort of the child elements within the given <see cref="XElement"/> and all its descendants,
+        /// using the specified comparer or a default that preserves original order.
         /// </summary>
         /// <param name="comparer">
-        /// Optional comparer used to sort the child elements. If null, a default comparer is used that performs no reordering.
+        /// Optional element comparer. If null, a default is used that preserves input order.
         /// </param>
         /// <remarks>
-        /// Each descendant's direct children are collected, sorted, and re-added in order.
-        /// The default comparer may be customized to provide meaningful ordering.
+        /// Sorting is cosmetic. Change notifications are suppressed to avoid triggering reactive listeners.
         /// </remarks>
         public static XElement Sort(this XElement @this, Func<XElement, XElement, int> comparer = null)
         {
