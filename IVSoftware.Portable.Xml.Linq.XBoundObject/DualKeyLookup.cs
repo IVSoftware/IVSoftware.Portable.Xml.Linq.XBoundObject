@@ -21,6 +21,7 @@ namespace IVSoftware.Portable.Xml.Linq
     /// - Automatic synchronization between mappings to prevent inconsistencies.
     /// - Optional exception throwing for strict retrieval.
     /// - Supports dynamic modification with add, remove, and clear operations.
+    /// - Provides the <see cref="EnumKeys"/> property to allow external enumeration or management of Enum keys.
     /// </summary>
 
     [DebuggerDisplay("{Count}")]
@@ -123,5 +124,15 @@ namespace IVSoftware.Portable.Xml.Linq
             _x2id.Clear();
             _id2x.Clear();
         }
+        /// <summary>
+        /// Gets a collection of Enum keys currently stored in the lookup.
+        /// </summary>
+        /// <remarks>
+        /// This property enables external enumeration or copying of the Enum-to-XElement mappings.
+        /// It can be used to implement custom merge or synchronization logic between multiple
+        /// <see cref="DualKeyLookup"/> instances.
+        /// </remarks>
+
+        public Dictionary<Enum, XElement>.KeyCollection EnumKeys => _id2x.Keys;
     }
 }

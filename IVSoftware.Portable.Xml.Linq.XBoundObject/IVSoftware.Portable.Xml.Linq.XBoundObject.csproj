@@ -17,6 +17,8 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageReleaseNotes>
+			Minor changes in 2.0.2:
+			- The DualKeyLibrary now provides an EnumKeys property, allowing external management.
 			Minor changes in 2.0.1:
 			- Non-breaking change obsoletes TryGetBoundAttributeOfType(out T object) in favor of TryGetBoundObjectOfType(out T object) and TryGetBoundAttributeOfType(out XBoundAttribute, out T object)
 			New in 2.0:
@@ -30,7 +32,7 @@
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
-		<BaseVersion>2.0.1</BaseVersion>
+		<BaseVersion>2.0.2</BaseVersion>
 		<VersionPrefix>$(BaseVersion)-prerelease</VersionPrefix>
 	</PropertyGroup>
 	<ItemGroup>
