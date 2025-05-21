@@ -17,6 +17,8 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageReleaseNotes>
+			Major (non-breaking) change in 2.0.3:
+			- OnPropertyChanged([CallerMemberName] overload now laterals to a proper (sender, e) signature.
 			Minor changes in 2.0.2:
 			- The DualKeyLibrary now provides an EnumKeys property, allowing external management.
 			Minor changes in 2.0.1:
@@ -32,8 +34,8 @@
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
-		<BaseVersion>2.0.2</BaseVersion>
-		<VersionPrefix>$(BaseVersion)-prerelease</VersionPrefix>
+		<BaseVersion>2.0.3</BaseVersion>
+		<VersionPrefix>$(BaseVersion)-beta</VersionPrefix>
 	</PropertyGroup>
 	<ItemGroup>
 	  <Compile Remove="Screenshots\**" />

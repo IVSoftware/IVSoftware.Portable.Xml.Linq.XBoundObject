@@ -71,12 +71,13 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         XElement _parent = default;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+            => OnPropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+        protected virtual void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+            => PropertyChanged?.Invoke(this, e);
+
         public event PropertyChangedEventHandler PropertyChanged;
         internal string DebuggerDisplay
-            => XEL?.Attribute(nameof(StdAttributeNameInternal.text))?.Value ?? "Error";
+            => XEL?.Attribute(nameof(StdAttributeNameInternal.text))?.Value ?? nameof(XBoundObjectImplementer);
     }
     public class XBoundViewObjectImplementer : XBoundObjectImplementer, IXBoundViewObject
     {

@@ -647,6 +647,24 @@ Settings.Apply.Selected";
             Assert.IsTrue(xel.Has<LocalClass?>());
         }
 
+        /// <summary>
+        /// Double-tap on the whole nullable enum thing.
+        /// </summary>
+        [TestMethod]
+        public void Test_ToEnum()
+        {
+            var xel = new XElement("empty");
+            Assert.IsTrue(xel.To<Enum>() is null);
+            Assert.IsTrue(xel.To<Enum?>() is null);
+
+            // Correct pattern for nullable named enum
+            Assert.IsTrue(xel.To<Deep.Apply?>() is null);
+
+            xel.SetBoundAttributeValue(Deep.Apply.All);
+            Assert.IsFalse(xel.To<Enum>() is null);
+            Assert.IsFalse(xel.To<Enum?>() is null);
+        }
+
         #region L O C A L S
         [Placement(EnumPlacement.UseXAttribute, "xattr")]
         private enum LocalXAttrEnum
