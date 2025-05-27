@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Xml.Linq;
 
@@ -24,7 +25,7 @@ namespace IVSoftware.Portable.Xml.Linq
     /// </summary>
 
     [DebuggerDisplay("{Count}")]
-    public class DualKeyLookup
+    public class DualKeyLookup : INotifyCollectionChanged
     {
         private readonly Dictionary<Enum, XElement> _id2x = new Dictionary<Enum, XElement>();
         public XElement this[Enum key, bool @throw = false]
@@ -46,6 +47,12 @@ namespace IVSoftware.Portable.Xml.Linq
                         {
                             _x2id.Remove(xel);
                         }
+                        CollectionChanged?.Invoke(
+                            this, 
+                            new NotifyCollectionChangedEventArgs(
+                                NotifyCollectionChangedAction.Remove,
+                                new KeyValuePair<Enum, XElement>(key, xel)));
+
                     }
                 }
                 else
@@ -58,6 +65,10 @@ namespace IVSoftware.Portable.Xml.Linq
                         }
                         else
                         {
+                            var e = new BeforeModifyMappingCancelEventArgs(key, prevXEL, value);
+                            BeforeModifyMapping?.Invoke(this, e);
+                            if (e.Cancel) return;
+
                             if (@throw)
                             {
                                 throw new InvalidOperationException(
@@ -71,11 +82,20 @@ namespace IVSoftware.Portable.Xml.Linq
                         }
                     }
                     _id2x[key] = value;
-                    _x2id[value] = key;
+                    _x2id[value] = key; 
+                    CollectionChanged?.Invoke(
+                        this, 
+                        new NotifyCollectionChangedEventArgs(
+                            NotifyCollectionChangedAction.Add,
+                            new KeyValuePair<Enum, XElement>(key, value)));
+
                 }
             }
         }
-        private readonly Dictionary<XElement, Enum> _x2id = new Dictionary<XElement, Enum>();
+        private readonly Dictionary<XElement, Enum> _x2id = new Dictionary<XElement, Enum>(); 
+
+        public event NotifyCollectionChangedEventHandler CollectionChanged; 
+        public event EventHandler<BeforeModifyMappingCancelEventArgs> BeforeModifyMapping;
 
         public Enum this[XElement key, bool @throw = false]
         {
@@ -96,6 +116,11 @@ namespace IVSoftware.Portable.Xml.Linq
                         {
                             _id2x.Remove(id);
                         }
+                        CollectionChanged?.Invoke(
+                            this,
+                            new NotifyCollectionChangedEventArgs(
+                                NotifyCollectionChangedAction.Remove,
+                                new KeyValuePair<Enum, XElement>(id, key)));
                     }
                 }
                 else
@@ -108,12 +133,28 @@ namespace IVSoftware.Portable.Xml.Linq
                         }
                         else
                         {
-                            // Eradicate the previous pair.
-                            this[key] = null;
+                            var e = new BeforeModifyMappingCancelEventArgs(key, prevID, value);
+                            BeforeModifyMapping?.Invoke(this, e);
+                            if (e.Cancel) return;
+                            if (@throw)
+                            {
+                                throw new InvalidOperationException(
+                                    "Cannot overwrite existing mapping with a different value when 'throw' is set.");
+                            }
+                            else
+                            {
+                                // Eradicate the previous pair.
+                                this[key] = null;
+                            }
                         }
                     }
                     _x2id[key] = value;
-                    _id2x[value] = key;
+                    _id2x[value] = key; 
+                    CollectionChanged?.Invoke(
+                        this,
+                        new NotifyCollectionChangedEventArgs(
+                            NotifyCollectionChangedAction.Add,
+                            new KeyValuePair<Enum, XElement>(value, key)));
                 }
             }
         }
@@ -129,7 +170,11 @@ namespace IVSoftware.Portable.Xml.Linq
         public void Clear()
         {
             _x2id.Clear();
-            _id2x.Clear();
+            _id2x.Clear(); 
+            CollectionChanged?.Invoke(
+                this, 
+                new NotifyCollectionChangedEventArgs(
+                NotifyCollectionChangedAction.Reset));
         }
         /// <summary>
         /// Gets a collection of Enum keys currently stored in the lookup.
