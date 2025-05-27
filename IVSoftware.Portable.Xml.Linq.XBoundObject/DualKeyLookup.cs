@@ -19,8 +19,7 @@ namespace IVSoftware.Portable.Xml.Linq
     /// Features:
     /// - Direct access via indexers for Enum-to-XElement and XElement-to-Enum lookups.
     /// - Automatic synchronization between mappings to prevent inconsistencies.
-    /// - Optional exception throwing for strict retrieval.
-    /// - Supports dynamic modification with add, remove, and clear operations.
+    /// - Optional exception throwing, both for strict retrieval and to prevent reassignment of existing mappings.
     /// - Provides the <see cref="EnumKeys"/> property to allow external enumeration or management of Enum keys.
     /// </summary>
 
@@ -59,8 +58,16 @@ namespace IVSoftware.Portable.Xml.Linq
                         }
                         else
                         {
-                            // Eradicate the previous pair.
-                            this[key] = null;
+                            if (@throw)
+                            {
+                                throw new InvalidOperationException(
+                                    "Cannot overwrite existing mapping with a different value when 'throw' is set.");
+                            }
+                            else
+                            {
+                                // Eradicate the previous pair.
+                                this[key] = null;
+                            }
                         }
                     }
                     _id2x[key] = value;

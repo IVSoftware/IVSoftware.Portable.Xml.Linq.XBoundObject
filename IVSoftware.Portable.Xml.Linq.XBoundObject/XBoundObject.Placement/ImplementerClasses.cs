@@ -72,8 +72,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
             => OnPropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+
         protected virtual void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
-            => PropertyChanged?.Invoke(this, e);
+            => PropertyChanged?.Invoke(sender, e);
 
         public event PropertyChangedEventHandler PropertyChanged;
         internal string DebuggerDisplay
