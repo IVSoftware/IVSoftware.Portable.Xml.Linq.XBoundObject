@@ -14,6 +14,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling
 {
     public class SenderEventPair
     {
+        public static implicit operator SenderEventPair((object sender, EventArgs e) @this)
+            => new SenderEventPair(@this.sender, @this.e);
+
         public static implicit operator EventArgs(SenderEventPair @this)
             => @this.e;
         public SenderEventPair(object sender, EventArgs e)
