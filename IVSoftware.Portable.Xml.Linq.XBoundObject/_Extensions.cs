@@ -793,5 +793,24 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
             private XElementComparer(Func<XElement, XElement, int> lambda) => _lambda = lambda;
             public int Compare(XElement x, XElement y) => _lambda(x, y);
         }
+
+        /// <summary>
+        /// Removes and returns the only item in the queue.
+        /// Throws if the queue is empty or contains more than one item.
+        /// 
+        /// Typical use is for unit tests where exactly one result is expected.
+        /// </summary> 
+        public static T DequeueSingle<T>(this Queue<T> queue)
+        {
+            switch (queue.Count)
+            {
+                case 0:
+                    throw new InvalidOperationException("Queue is empty.");
+                case 1:
+                    return queue.Dequeue();
+                default:
+                    throw new InvalidOperationException("Multiple items in queue.");
+            }
+        }
     }
 }

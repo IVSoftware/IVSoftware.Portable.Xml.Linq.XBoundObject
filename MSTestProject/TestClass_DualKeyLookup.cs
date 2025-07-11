@@ -1,4 +1,5 @@
 using IVSoftware.Portable.Xml.Linq;
+using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling;
 using System.Collections.Specialized;
 using System.Xml.Linq;
