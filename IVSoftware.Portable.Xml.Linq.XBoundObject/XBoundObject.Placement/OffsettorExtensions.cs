@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Linq;
+using IVSoftware.Portable.Common.Attributes;
 
 namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 {
@@ -51,13 +53,51 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// <summary>
         /// Resolves the previous element in modeled linear order.
         /// </summary>
-        public static XElement PreviousOffsettor(this XElement @this)
+        public static XElement? PreviousOffsettor(this XElement @this, Enum stdEnum)
+            => @this.PreviousOffsettor(stdEnum.ToString());
+
+        /// <summary>
+        /// Resolves the previous element in modeled linear order.
+        /// </summary>
+        [Canonical]
+        public static XElement? PreviousOffsettor(this XElement @this, string? name=null)
+        {
+            XElement current = @this;
+
+            while (true)
+            {
+                var previous =
+                    current.ElementsBeforeSelf().LastOrDefault() is XElement prevNode
+                    ? prevNode.DescendantsAndSelf().Last()
+                    : current.Parent;
+
+                if (previous is XElement xel)
+                {
+
+                    if (name is null || xel.Name.LocalName.Equals(name, StringComparison.Ordinal))
+                    {
+                        return xel;
+                    }
+
+                    current = xel;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Resolves the next element in modeled linear order.
+        /// </summary>
+        public static XElement? NextOffsettor(this XElement @this, Enum stdEnum)
             => throw new NotImplementedException();
 
         /// <summary>
         /// Resolves the next element in modeled linear order.
         /// </summary>
-        public static XElement NextOffsettor(this XElement @this)
+        public static XElement? NextOffsettor(this XElement @this)
             => throw new NotImplementedException();
     }
 }
