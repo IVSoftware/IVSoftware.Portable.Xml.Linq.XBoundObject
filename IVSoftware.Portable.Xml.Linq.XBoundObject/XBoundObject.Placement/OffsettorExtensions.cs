@@ -13,9 +13,22 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// </summary>
         public static IEnumerable<XElement> Ascendors(
             this XElement @this,
-            string? localName,
+            string? localName = null,
             bool includeSelf = false)
-            => throw new NotImplementedException();
+        {
+            XElement? current = includeSelf
+                ? @this
+                : @this.PreviousOffsettor();
+
+            while (current is not null)
+            {
+                if (localName is null || current.Name.LocalName.Equals(localName, StringComparison.Ordinal))
+                {
+                    yield return current;
+                }
+                current = current.PreviousOffsettor();
+            }
+        }
 
         /// <summary>
         /// Ascends modeled linear order using a standard enum local-name filter.
@@ -24,7 +37,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             this XElement @this,
             Enum? stdName,
             bool includeSelf = false)
-            => throw new NotImplementedException();
+            => @this.Ascendors(stdName?.ToString(), includeSelf);
 
         /// <summary>
         /// Descends modeled linear order using a BCL-style local-name filter.

@@ -11,7 +11,79 @@ namespace Offsettors.MSTest
     [TestClass]
     public sealed class TestClass_260424_Offsettors
     {
-        [TestMethod]
+        [TestMethod, DoNotParallelize]
+        public void Test_Ascendors()
+        {
+            Random rando = new(10);
+            using var te = this.TestableEpoch();
+
+            ObservableCollection<PlaceableModel> oc = new();
+            XElement model = StdModelElement.model.MakeXElement();
+
+            int index = 0;
+            foreach (var item in oc.PopulateForDemo(25))
+            {
+                model.Place(item.Id, out var xel);
+                xel.Name =
+                    rando.Next(5) == 0
+                    ? nameof(StdModelElement.proxy)
+                    : nameof(StdModelElement.item);
+                xel.SetStdAttributeValue(StdModelAttribute.index, index++);
+            }
+            model.WithRandomisedDepth();
+
+            var proxy20 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "20");
+
+            CollectionAssert.AreEqual(
+                new[] { "19", "18", "17", "16", "15", "14", "13", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1", "0", null },
+                proxy20
+                .Ascendors()
+                .Select(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value)
+                .ToArray(),
+                "Expecting unfiltered ascendors walk modeled linear order backward.");
+
+            CollectionAssert.AreEqual(
+                new[] { "20", "19", "18", "17", "16", "15", "14", "13", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1", "0", null },
+                proxy20
+                .Ascendors(includeSelf: true)
+                .Select(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value)
+                .ToArray(),
+                "Expecting includeSelf prepends the current node.");
+
+            CollectionAssert.AreEqual(
+                new[] { "18", "15", "14", "13", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1", "0" },
+                proxy20
+                .Ascendors(nameof(StdModelElement.item))
+                .Select(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value)
+                .ToArray(),
+                "Expecting item filter skips proxy nodes while preserving reverse modeled order.");
+
+            CollectionAssert.AreEqual(
+                new[] { "19", "17", "16" },
+                proxy20
+                .Ascendors(nameof(StdModelElement.proxy))
+                .Select(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value)
+                .ToArray(),
+                "Expecting proxy filter returns only prior proxies in reverse modeled order.");
+
+            var first = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "0");
+            CollectionAssert.AreEqual(
+                new string?[] { null },
+                first
+                .Ascendors()
+                .Select(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value)
+                .ToArray(),
+                "Expecting the first item ascends to the model root when unfiltered.");
+            CollectionAssert.AreEqual(
+                new string?[] { "0", null },
+                first
+                .Ascendors(includeSelf: true)
+                .Select(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value)
+                .ToArray(),
+                "Expecting includeSelf on the first item yields self then the model root.");
+        }
+
+        [TestMethod, DoNotParallelize]
         public void Test_PrevOffsettor()
         {
             Random rando = new(10);
@@ -22,10 +94,10 @@ namespace Offsettors.MSTest
             XElement model = StdModelElement.model.MakeXElement();
 
             int index = 0;
-            foreach(var item in oc.PopulateForDemo(25))
+            foreach (var item in oc.PopulateForDemo(25))
             {
                 model.Place(item.Id, out var xel);
-                xel.Name = 
+                xel.Name =
                     rando.Next(5) == 0
                     ? nameof(StdModelElement.proxy)
                     : nameof(StdModelElement.item);
@@ -87,6 +159,8 @@ namespace Offsettors.MSTest
             subtest_Edge6();
             subtest_Edge7();
             subtest_Edge8();
+            subtest_Edge9();
+            subtest_Edge10();
 
             #region S U B T E S T S
             void subtest_Edge1()
@@ -195,6 +269,35 @@ namespace Offsettors.MSTest
                     "20",
                     prevProxy.Attribute(nameof(StdModelAttribute.index))?.Value,
                     "Expecting previous sibling branch leaf is returned when filtering to proxies.");
+            }
+
+            void subtest_Edge9()
+            {
+                var item18 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "18");
+                var prevItem = item18.PreviousOffsettor(nameof(StdModelElement.item));
+
+                Assert.IsNotNull(prevItem, "Expecting previous item exists across proxy-parent boundary.");
+                Assert.AreEqual(
+                    "15",
+                    prevItem.Attribute(nameof(StdModelAttribute.index))?.Value,
+                    "Expecting first child climbs to proxy parent, skips non-item leaf, and lands on item 15.");
+            }
+
+            void subtest_Edge10()
+            {
+                var proxy17 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "17");
+                var prevProxy = proxy17.PreviousOffsettor(nameof(StdModelElement.proxy));
+
+                Assert.IsNotNull(prevProxy, "Expecting previous proxy exists.");
+                Assert.AreEqual(
+                    "16",
+                    prevProxy.Attribute(nameof(StdModelAttribute.index))?.Value,
+                    "Expecting previous sibling leaf proxy is returned when filtering to proxies.");
+
+                var item1 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "1");
+                Assert.IsNull(
+                    item1.PreviousOffsettor(nameof(StdModelElement.proxy)),
+                    "Expecting no previous proxy before the early flat items.");
             }
             #endregion S U B T E S T S
         }
