@@ -11,6 +11,8 @@
 		<PackageProjectUrl>https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject.git</PackageProjectUrl>
 		<RootNamespace>IVSoftware.Portable.Xml.Linq</RootNamespace>
 		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Author>Thomas C. Gregor</Author>
 		<Owner>IVSoftware LLC</Owner>
