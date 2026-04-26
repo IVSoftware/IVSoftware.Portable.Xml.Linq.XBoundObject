@@ -29,11 +29,42 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// <summary>
         /// Descends modeled linear order using a BCL-style local-name filter.
         /// </summary>
+        /// <remarks>
+        /// - When @this is the model root, Descendors().First() is the first item in the linear collection.
+        /// - As a calibration, Descendors().Skip(0) does the same thing.
+        /// </remarks>
         public static IEnumerable<XElement> Descendors(
             this XElement @this,
             string? localName,
             bool includeSelf = false)
-            => throw new NotImplementedException();
+        {
+            var xroot = @this.AncestorsAndSelf().Last();
+
+            bool wantYield = false;
+
+            foreach (var xel in xroot.DescendantsAndSelf())
+            {
+                if (!wantYield)
+                {
+                    if (ReferenceEquals(@this, xel))
+                    {
+                        wantYield = true;
+                        if (includeSelf && localIsNameMatch(xel))
+                        {
+                            yield return @this;
+                        }
+                    }
+                }
+                else if (localIsNameMatch(xel))
+                {
+                    yield return xel;
+                }
+            }
+
+            bool localIsNameMatch(XElement xel) =>
+                localName is null ||
+                xel.Name.LocalName.Equals(localName, StringComparison.Ordinal);
+        }
 
         /// <summary>
         /// Descends modeled linear order using a standard enum local-name filter.
@@ -42,7 +73,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             this XElement @this,
             Enum? stdName,
             bool includeSelf = false)
-            => throw new NotImplementedException();
+            => @this.Descendors(stdName?.ToString(), includeSelf);
 
         /// <summary>
         /// Resolves an element by relative offset within modeled linear order.
@@ -53,7 +84,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// <summary>
         /// Resolves the previous element in modeled linear order.
         /// </summary>
-        public static XElement? PreviousOffsettor(this XElement @this, Enum stdEnum)
+        public static XElement? PreviousAscendor(this XElement @this, Enum stdEnum)
             => @this.PreviousOffsettor(stdEnum.ToString());
 
         /// <summary>
@@ -91,7 +122,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// <summary>
         /// Resolves the next element in modeled linear order.
         /// </summary>
-        public static XElement? NextOffsettor(this XElement @this, Enum stdEnum)
+        public static XElement? NextDescendor(this XElement @this, Enum stdEnum)
             => throw new NotImplementedException();
 
         /// <summary>

@@ -14,6 +14,7 @@ namespace Offsettors.MSTest
         [TestMethod]
         public void Test_PrevOffsettor()
         {
+            Random rando = new(10);
             string actual, expected;
             using var te = this.TestableEpoch();
 
@@ -24,7 +25,10 @@ namespace Offsettors.MSTest
             foreach(var item in oc.PopulateForDemo(25))
             {
                 model.Place(item.Id, out var xel);
-                xel.Name = nameof(StdModelElement.item);
+                xel.Name = 
+                    rando.Next(5) == 0
+                    ? nameof(StdModelElement.proxy)
+                    : nameof(StdModelElement.item);
                 xel.SetStdAttributeValue(StdModelAttribute.index, index++);
             }
             model.WithRandomisedDepth();
@@ -39,8 +43,8 @@ namespace Offsettors.MSTest
   <item text=""312d1c21-0000-0000-0000-000000000002"" index=""2"">
     <item text=""312d1c21-0000-0000-0000-000000000003"" index=""3"" />
   </item>
-  <marklar text=""312d1c21-0000-0000-0000-000000000004"" index=""4"" />
-  <marklar text=""312d1c21-0000-0000-0000-000000000005"" index=""5"">
+  <item text=""312d1c21-0000-0000-0000-000000000004"" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" index=""5"">
     <item text=""312d1c21-0000-0000-0000-000000000006"" index=""6"" />
   </item>
   <item text=""312d1c21-0000-0000-0000-000000000007"" index=""7"" />
@@ -53,14 +57,14 @@ namespace Offsettors.MSTest
   </item>
   <item text=""312d1c21-0000-0000-0000-00000000000e"" index=""14"" />
   <item text=""312d1c21-0000-0000-0000-00000000000f"" index=""15"">
-    <item text=""312d1c21-0000-0000-0000-000000000010"" index=""16"" />
+    <proxy text=""312d1c21-0000-0000-0000-000000000010"" index=""16"" />
   </item>
-  <item text=""312d1c21-0000-0000-0000-000000000011"" index=""17"">
+  <proxy text=""312d1c21-0000-0000-0000-000000000011"" index=""17"">
     <item text=""312d1c21-0000-0000-0000-000000000012"" index=""18"" />
-  </item>
-  <item text=""312d1c21-0000-0000-0000-000000000013"" index=""19"">
-    <item text=""312d1c21-0000-0000-0000-000000000014"" index=""20"" />
-  </item>
+  </proxy>
+  <proxy text=""312d1c21-0000-0000-0000-000000000013"" index=""19"">
+    <proxy text=""312d1c21-0000-0000-0000-000000000014"" index=""20"" />
+  </proxy>
   <item text=""312d1c21-0000-0000-0000-000000000015"" index=""21"" />
   <item text=""312d1c21-0000-0000-0000-000000000016"" index=""22"">
     <item text=""312d1c21-0000-0000-0000-000000000017"" index=""23"" />
@@ -74,6 +78,125 @@ namespace Offsettors.MSTest
                 actual.NormalizeResult(),
                 "Expecting basic model schema."
             );
+
+            subtest_Edge1();
+            subtest_Edge2();
+            subtest_Edge3();
+            subtest_Edge4();
+            subtest_Edge5();
+            subtest_Edge6();
+            subtest_Edge7();
+            subtest_Edge8();
+
+            #region S U B T E S T S
+            void subtest_Edge1()
+            {
+                var first =
+                    model
+                    .DescendantsAndSelf()
+                    .First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "0");
+
+                Assert.IsNull(
+                    first.PreviousOffsettor(nameof(StdModelElement.item)),
+                    "Expecting first item has no previous item offsettor.");
+
+                var proxy20 =
+                    model
+                    .DescendantsAndSelf()
+                    .First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "20");
+
+                var prevItem = proxy20.PreviousOffsettor(nameof(StdModelElement.item));
+                Assert.IsNotNull(prevItem, "Expecting filtered previous item exists.");
+                Assert.AreEqual(
+                    "18",
+                    prevItem.Attribute(nameof(StdModelAttribute.index))?.Value,
+                    "Expecting proxy chain resolves backward to item index 18.");
+            }
+
+            void subtest_Edge2()
+            {
+                var child3 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "3");
+                var prevItem = child3.PreviousOffsettor(nameof(StdModelElement.item));
+
+                Assert.IsNotNull(prevItem, "Expecting child item has a previous item.");
+                Assert.AreEqual(
+                    "2",
+                    prevItem.Attribute(nameof(StdModelAttribute.index))?.Value,
+                    "Expecting previous item is the parent when there is no previous sibling.");
+            }
+
+            void subtest_Edge3()
+            {
+                var child6 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "6");
+                var prevAny = child6.PreviousOffsettor();
+
+                Assert.IsNotNull(prevAny, "Expecting child has a previous offsettor.");
+                Assert.AreEqual(
+                    "5",
+                    prevAny.Attribute(nameof(StdModelAttribute.index))?.Value,
+                    "Expecting previous offsettor is the parent when there is no previous sibling.");
+            }
+
+            void subtest_Edge4()
+            {
+                var item4 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "4");
+                var prevItem = item4.PreviousOffsettor(nameof(StdModelElement.item));
+
+                Assert.IsNotNull(prevItem, "Expecting previous item exists.");
+                Assert.AreEqual(
+                    "3",
+                    prevItem.Attribute(nameof(StdModelAttribute.index))?.Value,
+                    "Expecting previous sibling's leaf is selected.");
+            }
+
+            void subtest_Edge5()
+            {
+                var proxy17 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "17");
+                var prevAny = proxy17.PreviousOffsettor();
+
+                Assert.IsNotNull(prevAny, "Expecting previous offsettor exists.");
+                Assert.AreEqual(
+                    "16",
+                    prevAny.Attribute(nameof(StdModelAttribute.index))?.Value,
+                    "Expecting previous sibling leaf is returned regardless of name.");
+            }
+
+            void subtest_Edge6()
+            {
+                var proxy16 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "16");
+                var prevItem = proxy16.PreviousOffsettor(nameof(StdModelElement.item));
+
+                Assert.IsNotNull(prevItem, "Expecting filtered previous item exists.");
+                Assert.AreEqual(
+                    "15",
+                    prevItem.Attribute(nameof(StdModelAttribute.index))?.Value,
+                    "Expecting first child resolves to parent when filtering to items.");
+            }
+
+            void subtest_Edge7()
+            {
+                var proxy20 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "20");
+                var prevProxy = proxy20.PreviousOffsettor(nameof(StdModelElement.proxy));
+
+                Assert.IsNotNull(prevProxy, "Expecting filtered previous proxy exists.");
+                Assert.AreEqual(
+                    "19",
+                    prevProxy.Attribute(nameof(StdModelAttribute.index))?.Value,
+                    "Expecting first child proxy resolves to proxy parent.");
+            }
+
+            void subtest_Edge8()
+            {
+                var item21 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "21");
+                var prevProxy = item21.PreviousOffsettor(nameof(StdModelElement.proxy));
+
+                Assert.IsNotNull(prevProxy, "Expecting filtered previous proxy exists.");
+                Assert.AreEqual(
+                    "20",
+                    prevProxy.Attribute(nameof(StdModelAttribute.index))?.Value,
+                    "Expecting previous sibling branch leaf is returned when filtering to proxies.");
+            }
+            #endregion S U B T E S T S
         }
     }
 
