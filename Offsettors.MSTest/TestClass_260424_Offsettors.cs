@@ -171,7 +171,7 @@ namespace Offsettors.MSTest
                     .First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "0");
 
                 Assert.IsNull(
-                    first.PreviousOffsettor(nameof(StdModelElement.item)),
+                    first.PreviousAscendor(nameof(StdModelElement.item)),
                     "Expecting first item has no previous item offsettor.");
 
                 var proxy20 =
@@ -179,7 +179,7 @@ namespace Offsettors.MSTest
                     .DescendantsAndSelf()
                     .First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "20");
 
-                var prevItem = proxy20.PreviousOffsettor(nameof(StdModelElement.item));
+                var prevItem = proxy20.PreviousAscendor(nameof(StdModelElement.item));
                 Assert.IsNotNull(prevItem, "Expecting filtered previous item exists.");
                 Assert.AreEqual(
                     "18",
@@ -190,7 +190,7 @@ namespace Offsettors.MSTest
             void subtest_Edge2()
             {
                 var child3 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "3");
-                var prevItem = child3.PreviousOffsettor(nameof(StdModelElement.item));
+                var prevItem = child3.PreviousAscendor(nameof(StdModelElement.item));
 
                 Assert.IsNotNull(prevItem, "Expecting child item has a previous item.");
                 Assert.AreEqual(
@@ -202,7 +202,7 @@ namespace Offsettors.MSTest
             void subtest_Edge3()
             {
                 var child6 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "6");
-                var prevAny = child6.PreviousOffsettor();
+                var prevAny = child6.PreviousAscendor();
 
                 Assert.IsNotNull(prevAny, "Expecting child has a previous offsettor.");
                 Assert.AreEqual(
@@ -214,7 +214,7 @@ namespace Offsettors.MSTest
             void subtest_Edge4()
             {
                 var item4 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "4");
-                var prevItem = item4.PreviousOffsettor(nameof(StdModelElement.item));
+                var prevItem = item4.PreviousAscendor(nameof(StdModelElement.item));
 
                 Assert.IsNotNull(prevItem, "Expecting previous item exists.");
                 Assert.AreEqual(
@@ -226,7 +226,7 @@ namespace Offsettors.MSTest
             void subtest_Edge5()
             {
                 var proxy17 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "17");
-                var prevAny = proxy17.PreviousOffsettor();
+                var prevAny = proxy17.PreviousAscendor();
 
                 Assert.IsNotNull(prevAny, "Expecting previous offsettor exists.");
                 Assert.AreEqual(
@@ -238,7 +238,7 @@ namespace Offsettors.MSTest
             void subtest_Edge6()
             {
                 var proxy16 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "16");
-                var prevItem = proxy16.PreviousOffsettor(nameof(StdModelElement.item));
+                var prevItem = proxy16.PreviousAscendor(nameof(StdModelElement.item));
 
                 Assert.IsNotNull(prevItem, "Expecting filtered previous item exists.");
                 Assert.AreEqual(
@@ -250,7 +250,7 @@ namespace Offsettors.MSTest
             void subtest_Edge7()
             {
                 var proxy20 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "20");
-                var prevProxy = proxy20.PreviousOffsettor(nameof(StdModelElement.proxy));
+                var prevProxy = proxy20.PreviousAscendor(nameof(StdModelElement.proxy));
 
                 Assert.IsNotNull(prevProxy, "Expecting filtered previous proxy exists.");
                 Assert.AreEqual(
@@ -262,7 +262,7 @@ namespace Offsettors.MSTest
             void subtest_Edge8()
             {
                 var item21 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "21");
-                var prevProxy = item21.PreviousOffsettor(nameof(StdModelElement.proxy));
+                var prevProxy = item21.PreviousAscendor(nameof(StdModelElement.proxy));
 
                 Assert.IsNotNull(prevProxy, "Expecting filtered previous proxy exists.");
                 Assert.AreEqual(
@@ -274,7 +274,7 @@ namespace Offsettors.MSTest
             void subtest_Edge9()
             {
                 var item18 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "18");
-                var prevItem = item18.PreviousOffsettor(nameof(StdModelElement.item));
+                var prevItem = item18.PreviousAscendor(nameof(StdModelElement.item));
 
                 Assert.IsNotNull(prevItem, "Expecting previous item exists across proxy-parent boundary.");
                 Assert.AreEqual(
@@ -286,7 +286,7 @@ namespace Offsettors.MSTest
             void subtest_Edge10()
             {
                 var proxy17 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "17");
-                var prevProxy = proxy17.PreviousOffsettor(nameof(StdModelElement.proxy));
+                var prevProxy = proxy17.PreviousAscendor(nameof(StdModelElement.proxy));
 
                 Assert.IsNotNull(prevProxy, "Expecting previous proxy exists.");
                 Assert.AreEqual(
@@ -296,7 +296,7 @@ namespace Offsettors.MSTest
 
                 var item1 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "1");
                 Assert.IsNull(
-                    item1.PreviousOffsettor(nameof(StdModelElement.proxy)),
+                    item1.PreviousAscendor(nameof(StdModelElement.proxy)),
                     "Expecting no previous proxy before the early flat items.");
             }
             #endregion S U B T E S T S
