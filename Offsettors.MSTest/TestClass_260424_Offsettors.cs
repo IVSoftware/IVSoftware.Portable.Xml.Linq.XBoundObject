@@ -92,7 +92,7 @@ namespace Offsettors.MSTest
                 actual.NormalizeResult(),
                 "Expecting test set with mix of item + proxy at various depth."
             );
-
+        }
 
 #if false
 
@@ -159,7 +159,6 @@ namespace Offsettors.MSTest
                 .ToArray(),
                 "Expecting includeSelf on the first item yields self then the model root.");
 #endif
-        }
 
         [TestMethod, DoNotParallelize]
         public void Test_PrevOffsettor()
