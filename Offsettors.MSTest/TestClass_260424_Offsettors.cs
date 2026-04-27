@@ -172,13 +172,13 @@ namespace Offsettors.MSTest
         {
             string actual, expected;
             string[] builder;
-
-            using var ocm = new OCMLocal(count: 10, seed: 1);
-
-            actual = ocm.Model.ToString();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
+            OCMLocal ocm = null!;
+            using (ocm = new OCMLocal(count: 10, seed: 1))
+            {
+                actual = ocm.Model.ToString();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
 <model>
   <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""0"">
     <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[PlaceableModel]"" index=""1"" />
@@ -202,15 +202,88 @@ namespace Offsettors.MSTest
   </xnode>
 </model>";
 
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting test set with mix of item + proxy at various depth."
-            );
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting test set with mix of item + default at various depth."
+                );
 
-            subtest_AscendFromLast();
-            subtest_AscendFromModel();
-            subtest_AscendFromSibling();
+                subtest_AscendFromLast();
+                subtest_AscendFromModel();
+            }
+            using (ocm = new OCMLocal(count: 25, seed: 1))
+            {
+
+                actual = ocm.Model.ToString(); ;
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<model>
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""0"">
+    <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[PlaceableModel]"" index=""1"" />
+    <xnode text=""312d1c21-0000-0000-0000-000000000018"">
+      <item text=""312d1c21-0000-0000-0000-000000000012"" model=""[PlaceableModel]"" index=""2"" />
+    </xnode>
+  </item>
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""3"" />
+  <xnode text=""312d1c21-0000-0000-0000-000000000013"">
+    <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""4"" />
+    <item text=""312d1c21-0000-0000-0000-00000000000e"" model=""[PlaceableModel]"" index=""5"" />
+  </xnode>
+  <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[PlaceableModel]"" index=""6"">
+    <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""7"" />
+  </item>
+  <xnode text=""312d1c21-0000-0000-0000-000000000017"">
+    <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[PlaceableModel]"" index=""8"" />
+    <xnode text=""312d1c21-0000-0000-0000-000000000002"">
+      <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[PlaceableModel]"" index=""9"" />
+    </xnode>
+  </xnode>
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[PlaceableModel]"" index=""10"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[PlaceableModel]"" index=""11"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000014"">
+      <item text=""312d1c21-0000-0000-0000-000000000010"" model=""[PlaceableModel]"" index=""12"" />
+    </xnode>
+  </item>
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[PlaceableModel]"" index=""13"" />
+  <xnode text=""312d1c21-0000-0000-0000-000000000011"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000010"">
+      <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[PlaceableModel]"" index=""14"" />
+    </xnode>
+    <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[PlaceableModel]"" index=""15"" />
+    <xnode text=""312d1c21-0000-0000-0000-000000000009"">
+      <item text=""312d1c21-0000-0000-0000-000000000016"" model=""[PlaceableModel]"" index=""16"" />
+    </xnode>
+  </xnode>
+  <item text=""312d1c21-0000-0000-0000-00000000000d"" model=""[PlaceableModel]"" index=""17"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000011"">
+      <item text=""312d1c21-0000-0000-0000-000000000011"" model=""[PlaceableModel]"" index=""18"" />
+    </xnode>
+    <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[PlaceableModel]"" index=""19"" />
+  </item>
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[PlaceableModel]"" index=""20"" />
+  <item text=""312d1c21-0000-0000-0000-000000000015"" model=""[PlaceableModel]"" index=""21"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000001"">
+      <item text=""312d1c21-0000-0000-0000-000000000013"" model=""[PlaceableModel]"" index=""22"" />
+    </xnode>
+  </item>
+  <xnode text=""312d1c21-0000-0000-0000-000000000010"">
+    <item text=""312d1c21-0000-0000-0000-000000000017"" model=""[PlaceableModel]"" index=""23"" />
+  </xnode>
+  <xnode text=""312d1c21-0000-0000-0000-00000000000b"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000006"">
+      <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[PlaceableModel]"" index=""24"" />
+    </xnode>
+  </xnode>
+</model>";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting test set with mix of item + default at various depth."
+                );
+                subtest_AscendFromSibling();
+            }
 
             #region S U B T E S T S
             void subtest_AscendFromModel()
@@ -261,7 +334,7 @@ model"
                 builder =
                     xlast
                     .Ascendors(includeSelf: true)
-                    .Select(_ =>_.Formatted())
+                    .Select(_ => _.Formatted())
                     .ToArray();
 
                 actual = string.Join(Environment.NewLine, builder);
@@ -294,7 +367,7 @@ model"
                 builder =
                     xlast
                     .Ascendors(includeSelf: false)
-                    .Select(_ =>_.Formatted())
+                    .Select(_ => _.Formatted())
                     .ToArray();
 
                 actual = string.Join(Environment.NewLine, builder);
@@ -327,11 +400,11 @@ model"
                     xlast
                     .Ascendors(StdModelElement.item, includeSelf: true)
                     .SkipLast(1)
-                    .Select(_ => $"{_.Attribute(StdModelAttribute.index)!.Value} {_.Attribute(StdModelAttribute.text)!.Value}" )
+                    .Select(_ => $"{_.Attribute(StdModelAttribute.index)!.Value} {_.Attribute(StdModelAttribute.text)!.Value}")
                     .ToArray();
                 { }
 
-                actual = string.Join(Environment.NewLine, builder); 
+                actual = string.Join(Environment.NewLine, builder);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -354,11 +427,11 @@ model"
                     xlast
                     .Ascendors(StdModelElement.item, includeSelf: false)
                     .SkipLast(1)
-                    .Select(_ => $"{_.Attribute(StdModelAttribute.index)!.Value} {_.Attribute(StdModelAttribute.text)!.Value}" )
+                    .Select(_ => $"{_.Attribute(StdModelAttribute.index)!.Value} {_.Attribute(StdModelAttribute.text)!.Value}")
                     .ToArray();
                 { }
 
-                actual = string.Join(Environment.NewLine, builder); 
+                actual = string.Join(Environment.NewLine, builder);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
@@ -380,9 +453,9 @@ model"
 
             void subtest_AscendFromSibling()
             {
+                // var ddor = ocm.Model.OffsettorAt(StdModelElement.item, 4);
             }
             #endregion S U B T E S T S
-
         }
     }
 

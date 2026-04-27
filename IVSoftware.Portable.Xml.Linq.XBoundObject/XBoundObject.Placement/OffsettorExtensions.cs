@@ -41,9 +41,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// </summary>
         public static IEnumerable<XElement> Ascendors(
             this XElement @this,
-            Enum? stdName,
+            Enum stdName,
             bool includeSelf = false)
-            => @this.Ascendors(stdName?.ToString(), includeSelf);
+            => @this.Ascendors(stdName.ToString(), includeSelf);
 
         /// <summary>
         /// Descends modeled linear order using a BCL-style local-name filter.
@@ -80,14 +80,33 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// </summary>
         public static IEnumerable<XElement> Descendors(
             this XElement @this,
-            Enum? stdName,
+            Enum stdName,
             bool includeSelf = false)
-            => @this.Descendors(stdName?.ToString(), includeSelf);
+            => @this.Descendors(stdName.ToString(), includeSelf);
 
         /// <summary>
         /// Resolves an element by relative offset within modeled linear order.
         /// </summary>
         public static XElement OffsettorAt(this XElement @this, int plusOrMinus)
+            => @this.OffsettorAt(name: null, plusOrMinus);
+
+        /// <summary>
+        /// Resolves an element by relative offset within modeled linear order.
+        /// </summary>
+        public static XElement OffsettorAt(
+            this XElement @this,
+            Enum stdName,
+            int plusOrMinus)
+            => @this.OffsettorAt(stdName.ToString(), plusOrMinus);
+
+        /// <summary>
+        /// Resolves an element by relative offset within modeled linear order.
+        /// </summary>
+        [Canonical]
+        public static XElement OffsettorAt(
+            this XElement @this,
+            string? name,
+            int plusOrMinus)
         {
             XElement? current = @this;
 
@@ -95,7 +114,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             {
                 for (int i = 0; i < plusOrMinus; i++)
                 {
-                    current = current?.NextDescendor();
+                    current = current?.NextDescendor(name);
                     if (current is null)
                     {
                         throw new InvalidOperationException("Modeled offset exceeds the available forward range.");
@@ -106,7 +125,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             {
                 for (int i = 0; i < -plusOrMinus; i++)
                 {
-                    current = current?.PreviousAscendor();
+                    current = current?.PreviousAscendor(name);
                     if (current is null)
                     {
                         throw new InvalidOperationException("Modeled offset exceeds the available backward range.");
@@ -159,42 +178,39 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// Resolves the next element in modeled linear order.
         /// </summary>
         public static XElement? NextDescendor(this XElement @this, Enum stdEnum)
-        {
-            XElement? current = @this;
-            string name = stdEnum.ToString();
-
-            while ((current = current.NextDescendor()) is XElement xel)
-            {
-                if (xel.Name.LocalName.Equals(name, StringComparison.Ordinal))
-                {
-                    return xel;
-                }
-            }
-            return null;
-        }
+            => @this.NextDescendor(stdEnum.ToString());
 
         /// <summary>
         /// Resolves the next element in modeled linear order.
         /// </summary>
         [Canonical]
-        public static XElement? NextDescendor(this XElement @this)
+        public static XElement? NextDescendor(this XElement @this, string? name = null)
         {
-            if (@this.FirstNode is XElement child)
-            {
-                return child;
-            }
-
             XElement? current = @this;
-            while (current is not null)
+            while (true)
             {
-                if (current.ElementsAfterSelf().FirstOrDefault() is XElement nextSibling)
-                {
-                    return nextSibling;
-                }
-                current = current.Parent;
-            }
+                XElement? next =
+                    current?.FirstNode as XElement ??
+                    current?.ElementsAfterSelf().FirstOrDefault() as XElement;
 
-            return null;
+                while (next is null && current is not null)
+                {
+                    current = current.Parent;
+                    next = current?.ElementsAfterSelf().FirstOrDefault() as XElement;
+                }
+
+                if (next is not XElement xel)
+                {
+                    return null;
+                }
+
+                if (name is null || xel.Name.LocalName.Equals(name, StringComparison.Ordinal))
+                {
+                    return xel;
+                }
+
+                current = xel;
+            }
         }
     }
 }
