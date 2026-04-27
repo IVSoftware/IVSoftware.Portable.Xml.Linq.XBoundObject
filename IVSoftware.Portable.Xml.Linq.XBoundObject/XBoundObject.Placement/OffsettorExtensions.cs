@@ -167,11 +167,12 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 {
                     for (int i = 0; i < plusOrMinus; i++)
                     {
-                        current = current.NextDescendor();
+                        current = current?.NextDescendor();
                         if (current is not XElement)
                         {
-                            throw new InvalidOperationException(
-                                "Modeled offset exceeds the available forward range.");
+                            @this.ThrowSoft<InvalidOperationException>(
+                                $"Modeled offset exceeds the available forward range.");
+                            return null;
                         }
                     }
                 }
@@ -179,11 +180,12 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 {
                     for (int i = 0; i < -plusOrMinus; i++)
                     {
-                        current = current.PreviousAscendor();
+                        current = current?.PreviousAscendor();
                         if (current is not XElement)
                         {
-                            throw new InvalidOperationException(
-                                "Modeled offset exceeds the available backward range.");
+                            @this.ThrowSoft<InvalidOperationException>(
+                                $"Modeled offset exceeds the available backward range.");
+                            return null;
                         }
                     }
                 }

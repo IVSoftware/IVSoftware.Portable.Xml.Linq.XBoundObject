@@ -773,23 +773,24 @@ model
                 "Expecting test set with mix of item + default at various depth."
             );
 
+            subtest_TerminalNulls();
+            subtest_FilteredZeroMiss();
+            subtest_FilteredExhaustion();
+            subtest_RawOverrun();
+
             // CODEX THROW TEMPLATE
-            actual = string.Join(Environment.NewLine, builderThrow); builderThrow.Clear();
+            actual = string.Join(Environment.NewLine, builderThrow);
+            builderThrow.Clear();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-";
+ ";
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
                 "Expecting fail pending human paste."
             );
-
-            subtest_TerminalNulls();
-            subtest_FilteredZeroMiss();
-            subtest_FilteredExhaustion();
-            subtest_RawOverrun();
 
             #region S U B T E S T S
             void subtest_TerminalNulls()

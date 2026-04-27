@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Offsettors.MSTest")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f615912a5bc5432f99a061b93fe33211e9355246")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a48750280a617b7187f0a21ca257709e7745b76d")]
 [assembly: System.Reflection.AssemblyProductAttribute("Offsettors.MSTest")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Offsettors.MSTest")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
