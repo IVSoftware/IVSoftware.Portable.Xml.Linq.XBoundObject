@@ -778,20 +778,6 @@ model
             subtest_FilteredExhaustion();
             subtest_RawOverrun();
 
-            // CODEX THROW TEMPLATE
-            actual = string.Join(Environment.NewLine, builderThrow);
-            builderThrow.Clear();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
- ";
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting fail pending human paste."
-            );
-
             #region S U B T E S T S
             void subtest_TerminalNulls()
             {
@@ -816,12 +802,25 @@ model
 
             void subtest_FilteredZeroMiss()
             {
+                Assert.HasCount(0, builderThrow);
                 Assert.IsNull(
                     ocm.Model.OffsettorAt(
                         StdModelElement.item,
                         0,
                         OffsetZeroPolicy.Absolute),
                     "Expecting explicit filtered zero from non-matching root to return null.");
+
+                actual = string.Join(Environment.NewLine, builderThrow); builderThrow.Clear();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+ThrowSoft: Explicit filter 'item' requires zero to resolve within the filtered domain.";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting builder content to match."
+                );
             }
 
             void subtest_FilteredExhaustion()
@@ -843,19 +842,24 @@ model
 
             void subtest_RawOverrun()
             {
+                Assert.HasCount(0, builderThrow);
                 var xlast = ocm.Model.Descendors().Last();
-
-                try
-                {
                     _ = xlast.OffsettorAt(
                         name: null,
                         plusOrMinus: +1,
                         OffsetZeroPolicy.Absolute);
-                    Assert.Fail("Expecting raw modeled overrun to throw.");
-                }
-                catch (InvalidOperationException)
-                {
-                }
+
+                actual = string.Join(Environment.NewLine, builderThrow); builderThrow.Clear();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+ThrowSoft: Modeled offset exceeds the available forward range.";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting builder content to match."
+                );
             }
             #endregion S U B T E S T S
         }
