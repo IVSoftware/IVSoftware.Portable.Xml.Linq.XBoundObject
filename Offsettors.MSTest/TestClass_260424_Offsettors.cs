@@ -772,6 +772,20 @@ model
                 actual.NormalizeResult(),
                 "Expecting test set with mix of item + default at various depth."
             );
+
+            // CODEX THROW TEMPLATE
+            actual = string.Join(Environment.NewLine, builderThrow); builderThrow.Clear();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting fail pending human paste."
+            );
+
             subtest_TerminalNulls();
             subtest_FilteredZeroMiss();
             subtest_FilteredExhaustion();
