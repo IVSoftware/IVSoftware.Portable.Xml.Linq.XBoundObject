@@ -1,12 +1,9 @@
 ﻿using IVSoftware.Portable.Collections;
-using IVSoftware.Portable.Common;
 using IVSoftware.Portable.MSTest.Preview;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using IVSoftware.WinOS.MSTest.Extensions;
-using SQLite;
 using System.Collections.ObjectModel;
-using System.ComponentModel.Design;
 using System.Xml.Linq;
 
 namespace Offsettors.MSTest
