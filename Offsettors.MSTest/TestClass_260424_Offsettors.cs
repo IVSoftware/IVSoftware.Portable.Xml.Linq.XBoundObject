@@ -1,4 +1,5 @@
 ﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.MSTest.Preview;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
@@ -159,6 +160,8 @@ namespace Offsettors.MSTest
   </xnode>
 </model>"
             ;
+
+            Assert.Fail(actual);
 
             Assert.AreEqual(
                 expected.NormalizeResult(),
@@ -702,6 +705,144 @@ model
                     actual.NormalizeResult(),
                     "Expecting builder content to match."
                 );
+            }
+            #endregion S U B T E S T S
+        }
+
+        [TestMethod, DoNotParallelize]
+        public void Test_EdgeSentinels()
+        {
+            string actual, expected;
+            using var ocm = new OCMLocal(count: 10, seed: 3);
+
+            #region L o c a l F x
+            var builderThrow = new List<string>();
+            void localOnBeginThrowOrAdvise(object? sender, Throw e)
+            {
+                builderThrow.Add($"{e.Mode}: {e.Message}");
+                e.Handled = true;
+            }
+            #endregion L o c a l F x
+            using var local = this.WithOnDispose(
+                onInit: (sender, e) =>
+                {
+                    Throw.BeginThrowOrAdvise += localOnBeginThrowOrAdvise;
+                },
+                onDispose: (sender, e) =>
+                {
+                    Throw.BeginThrowOrAdvise -= localOnBeginThrowOrAdvise;
+                });
+
+            actual = ocm.Model.ToString();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model>
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""0"" />
+  <xnode text=""312d1c21-0000-0000-0000-000000000008"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000001"">
+      <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""1"" />
+    </xnode>
+  </xnode>
+  <xnode text=""312d1c21-0000-0000-0000-000000000001"">
+    <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""2"" />
+    <xnode text=""312d1c21-0000-0000-0000-000000000008"">
+      <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[PlaceableModel]"" index=""3"" />
+    </xnode>
+  </xnode>
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""4"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000005"">
+      <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[PlaceableModel]"" index=""5"" />
+    </xnode>
+  </item>
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[PlaceableModel]"" index=""6"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000000"">
+      <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[PlaceableModel]"" index=""7"" />
+    </xnode>
+  </item>
+  <xnode text=""312d1c21-0000-0000-0000-000000000004"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000002"">
+      <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[PlaceableModel]"" index=""8"" />
+    </xnode>
+    <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[PlaceableModel]"" index=""9"" />
+  </xnode>
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting test set with mix of item + default at various depth."
+            );
+            subtest_TerminalNulls();
+            subtest_FilteredZeroMiss();
+            subtest_FilteredExhaustion();
+            subtest_RawOverrun();
+
+            #region S U B T E S T S
+            void subtest_TerminalNulls()
+            {
+                var xfirstItem = ocm.Model.OffsettorAt(
+                    StdModelElement.item,
+                    0,
+                    OffsetZeroPolicy.FirstFilterMatch);
+                var xlast = ocm.Model.Descendors().Last();
+
+                Assert.IsNull(
+                    ocm.Model.PreviousAscendor(),
+                    "Expecting root to have no previous ascendor.");
+
+                Assert.IsNull(
+                    xfirstItem?.PreviousAscendor(StdModelElement.item),
+                    "Expecting first filtered item to have no previous item.");
+
+                Assert.IsNull(
+                    xlast.NextDescendor(),
+                    "Expecting last modeled node to have no next descendor.");
+            }
+
+            void subtest_FilteredZeroMiss()
+            {
+                Assert.IsNull(
+                    ocm.Model.OffsettorAt(
+                        StdModelElement.item,
+                        0,
+                        OffsetZeroPolicy.Absolute),
+                    "Expecting explicit filtered zero from non-matching root to return null.");
+            }
+
+            void subtest_FilteredExhaustion()
+            {
+                Assert.IsNull(
+                    ocm.Model.OffsettorAt(
+                        StdModelElement.item,
+                        ocm.Count,
+                        OffsetZeroPolicy.FirstFilterMatch),
+                    "Expecting filtered forward exhaustion to return null.");
+
+                Assert.IsNull(
+                    ocm.Model.OffsettorAt(
+                        StdModelElement.item,
+                        -(ocm.Count + 1),
+                        OffsetZeroPolicy.ForceAscendingFilterMatch),
+                    "Expecting filtered backward exhaustion to return null.");
+            }
+
+            void subtest_RawOverrun()
+            {
+                var xlast = ocm.Model.Descendors().Last();
+
+                try
+                {
+                    _ = xlast.OffsettorAt(
+                        name: null,
+                        plusOrMinus: +1,
+                        OffsetZeroPolicy.Absolute);
+                    Assert.Fail("Expecting raw modeled overrun to throw.");
+                }
+                catch (InvalidOperationException)
+                {
+                }
             }
             #endregion S U B T E S T S
         }
