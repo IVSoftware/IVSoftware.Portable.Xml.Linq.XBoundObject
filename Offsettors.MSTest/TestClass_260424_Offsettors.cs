@@ -6,6 +6,7 @@ using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using IVSoftware.WinOS.MSTest.Extensions;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Xml.Linq;
 
 namespace Offsettors.MSTest
@@ -17,63 +18,46 @@ namespace Offsettors.MSTest
             : ObservableCollection<PlaceableModel>
             , IDisposable
         {
-            public OCMLocal(int count, int seed, int maxDepth) 
+            public OCMLocal(int count, int seed, int maxDepth)
             {
                 _te = this.TestableEpoch();
                 Rando = new(seed);
 
-                #region L o c a l F x				
-                using var local = this.WithOnDispose(
-                    onInit: (sender, e) =>
-                    {
-                        this.CollectionChanged += localOnCollectionChanged;
-                    },
-                    onDispose: (sender, e) =>
-                    {
-                        this.CollectionChanged -= localOnCollectionChanged;
-                    });
-                void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-                {
-                    switch (e.Action)
-                    {
-                        case NotifyCollectionChangedAction.Add:
-                            foreach (PlaceableModel item in e.NewItems!)
-                            {
-                                Model.Place(item.FullPath, out var xel);
-                                xel.Name = nameof(StdModelElement.item);
-                                xel.SetBoundAttributeValue(item, StdModelAttribute.model);
-                                xel.SetStdAttributeValue(StdModelAttribute.index, e.NewStartingIndex);
-                            }
-                            break;
-                    }
-                }
-                #endregion L o c a l F x
-
                 string[] guids =
                     Enumerable.Range(0, count)
                     .Select(_ => new Guid().WithTestability().ToString())
-                    .ToArray(),
-                    paths = new string[count];
-               
-                for (int index = 0; index < count; index++)
+                    .ToArray();
+                for (int i = 0; i < count; i++)
                 {
+                    Debug.WriteLine($"Index={i:D2}");
+#if DEBUG
+                    if (i == 11)
+                    { }
+#endif
                     HashSet<string> visited = new();
-                    int length = 1 + Rando.Next(maxDepth + 1);
+                    int length = Rando.Next(maxDepth + 1);
                     List<string> segments = new();
                     for (int depth = 0; depth < length; depth++)
                     {
                         string segment;
-                        while (!visited.Add(segment = guids[Rando.Next(count)]));
+                        while (!visited.Add(segment = guids[Rando.Next(count)])) ;
                         segments.Add(segment);
                     }
+                    segments.Add(guids[i]);
                     var fullPath = string.Join('\\', segments);
-                    var item = new PlaceableModel(fullPath)
-                    {
-                        Description = $"Item{index:D2}",
-                    };
-                    { }
+                    Model.Place(fullPath, out var xel);
+                    xel.SetBoundAttributeValue(new PlaceableModel(fullPath), StdModelAttribute.model);
                 }
-               
+                foreach (var xel in Model.Descendants())
+                {
+                    if(xel.To<PlaceableModel>() is { } item)
+                    {
+                        xel.Name = nameof(StdModelElement.item);
+                        xel.SetStdAttributeValue(StdModelAttribute.index, Count);
+                        Add(item);
+                        item.Description = $"Item{Count:D2}";
+                    }
+                }
             }
             public XElement Model { get; } =
                 StdModelElement.model.MakeXElement();
@@ -93,7 +77,66 @@ namespace Offsettors.MSTest
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model />"
+<model>
+  <item text=""312d1c21-0000-0000-0000-000000000012"" model=""[PlaceableModel]"" index=""0"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000011"">
+      <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""1"" />
+    </xnode>
+    <item text=""312d1c21-0000-0000-0000-000000000017"" model=""[PlaceableModel]"" index=""2"" />
+  </item>
+  <xnode text=""312d1c21-0000-0000-0000-000000000007"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000009"">
+      <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""3"" />
+    </xnode>
+  </xnode>
+  <xnode text=""312d1c21-0000-0000-0000-000000000005"">
+    <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""4"" />
+  </xnode>
+  <item text=""312d1c21-0000-0000-0000-000000000010"" model=""[PlaceableModel]"" index=""5"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000006"">
+      <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""6"" />
+    </xnode>
+    <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[PlaceableModel]"" index=""7"" />
+  </item>
+  <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[PlaceableModel]"" index=""8"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000001"">
+      <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[PlaceableModel]"" index=""9"" />
+    </xnode>
+  </item>
+  <xnode text=""312d1c21-0000-0000-0000-000000000004"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000003"">
+      <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[PlaceableModel]"" index=""10"" />
+    </xnode>
+    <item text=""312d1c21-0000-0000-0000-000000000014"" model=""[PlaceableModel]"" index=""11"" />
+    <item text=""312d1c21-0000-0000-0000-000000000016"" model=""[PlaceableModel]"" index=""12"" />
+  </xnode>
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[PlaceableModel]"" index=""13"" />
+  <xnode text=""312d1c21-0000-0000-0000-00000000000d"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000010"">
+      <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[PlaceableModel]"" index=""14"" />
+    </xnode>
+    <xnode text=""312d1c21-0000-0000-0000-000000000016"">
+      <item text=""312d1c21-0000-0000-0000-00000000000a"" model=""[PlaceableModel]"" index=""15"" />
+    </xnode>
+  </xnode>
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" model=""[PlaceableModel]"" index=""16"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" model=""[PlaceableModel]"" index=""17"" />
+  <xnode text=""312d1c21-0000-0000-0000-000000000002"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000007"">
+      <item text=""312d1c21-0000-0000-0000-00000000000d"" model=""[PlaceableModel]"" index=""18"" />
+    </xnode>
+  </xnode>
+  <item text=""312d1c21-0000-0000-0000-00000000000e"" model=""[PlaceableModel]"" index=""19"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" model=""[PlaceableModel]"" index=""20"" />
+  <item text=""312d1c21-0000-0000-0000-000000000011"" model=""[PlaceableModel]"" index=""21"" />
+  <item text=""312d1c21-0000-0000-0000-000000000013"" model=""[PlaceableModel]"" index=""22"" />
+  <xnode text=""312d1c21-0000-0000-0000-000000000015"">
+    <item text=""312d1c21-0000-0000-0000-000000000015"" model=""[PlaceableModel]"" index=""23"" />
+  </xnode>
+  <xnode text=""312d1c21-0000-0000-0000-000000000003"">
+    <item text=""312d1c21-0000-0000-0000-000000000018"" model=""[PlaceableModel]"" index=""24"" />
+  </xnode>
+</model>"
             ;
 
             Assert.AreEqual(
