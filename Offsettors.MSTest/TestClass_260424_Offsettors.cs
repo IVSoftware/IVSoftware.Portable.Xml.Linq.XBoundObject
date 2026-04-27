@@ -4,6 +4,7 @@ using IVSoftware.Portable.MSTest.Preview;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using IVSoftware.WinOS.MSTest.Extensions;
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -14,11 +15,37 @@ namespace Offsettors.MSTest
     [TestClass]
     public sealed class TestClass_260424_Offsettors
     {
+        /// <summary>
+        /// Generates a deterministic flat-to-hierarchal modeled test fixture.
+        /// </summary>
+        /// <remarks>
+        /// Optimized for offsettor tests that need repeatable scatter, depth,
+        /// and filter behavior.
+        /// 
+        /// Requires <c>DoNotParallelize</c> because <c>TestableEpoch</c> is
+        /// static and must remain isolated per test.
+        /// 
+        /// Intentionally mixes item nodes with default nodes so filtered
+        /// traversal can prove it skips, lands, and terminates correctly.
+        /// 
+        /// Only item nodes receive index attributes, which keeps assertions
+        /// aligned with the modeled collection rather than helper path nodes.
+        /// </remarks>
         private class OCMLocal
             : ObservableCollection<PlaceableModel>
             , IDisposable
         {
-            public OCMLocal(int count, int seed, int maxDepth)
+            /// <summary>
+            /// Builds a seeded scatter of modeled items with bounded path depth.
+            /// </summary>
+            /// <remarks>
+            /// Accepts <paramref name="count"/> and <paramref name="seed"/> so
+            /// tests can generate arbitrary but fully repeatable structures.
+            /// 
+            /// The generated model starts from a flat source collection and
+            /// projects it into hierarchal XML through placed full paths.
+            /// </remarks>
+            public OCMLocal(int count, int seed = 1, int maxDepth = 2)
             {
                 _te = this.TestableEpoch();
                 Rando = new(seed);
@@ -62,10 +89,9 @@ namespace Offsettors.MSTest
         }
 
         [TestMethod, DoNotParallelize]
-        public void Test_Ascendors()
+        public void Test_OCMLocal_CTor()
         {
             string actual, expected;
-
             using var ocm = new OCMLocal(25, 10, 2);
 
             actual = ocm.Model.ToString();
@@ -139,74 +165,225 @@ namespace Offsettors.MSTest
                 actual.NormalizeResult(),
                 "Expecting test set with mix of item + proxy at various depth."
             );
-            { }
         }
 
-#if false
+        [TestMethod, DoNotParallelize]
+        public void Test_AscendFromDescendor()
+        {
+            string actual, expected;
+            string[] builder;
 
-            ObservableCollection<PlaceableModel> oc = new();
-            XElement model = StdModelElement.model.MakeXElement();
-            int index = 0;
-            foreach (var item in oc.PopulateForDemo(25))
+            using var ocm = new OCMLocal(count: 10, seed: 1);
+
+            actual = ocm.Model.ToString();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model>
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""0"">
+    <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[PlaceableModel]"" index=""1"" />
+  </item>
+  <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""2"" />
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[PlaceableModel]"" index=""3"">
+    <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""4"" />
+  </item>
+  <xnode text=""312d1c21-0000-0000-0000-000000000004"">
+    <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""5"" />
+  </xnode>
+  <xnode text=""312d1c21-0000-0000-0000-000000000009"">
+    <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[PlaceableModel]"" index=""6"" />
+  </xnode>
+  <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[PlaceableModel]"" index=""7"" />
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[PlaceableModel]"" index=""8"" />
+  <xnode text=""312d1c21-0000-0000-0000-000000000006"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000002"">
+      <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[PlaceableModel]"" index=""9"" />
+    </xnode>
+  </xnode>
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting test set with mix of item + proxy at various depth."
+            );
+
+            subtest_AscendFromLast();
+            subtest_AscendFromModel();
+            subtest_AscendFromSibling();
+
+            #region S U B T E S T S
+            void subtest_AscendFromModel()
             {
-                model.Place(item.Id, out var xel);
-                xel.Name =
-                    ocm.Rando.Next(5) == 0
-                    ? nameof(StdModelElement.proxy)
-                    : nameof(StdModelElement.item);
-                xel.SetStdAttributeValue(StdModelAttribute.index, index++);
+                builder =
+                    ocm.Model
+                    .Ascendors(includeSelf: true)
+                    .Select(_ => _.Formatted())
+                    .ToArray();
+
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+model"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting builder content to match."
+                );
+
+                builder =
+                    ocm.Model
+                    .Ascendors(includeSelf: false)
+                    .Select(_ => _.Formatted())
+                    .ToArray();
+
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting builder content to match."
+                );
             }
-            model.WithRandomisedDepth(ocm.Rando);
-            var proxy20 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "20");
 
-            CollectionAssert.AreEqual(
-                new[] { "19", "18", "17", "16", "15", "14", "13", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1", "0", null },
-                proxy20
-                .Ascendors()
-                .Select(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value)
-                .ToArray(),
-                "Expecting unfiltered ascendors walk modeled linear order backward.");
+            void subtest_AscendFromLast()
+            {
+                var xlast = ocm.Model.Descendants().Last();
 
-            CollectionAssert.AreEqual(
-                new[] { "20", "19", "18", "17", "16", "15", "14", "13", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1", "0", null },
-                proxy20
-                .Ascendors(includeSelf: true)
-                .Select(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value)
-                .ToArray(),
-                "Expecting includeSelf prepends the current node.");
+                builder =
+                    xlast
+                    .Ascendors(includeSelf: true)
+                    .Select(_ =>_.Formatted())
+                    .ToArray();
 
-            CollectionAssert.AreEqual(
-                new[] { "18", "15", "14", "13", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1", "0" },
-                proxy20
-                .Ascendors(nameof(StdModelElement.item))
-                .Select(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value)
-                .ToArray(),
-                "Expecting item filter skips proxy nodes while preserving reverse modeled order.");
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+9 312d1c21-0000-0000-0000-000000000009
+- 312d1c21-0000-0000-0000-000000000002
+- 312d1c21-0000-0000-0000-000000000006
+8 312d1c21-0000-0000-0000-000000000008
+7 312d1c21-0000-0000-0000-000000000005
+6 312d1c21-0000-0000-0000-000000000004
+- 312d1c21-0000-0000-0000-000000000009
+5 312d1c21-0000-0000-0000-000000000003
+- 312d1c21-0000-0000-0000-000000000004
+4 312d1c21-0000-0000-0000-000000000002
+3 312d1c21-0000-0000-0000-000000000007
+2 312d1c21-0000-0000-0000-000000000001
+1 312d1c21-0000-0000-0000-000000000006
+0 312d1c21-0000-0000-0000-000000000000
+model"
+                ;
 
-            CollectionAssert.AreEqual(
-                new[] { "19", "17", "16" },
-                proxy20
-                .Ascendors(nameof(StdModelElement.proxy))
-                .Select(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value)
-                .ToArray(),
-                "Expecting proxy filter returns only prior proxies in reverse modeled order.");
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting builder content to match."
+                );
 
-            var first = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "0");
-            CollectionAssert.AreEqual(
-                new string?[] { null },
-                first
-                .Ascendors()
-                .Select(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value)
-                .ToArray(),
-                "Expecting the first item ascends to the model root when unfiltered.");
-            CollectionAssert.AreEqual(
-                new string?[] { "0", null },
-                first
-                .Ascendors(includeSelf: true)
-                .Select(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value)
-                .ToArray(),
-                "Expecting includeSelf on the first item yields self then the model root.");
-#endif
+                builder =
+                    xlast
+                    .Ascendors(includeSelf: false)
+                    .Select(_ =>_.Formatted())
+                    .ToArray();
+
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+- 312d1c21-0000-0000-0000-000000000002
+- 312d1c21-0000-0000-0000-000000000006
+8 312d1c21-0000-0000-0000-000000000008
+7 312d1c21-0000-0000-0000-000000000005
+6 312d1c21-0000-0000-0000-000000000004
+- 312d1c21-0000-0000-0000-000000000009
+5 312d1c21-0000-0000-0000-000000000003
+- 312d1c21-0000-0000-0000-000000000004
+4 312d1c21-0000-0000-0000-000000000002
+3 312d1c21-0000-0000-0000-000000000007
+2 312d1c21-0000-0000-0000-000000000001
+1 312d1c21-0000-0000-0000-000000000006
+0 312d1c21-0000-0000-0000-000000000000
+model"
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting builder content to match."
+                );
+
+                builder =
+                    xlast
+                    .Ascendors(StdModelElement.item, includeSelf: true)
+                    .SkipLast(1)
+                    .Select(_ => $"{_.Attribute(StdModelAttribute.index)!.Value} {_.Attribute(StdModelAttribute.text)!.Value}" )
+                    .ToArray();
+                { }
+
+                actual = string.Join(Environment.NewLine, builder); 
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+9 312d1c21-0000-0000-0000-000000000009
+8 312d1c21-0000-0000-0000-000000000008
+7 312d1c21-0000-0000-0000-000000000005
+6 312d1c21-0000-0000-0000-000000000004
+5 312d1c21-0000-0000-0000-000000000003
+4 312d1c21-0000-0000-0000-000000000002
+3 312d1c21-0000-0000-0000-000000000007
+2 312d1c21-0000-0000-0000-000000000001
+1 312d1c21-0000-0000-0000-000000000006";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting builder content to match."
+                );
+                builder =
+                    xlast
+                    .Ascendors(StdModelElement.item, includeSelf: false)
+                    .SkipLast(1)
+                    .Select(_ => $"{_.Attribute(StdModelAttribute.index)!.Value} {_.Attribute(StdModelAttribute.text)!.Value}" )
+                    .ToArray();
+                { }
+
+                actual = string.Join(Environment.NewLine, builder); 
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+8 312d1c21-0000-0000-0000-000000000008
+7 312d1c21-0000-0000-0000-000000000005
+6 312d1c21-0000-0000-0000-000000000004
+5 312d1c21-0000-0000-0000-000000000003
+4 312d1c21-0000-0000-0000-000000000002
+3 312d1c21-0000-0000-0000-000000000007
+2 312d1c21-0000-0000-0000-000000000001
+1 312d1c21-0000-0000-0000-000000000006";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting builder content to match."
+                );
+            }
+
+            void subtest_AscendFromSibling()
+            {
+            }
+            #endregion S U B T E S T S
+
+        }
     }
 
     static class TestClass_260424_OffsettorsExtensions
@@ -268,6 +445,17 @@ namespace Offsettors.MSTest
                 nodes[1].MoveRight();
             }
             return root;
+        }
+        public static string Formatted(this XElement @this)
+        {
+            if (@this.Attribute(StdModelAttribute.text) is { } text)
+            {
+                return $"{(@this.Attribute(StdModelAttribute.index)?.Value ?? "-").PadRight(2)} {text.Value}";
+            }
+            else
+            {
+                return @this.Name.LocalName;
+            }
         }
     }
 }
