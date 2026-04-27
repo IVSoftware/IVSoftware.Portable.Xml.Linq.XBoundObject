@@ -1,9 +1,12 @@
 ﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Common;
 using IVSoftware.Portable.MSTest.Preview;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using IVSoftware.WinOS.MSTest.Extensions;
+using SQLite;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Design;
 using System.Xml.Linq;
 
 namespace Offsettors.MSTest
@@ -11,27 +14,101 @@ namespace Offsettors.MSTest
     [TestClass]
     public sealed class TestClass_260424_Offsettors
     {
+        private class OCMLocal
+            : ObservableCollection<PlaceableModel>
+            , IDisposable
+        {
+            public OCMLocal(int count, int seed) 
+            {
+                _te = this.TestableEpoch();
+                Rando = new(seed);
+                int index = 0;
+                foreach (var item in this.PopulateForDemo(count))
+                {
+                    Model.Place(item.Id, out var xel);
+                    xel.Name =
+                        Rando.Next(5) == 0
+                        ? "other"
+                        : nameof(StdModelElement.item);
+                    xel.SetStdAttributeValue(StdModelAttribute.index, index++);
+                }
+                Model.WithRandomisedDepth(Rando);
+            }
+            public XElement Model { get; } =
+                StdModelElement.model.MakeXElement();
+            public Random Rando { get; }
+            public void Dispose() => _te.Dispose();
+            private IDisposable _te;
+        }
+
         [TestMethod, DoNotParallelize]
         public void Test_Ascendors()
         {
-            Random rando = new(10);
-            using var te = this.TestableEpoch();
+            string actual, expected;
+
+            using var ocm = new OCMLocal(25, 10);
+
+            actual = ocm.Model.ToString();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model>
+  <item text=""312d1c21-0000-0000-0000-000000000000"" index=""0"" />
+  <item text=""312d1c21-0000-0000-0000-000000000001"" index=""1"" />
+  <item text=""312d1c21-0000-0000-0000-000000000002"" index=""2"">
+    <item text=""312d1c21-0000-0000-0000-000000000003"" index=""3"" />
+  </item>
+  <item text=""312d1c21-0000-0000-0000-000000000004"" index=""4"" />
+  <item text=""312d1c21-0000-0000-0000-000000000005"" index=""5"">
+    <item text=""312d1c21-0000-0000-0000-000000000006"" index=""6"" />
+  </item>
+  <item text=""312d1c21-0000-0000-0000-000000000007"" index=""7"">
+    <item text=""312d1c21-0000-0000-0000-000000000008"" index=""8"" />
+  </item>
+  <item text=""312d1c21-0000-0000-0000-000000000009"" index=""9"">
+    <item text=""312d1c21-0000-0000-0000-00000000000a"" index=""10"" />
+  </item>
+  <item text=""312d1c21-0000-0000-0000-00000000000b"" index=""11"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000c"" index=""12"" />
+  <item text=""312d1c21-0000-0000-0000-00000000000d"" index=""13"">
+    <item text=""312d1c21-0000-0000-0000-00000000000e"" index=""14"" />
+  </item>
+  <item text=""312d1c21-0000-0000-0000-00000000000f"" index=""15"" />
+  <other text=""312d1c21-0000-0000-0000-000000000010"" index=""16"" />
+  <other text=""312d1c21-0000-0000-0000-000000000011"" index=""17"" />
+  <item text=""312d1c21-0000-0000-0000-000000000012"" index=""18"" />
+  <other text=""312d1c21-0000-0000-0000-000000000013"" index=""19"" />
+  <other text=""312d1c21-0000-0000-0000-000000000014"" index=""20"">
+    <item text=""312d1c21-0000-0000-0000-000000000015"" index=""21"" />
+  </other>
+  <item text=""312d1c21-0000-0000-0000-000000000016"" index=""22"" />
+  <item text=""312d1c21-0000-0000-0000-000000000017"" index=""23"" />
+  <item text=""312d1c21-0000-0000-0000-000000000018"" index=""24"" />
+</model>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting test set with mix of item + proxy at various depth."
+            );
+
+
+#if false
 
             ObservableCollection<PlaceableModel> oc = new();
             XElement model = StdModelElement.model.MakeXElement();
-
             int index = 0;
             foreach (var item in oc.PopulateForDemo(25))
             {
                 model.Place(item.Id, out var xel);
                 xel.Name =
-                    rando.Next(5) == 0
+                    ocm.Rando.Next(5) == 0
                     ? nameof(StdModelElement.proxy)
                     : nameof(StdModelElement.item);
                 xel.SetStdAttributeValue(StdModelAttribute.index, index++);
             }
-            model.WithRandomisedDepth();
-
+            model.WithRandomisedDepth(ocm.Rando);
             var proxy20 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "20");
 
             CollectionAssert.AreEqual(
@@ -81,6 +158,7 @@ namespace Offsettors.MSTest
                 .Select(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value)
                 .ToArray(),
                 "Expecting includeSelf on the first item yields self then the model root.");
+#endif
         }
 
         [TestMethod, DoNotParallelize]
@@ -103,7 +181,7 @@ namespace Offsettors.MSTest
                     : nameof(StdModelElement.item);
                 xel.SetStdAttributeValue(StdModelAttribute.index, index++);
             }
-            model.WithRandomisedDepth();
+            model.WithRandomisedDepth(rando);
 
             actual = model.ToString();
             actual.ToClipboardExpected();
@@ -322,27 +400,25 @@ namespace Offsettors.MSTest
             return @this.GetPath();
         }
 
-        public static XElement WithRandomisedDepth(this XElement root, int seed=123)
+        public static XElement WithRandomisedDepth(this XElement root, Random rando)
         {
             var nodes = root.Elements().ToArray();
             if (nodes.Length == 0)
             {
                 return root;
             }
-
-            var rng = new Random(seed);
             root.RemoveNodes();
             root.Add(nodes);
 
             var siblingsInCurrentGroup = 1;
-            var targetGroupSize = rng.Next(2, 4);
+            var targetGroupSize = rando.Next(2, 4);
             var indented = false;
 
             for (int i = 1; i < nodes.Length; i++)
             {
                 if (siblingsInCurrentGroup >= targetGroupSize)
                 {
-                    var maxMoves = indented ? rng.Next(0, 4) : rng.Next(1, 4);
+                    var maxMoves = indented ? rando.Next(0, 4) : rando.Next(1, 4);
                     for (int move = 0; move < maxMoves; move++)
                     {
                         var pathBefore = nodes[i].GetPath();
@@ -354,7 +430,7 @@ namespace Offsettors.MSTest
                         indented = true;
                     }
                     siblingsInCurrentGroup = 0;
-                    targetGroupSize = rng.Next(2, 4);
+                    targetGroupSize = rando.Next(2, 4);
                 }
                 siblingsInCurrentGroup++;
             }
@@ -363,7 +439,6 @@ namespace Offsettors.MSTest
             {
                 nodes[1].MoveRight();
             }
-
             return root;
         }
     }
