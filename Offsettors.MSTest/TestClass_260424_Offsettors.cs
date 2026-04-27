@@ -732,6 +732,7 @@ model
                 });
 
             actual = ocm.Model.ToString();
+            actual.ToClipboard();
             actual.ToClipboardExpected();
             { }
             expected = @" 
@@ -862,6 +863,258 @@ ThrowSoft: Modeled offset exceeds the available forward range.";
                 );
             }
             #endregion S U B T E S T S
+        }
+
+        [TestMethod, DoNotParallelize]
+        public void Test_AffinityAscendor()
+        {
+            string actual, expected;
+            string[] builder;
+            var model = localGetAffinityModel();
+
+            actual = model.ToString();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model>
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""3"">
+    <item above=""True"" text=""312d1c21-0000-0000-0000-000000000003"" index=""2"" />
+    <item above=""True"" text=""312d1c21-0000-0000-0000-000000000002"" index=""1"" />
+    <item above=""True"" text=""312d1c21-0000-0000-0000-000000000001"" index=""0"" />
+    <item text=""312d1c21-0000-0000-0000-000000000004"" index=""4"" />
+    <item text=""312d1c21-0000-0000-0000-000000000005"" index=""5"" />
+  </item>
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting affinity fixture content to match."
+            );
+
+            subtest_AscendFromLast();
+            subtest_AscendFromAnchor();
+
+            #region S U B T E S T S
+            void subtest_AscendFromLast()
+            {
+                var xlast = model.Descendors(StdModelElement.item).Last();
+
+                builder =
+                    xlast
+                    .Ascendors(StdModelElement.item, includeSelf: true)
+                    .Select(_ => _.Formatted())
+                    .ToArray();
+
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+5  312d1c21-0000-0000-0000-000000000005
+4  312d1c21-0000-0000-0000-000000000004
+3  312d1c21-0000-0000-0000-000000000000
+2  312d1c21-0000-0000-0000-000000000003
+1  312d1c21-0000-0000-0000-000000000002
+0  312d1c21-0000-0000-0000-000000000001";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting affinity ascendors from last item to match."
+                );
+            }
+
+            void subtest_AscendFromAnchor()
+            {
+                var xanchor = localGetByIndex(3);
+                var xabove = xanchor.PreviousAscendor(StdModelElement.item);
+                Assert.AreEqual(
+                    2,
+                    localGetIndex(xabove),
+                    "Expecting anchor to resolve its closest pinned leading item.");
+
+                builder =
+                    xanchor
+                    .Ascendors(StdModelElement.item, includeSelf: true)
+                    .Select(_ => _.Formatted())
+                    .ToArray();
+
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+3  312d1c21-0000-0000-0000-000000000000
+2  312d1c21-0000-0000-0000-000000000003
+1  312d1c21-0000-0000-0000-000000000002
+0  312d1c21-0000-0000-0000-000000000001";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting affinity ascendors from anchor to match."
+                );
+            }
+            #endregion S U B T E S T S
+
+            #region L o c a l F x
+            XElement localGetAffinityModel() => XElement.Parse(
+@"<model>
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""3"">
+    <item above=""True"" text=""312d1c21-0000-0000-0000-000000000003"" index=""2"" />
+    <item above=""True"" text=""312d1c21-0000-0000-0000-000000000002"" index=""1"" />
+    <item above=""True"" text=""312d1c21-0000-0000-0000-000000000001"" index=""0"" />
+    <item text=""312d1c21-0000-0000-0000-000000000004"" index=""4"" />
+    <item text=""312d1c21-0000-0000-0000-000000000005"" index=""5"" />
+  </item>
+</model>");
+
+            XElement localGetByIndex(int index) =>
+                model
+                .Descendors(StdModelElement.item)
+                .First(_ => localGetIndex(_) == index);
+
+            int localGetIndex(XElement? xel) =>
+                int.Parse(xel?.Attribute(StdModelAttribute.index)?.Value ?? string.Empty);
+            #endregion L o c a l F x
+        }
+
+        [TestMethod, DoNotParallelize]
+        public void Test_AffinityDescendor()
+        {
+            string actual, expected;
+            string[] builder;
+            var model = localGetAffinityModel();
+
+            actual = model.ToString();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model>
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""3"">
+    <item above=""True"" text=""312d1c21-0000-0000-0000-000000000003"" index=""2"" />
+    <item above=""True"" text=""312d1c21-0000-0000-0000-000000000002"" index=""1"" />
+    <item above=""True"" text=""312d1c21-0000-0000-0000-000000000001"" index=""0"" />
+    <item text=""312d1c21-0000-0000-0000-000000000004"" index=""4"" />
+    <item text=""312d1c21-0000-0000-0000-000000000005"" index=""5"" />
+  </item>
+</model>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting affinity fixture content to match."
+            );
+
+            subtest_DescendFromModel();
+            subtest_DescendFromAnchor();
+            subtest_DescendFromFirstPinned();
+
+            #region S U B T E S T S
+            void subtest_DescendFromModel()
+            {
+                builder =
+                    model
+                    .Descendors(StdModelElement.item)
+                    .Select(_ => _.Formatted())
+                    .ToArray();
+
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+0  312d1c21-0000-0000-0000-000000000001
+1  312d1c21-0000-0000-0000-000000000002
+2  312d1c21-0000-0000-0000-000000000003
+3  312d1c21-0000-0000-0000-000000000000
+4  312d1c21-0000-0000-0000-000000000004
+5  312d1c21-0000-0000-0000-000000000005";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting affinity descendors from model to match."
+                );
+            }
+
+            void subtest_DescendFromAnchor()
+            {
+                var xanchor = localGetByIndex(3);
+
+                builder =
+                    xanchor
+                    .Descendors(StdModelElement.item, includeSelf: true)
+                    .Select(_ => _.Formatted())
+                    .ToArray();
+
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+3  312d1c21-0000-0000-0000-000000000000
+4  312d1c21-0000-0000-0000-000000000004
+5  312d1c21-0000-0000-0000-000000000005";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting affinity descendors from anchor to match."
+                );
+            }
+
+            void subtest_DescendFromFirstPinned()
+            {
+                var xpinned = localGetByIndex(0);
+                var xnext = xpinned.NextDescendor(StdModelElement.item);
+                Assert.AreEqual(
+                    1,
+                    localGetIndex(xnext),
+                    "Expecting earliest pinned item to continue through the pinned band.");
+
+                builder =
+                    xpinned
+                    .Descendors(StdModelElement.item, includeSelf: true)
+                    .Select(_ => _.Formatted())
+                    .ToArray();
+
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+0  312d1c21-0000-0000-0000-000000000001
+1  312d1c21-0000-0000-0000-000000000002
+2  312d1c21-0000-0000-0000-000000000003
+3  312d1c21-0000-0000-0000-000000000000
+4  312d1c21-0000-0000-0000-000000000004
+5  312d1c21-0000-0000-0000-000000000005";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting affinity descendors from first pinned item to match."
+                );
+            }
+            #endregion S U B T E S T S
+
+            #region L o c a l F x
+            XElement localGetAffinityModel() => XElement.Parse(
+@"<model>
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""3"">
+    <item above=""True"" text=""312d1c21-0000-0000-0000-000000000003"" index=""2"" />
+    <item above=""True"" text=""312d1c21-0000-0000-0000-000000000002"" index=""1"" />
+    <item above=""True"" text=""312d1c21-0000-0000-0000-000000000001"" index=""0"" />
+    <item text=""312d1c21-0000-0000-0000-000000000004"" index=""4"" />
+    <item text=""312d1c21-0000-0000-0000-000000000005"" index=""5"" />
+  </item>
+</model>");
+
+            XElement localGetByIndex(int index) =>
+                model
+                .Descendors(StdModelElement.item)
+                .First(_ => localGetIndex(_) == index);
+
+            int localGetIndex(XElement? xel) =>
+                int.Parse(xel?.Attribute(StdModelAttribute.index)?.Value ?? string.Empty);
+            #endregion L o c a l F x
         }
     }
 

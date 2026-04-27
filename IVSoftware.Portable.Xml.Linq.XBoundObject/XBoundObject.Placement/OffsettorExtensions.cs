@@ -296,30 +296,118 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         [Canonical]
         public static XElement? PreviousAscendor(this XElement @this, string? name=null)
         {
-            XElement current = @this;
+            XElement? result = null;
+            XElement? current = @this;
 
-            while (true)
+            while (result is null && current is not null)
             {
-                var previous =
-                    current.ElementsBeforeSelf().LastOrDefault() is XElement prevNode
-                    ? prevNode.DescendantsAndSelf().Last()
-                    : current.Parent;
-
-                if (previous is XElement xel)
+                if (localIsPinnedAbove(current))
                 {
-
-                    if (name is null || xel.Name.LocalName.Equals(name, StringComparison.Ordinal))
+                    if (localGetNextPinnedAboveSibling(current) is XElement xPinned)
                     {
-                        return xel;
+                        result = localGetLastLogicalInSubtree(xPinned);
                     }
-
-                    current = xel;
                 }
                 else
                 {
-                    return null;
+                    if (localGetClosestLeadingAboveChild(current) is XElement xLeading)
+                    {
+                        result = localGetLastLogicalInSubtree(xLeading);
+                    }
+                    else if (current.ElementsBeforeSelf().OfType<XElement>().LastOrDefault(localIsNotPinnedAbove) is XElement xPrevious)
+                    {
+                        result = localGetLastLogicalInSubtree(xPrevious);
+                    }
+                    else
+                    {
+                        result = current.Parent;
+                    }
+                }
+
+                if (result is XElement xel)
+                {
+                    if (name is null || xel.Name.LocalName.Equals(name, StringComparison.Ordinal))
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        current = xel;
+                        result = null;
+                    }
                 }
             }
+
+            return result;
+
+            #region L o c a l F x
+            bool localIsPinnedAbove(XElement xel)
+            {
+                bool isPinned = false;
+                if (xel.Attribute("above") is XAttribute attrAbove)
+                {
+                    isPinned = bool.TryParse(attrAbove.Value, out bool value) && value;
+                }
+                return isPinned;
+            }
+
+            bool localIsNotPinnedAbove(XElement xel) => !localIsPinnedAbove(xel);
+
+            XElement? localGetNextPinnedAboveSibling(XElement xel)
+            {
+                XElement? result = null;
+
+                if (xel.Parent is XElement parent)
+                {
+                    var leadingPinned = localGetLeadingPinnedChildren(parent).ToArray();
+                    int index = Array.IndexOf(leadingPinned, xel);
+                    if (index >= 0 && index < leadingPinned.Length - 1)
+                    {
+                        result = leadingPinned[index + 1];
+                    }
+                }
+
+                return result;
+            }
+
+            XElement? localGetClosestLeadingAboveChild(XElement xel)
+            {
+                XElement? result = null;
+                foreach (var xLeading in localGetLeadingPinnedChildren(xel))
+                {
+                    result = xLeading;
+                    break;
+                }
+                return result;
+            }
+
+            IEnumerable<XElement> localGetLeadingPinnedChildren(XElement xel)
+            {
+                foreach (var child in xel.Elements())
+                {
+                    if (localIsPinnedAbove(child))
+                    {
+                        yield return child;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+
+            XElement localGetLastLogicalInSubtree(XElement xel)
+            {
+                XElement result = xel;
+
+                if (xel.Elements().OfType<XElement>().LastOrDefault(localIsNotPinnedAbove) is XElement xLastChild)
+                {
+                    result = localGetLastLogicalInSubtree(xLastChild);
+                }
+
+                return result;
+            }
+            #endregion L o c a l F x
         }
 
         /// <summary>
@@ -334,31 +422,148 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         [Canonical]
         public static XElement? NextDescendor(this XElement @this, string? name = null)
         {
+            XElement? result = null;
             XElement? current = @this;
-            while (true)
-            {
-                XElement? next =
-                    current?.FirstNode as XElement ??
-                    current?.ElementsAfterSelf().FirstOrDefault() as XElement;
 
-                while (next is null && current is not null)
+            while (result is null && current is not null)
+            {
+                if (localIsPinnedAbove(current))
+                {
+                    if (localGetPreviousPinnedAboveSibling(current) is XElement xPinned)
+                    {
+                        result = localGetFirstLogicalInSubtree(xPinned);
+                    }
+                    else
+                    {
+                        result = current.Parent;
+                    }
+                }
+                else if (localGetFirstTrailingChild(current) is XElement xChild)
+                {
+                    result = localGetFirstLogicalInSubtree(xChild);
+                }
+                else if (localGetNextTrailingSibling(current) is XElement xSibling)
+                {
+                    result = localGetFirstLogicalInSubtree(xSibling);
+                }
+                else
                 {
                     current = current.Parent;
-                    next = current?.ElementsAfterSelf().FirstOrDefault() as XElement;
+                    while (result is null && current is not null)
+                    {
+                        if (localGetNextTrailingSibling(current) is XElement xAncestorSibling)
+                        {
+                            result = localGetFirstLogicalInSubtree(xAncestorSibling);
+                        }
+                        else
+                        {
+                            current = current.Parent;
+                        }
+                    }
                 }
 
-                if (next is not XElement xel)
+                if (result is XElement xel)
                 {
-                    return null;
+                    if (name is null || xel.Name.LocalName.Equals(name, StringComparison.Ordinal))
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        current = xel;
+                        result = null;
+                    }
                 }
-
-                if (name is null || xel.Name.LocalName.Equals(name, StringComparison.Ordinal))
-                {
-                    return xel;
-                }
-
-                current = xel;
             }
+
+            return result;
+
+            #region L o c a l F x
+            bool localIsPinnedAbove(XElement xel)
+            {
+                bool isPinned = false;
+                if (xel.Attribute("above") is XAttribute attrAbove)
+                {
+                    isPinned = bool.TryParse(attrAbove.Value, out bool value) && value;
+                }
+                return isPinned;
+            }
+
+            bool localIsNotPinnedAbove(XElement xel) => !localIsPinnedAbove(xel);
+
+            XElement? localGetPreviousPinnedAboveSibling(XElement xel)
+            {
+                XElement? result = null;
+
+                if (xel.Parent is XElement parent)
+                {
+                    var leadingPinned = localGetLeadingPinnedChildren(parent).ToArray();
+                    int index = Array.IndexOf(leadingPinned, xel);
+                    if (index > 0)
+                    {
+                        result = leadingPinned[index - 1];
+                    }
+                }
+
+                return result;
+            }
+
+            XElement? localGetFirstTrailingChild(XElement xel)
+            {
+                XElement? result = null;
+                foreach (var child in xel.Elements())
+                {
+                    if (localIsNotPinnedAbove(child))
+                    {
+                        result = child;
+                        break;
+                    }
+                }
+                return result;
+            }
+
+            XElement? localGetNextTrailingSibling(XElement xel)
+            {
+                XElement? result = null;
+                foreach (var sibling in xel.ElementsAfterSelf())
+                {
+                    if (localIsNotPinnedAbove(sibling))
+                    {
+                        result = sibling;
+                        break;
+                    }
+                }
+                return result;
+            }
+
+            IEnumerable<XElement> localGetLeadingPinnedChildren(XElement xel)
+            {
+                foreach (var child in xel.Elements())
+                {
+                    if (localIsPinnedAbove(child))
+                    {
+                        yield return child;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+
+            XElement localGetFirstLogicalInSubtree(XElement xel)
+            {
+                XElement result = xel;
+                var leadingPinned = localGetLeadingPinnedChildren(xel).ToArray();
+
+                if (leadingPinned.Length > 0)
+                {
+                    result = localGetFirstLogicalInSubtree(leadingPinned.Last());
+                }
+
+                return result;
+            }
+            #endregion L o c a l F x
         }
     }
 }
