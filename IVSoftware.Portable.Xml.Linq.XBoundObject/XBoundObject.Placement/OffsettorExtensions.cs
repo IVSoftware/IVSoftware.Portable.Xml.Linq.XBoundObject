@@ -3,9 +3,46 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 using IVSoftware.Portable.Common.Attributes;
+using IVSoftware.Portable.Common.Exceptions;
 
 namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 {
+    /// <summary>
+    /// Selects how offset zero is established for filtered lookups.
+    /// </summary>
+    /// <remarks>
+    /// Only affects the ambiguous case when a filter name is supplied and
+    /// the requested offset is 0. Non-zero offsets keep their normal
+    /// directional semantics.
+    /// </remarks>
+    public enum OffsetZeroPolicy
+    {
+        /// <summary>
+        /// Zero is calibrated to the receiver itself.
+        /// </summary>
+        Absolute = 0,
+
+        /// <summary>
+        /// Zero is calibrated to the first forward filtered match,
+        /// including self.
+        /// </summary>
+        /// <remarks>
+        /// This is the natural policy for root-anchored filtered indexing.
+        /// </remarks>
+        FirstFilterMatch = 1,
+
+        /// <summary>
+        /// Zero is calibrated from the ascending filtered direction.
+        /// </summary>
+        /// <remarks>
+        /// Use when zero must be established by walking backward through
+        /// the filtered domain rather than forward from the receiver.
+        /// This explicitly overrides the default forward interpretation of
+        /// <see cref="FirstFilterMatch"/>.
+        /// </remarks>
+        ForceAscendingFilterMatch = 2,
+    }
+
     public static partial class Extensions
     {
         /// <summary>
@@ -87,53 +124,160 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// <summary>
         /// Resolves an element by relative offset within modeled linear order.
         /// </summary>
-        public static XElement OffsettorAt(this XElement @this, int plusOrMinus)
-            => @this.OffsettorAt(name: null, plusOrMinus);
-
-        /// <summary>
-        /// Resolves an element by relative offset within modeled linear order.
-        /// </summary>
-        public static XElement OffsettorAt(
+        public static XElement? OffsettorAt(
             this XElement @this,
             Enum stdName,
-            int plusOrMinus)
-            => @this.OffsettorAt(stdName.ToString(), plusOrMinus);
+            int plusOrMinus,
+            OffsetZeroPolicy offsetZeroPolicy = OffsetZeroPolicy.Absolute)
+            => @this.OffsettorAt(stdName.ToString(), plusOrMinus, offsetZeroPolicy);
 
         /// <summary>
         /// Resolves an element by relative offset within modeled linear order.
         /// </summary>
         [Canonical]
-        public static XElement OffsettorAt(
+        public static XElement? OffsettorAt(
             this XElement @this,
             string? name,
-            int plusOrMinus)
+            int plusOrMinus,
+            OffsetZeroPolicy offsetZeroPolicy = OffsetZeroPolicy.Absolute)
         {
-            XElement? current = @this;
-
-            if (plusOrMinus > 0)
+            if (name is null)
             {
-                for (int i = 0; i < plusOrMinus; i++)
-                {
-                    current = current?.NextDescendor(name);
-                    if (current is null)
-                    {
-                        throw new InvalidOperationException("Modeled offset exceeds the available forward range.");
-                    }
-                }
-            }
-            else if (plusOrMinus < 0)
-            {
-                for (int i = 0; i < -plusOrMinus; i++)
-                {
-                    current = current?.PreviousAscendor(name);
-                    if (current is null)
-                    {
-                        throw new InvalidOperationException("Modeled offset exceeds the available backward range.");
-                    }
-                }
+                return resolveRawOffset();
             }
 
-            return current;
+            return resolveFilteredOffset();
+
+            XElement? resolveRawOffset()
+            {
+                var current = getRawAnchor();
+
+                if (plusOrMinus == 0)
+                {
+                    return current;
+                }
+
+                if (current is null)
+                {
+                    return null;
+                }
+
+                if (plusOrMinus > 0)
+                {
+                    for (int i = 0; i < plusOrMinus; i++)
+                    {
+                        current = current.NextDescendor();
+                        if (current is not XElement)
+                        {
+                            throw new InvalidOperationException(
+                                "Modeled offset exceeds the available forward range.");
+                        }
+                    }
+                }
+                else if (plusOrMinus < 0)
+                {
+                    for (int i = 0; i < -plusOrMinus; i++)
+                    {
+                        current = current.PreviousAscendor();
+                        if (current is not XElement)
+                        {
+                            throw new InvalidOperationException(
+                                "Modeled offset exceeds the available backward range.");
+                        }
+                    }
+                }
+
+                return current;
+            }
+
+            XElement? resolveFilteredOffset()
+            {
+                var anchor = getFilteredAnchor();
+
+                if (plusOrMinus == 0)
+                {
+                    if (anchor is XElement xel)
+                    {
+                        return xel.Name.LocalName.Equals(
+                            name,
+                            StringComparison.Ordinal)
+                            ? xel
+                            : returnFilteredZeroMiss();
+                    }
+                    return returnFilteredZeroMiss();
+                }
+
+                if (anchor is not XElement current)
+                {
+                    return null;
+                }
+
+                if (plusOrMinus > 0)
+                {
+                    return filteredDescendorsFrom(current)
+                        .Skip(plusOrMinus)
+                        .FirstOrDefault();
+                }
+
+                return filteredAscendorsFrom(current)
+                    .Skip(-plusOrMinus)
+                    .FirstOrDefault();
+            }
+
+            XElement? getRawAnchor()
+            {
+                return offsetZeroPolicy switch
+                {
+                    OffsetZeroPolicy.Absolute => @this,
+                    OffsetZeroPolicy.FirstFilterMatch =>
+                        @this.Descendors(includeSelf: true).FirstOrDefault(),
+                    OffsetZeroPolicy.ForceAscendingFilterMatch =>
+                        @this.PreviousAscendor(),
+                    _ => throw new NotImplementedException(
+                        $"Bad case: {offsetZeroPolicy}"),
+                };
+            }
+
+            XElement? getFilteredAnchor()
+            {
+                return offsetZeroPolicy switch
+                {
+                    OffsetZeroPolicy.Absolute => @this,
+                    OffsetZeroPolicy.FirstFilterMatch =>
+                        @this.Descendors(name, includeSelf: true)
+                            .FirstOrDefault(),
+                    OffsetZeroPolicy.ForceAscendingFilterMatch =>
+                        @this.Ascendors(name, includeSelf: false)
+                            .FirstOrDefault(),
+                    _ => throw new NotImplementedException(
+                        $"Bad case: {offsetZeroPolicy}"),
+                };
+            }
+
+            IEnumerable<XElement> filteredDescendorsFrom(XElement anchor)
+            {
+                foreach (var xel in anchor.Descendors(name, includeSelf: true))
+                {
+                    yield return xel;
+                }
+            }
+
+            IEnumerable<XElement> filteredAscendorsFrom(XElement anchor)
+            {
+                foreach (var xel in anchor.Ascendors(name, includeSelf: true))
+                {
+                    yield return xel;
+                }
+            }
+
+            XElement? returnFilteredZeroMiss()
+            {
+                @this.ThrowSoft<InvalidOperationException>(
+                    "FilteredZeroMiss",
+                    $"Explicit filter '{name}' requires zero to resolve " +
+                    $"within the filtered domain.");
+                return null;
+            }
         }
 
         /// <summary>

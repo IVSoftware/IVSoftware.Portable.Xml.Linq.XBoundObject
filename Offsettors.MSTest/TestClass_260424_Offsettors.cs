@@ -167,8 +167,15 @@ namespace Offsettors.MSTest
             );
         }
 
+        /// <summary>
+        /// Verifies reverse modeled traversal from leaves, root, and anchors.
+        /// </summary>
+        /// <remarks>
+        /// Uses seeded OCMLocal scatters to prove includeSelf and item-only
+        /// filtering over mixed item and default nodes.
+        /// </remarks>
         [TestMethod, DoNotParallelize]
-        public void Test_AscendFromDescendor()
+        public void Test_Ascendor()
         {
             string actual, expected;
             string[] builder;
@@ -210,10 +217,10 @@ namespace Offsettors.MSTest
 
                 subtest_AscendFromLast();
                 subtest_AscendFromModel();
+                subtest_Offsettor();
             }
             using (ocm = new OCMLocal(count: 25, seed: 1))
             {
-
                 actual = ocm.Model.ToString(); ;
                 actual.ToClipboardExpected();
                 { }
@@ -282,7 +289,7 @@ namespace Offsettors.MSTest
                     actual.NormalizeResult(),
                     "Expecting test set with mix of item + default at various depth."
                 );
-                subtest_AscendFromSibling();
+                subtest_AscendFromOffsettor();
             }
 
             #region S U B T E S T S
@@ -341,20 +348,20 @@ model"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-9 312d1c21-0000-0000-0000-000000000009
-- 312d1c21-0000-0000-0000-000000000002
-- 312d1c21-0000-0000-0000-000000000006
-8 312d1c21-0000-0000-0000-000000000008
-7 312d1c21-0000-0000-0000-000000000005
-6 312d1c21-0000-0000-0000-000000000004
-- 312d1c21-0000-0000-0000-000000000009
-5 312d1c21-0000-0000-0000-000000000003
-- 312d1c21-0000-0000-0000-000000000004
-4 312d1c21-0000-0000-0000-000000000002
-3 312d1c21-0000-0000-0000-000000000007
-2 312d1c21-0000-0000-0000-000000000001
-1 312d1c21-0000-0000-0000-000000000006
-0 312d1c21-0000-0000-0000-000000000000
+9  312d1c21-0000-0000-0000-000000000009 Item10    
+-  312d1c21-0000-0000-0000-000000000002
+-  312d1c21-0000-0000-0000-000000000006
+8  312d1c21-0000-0000-0000-000000000008 Item09    
+7  312d1c21-0000-0000-0000-000000000005 Item08    
+6  312d1c21-0000-0000-0000-000000000004 Item07    
+-  312d1c21-0000-0000-0000-000000000009
+5  312d1c21-0000-0000-0000-000000000003 Item06    
+-  312d1c21-0000-0000-0000-000000000004
+4  312d1c21-0000-0000-0000-000000000002 Item05    
+3  312d1c21-0000-0000-0000-000000000007 Item04    
+2  312d1c21-0000-0000-0000-000000000001 Item03    
+1  312d1c21-0000-0000-0000-000000000006 Item02    
+0  312d1c21-0000-0000-0000-000000000000 Item01    
 model"
                 ;
 
@@ -374,19 +381,19 @@ model"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-- 312d1c21-0000-0000-0000-000000000002
-- 312d1c21-0000-0000-0000-000000000006
-8 312d1c21-0000-0000-0000-000000000008
-7 312d1c21-0000-0000-0000-000000000005
-6 312d1c21-0000-0000-0000-000000000004
-- 312d1c21-0000-0000-0000-000000000009
-5 312d1c21-0000-0000-0000-000000000003
-- 312d1c21-0000-0000-0000-000000000004
-4 312d1c21-0000-0000-0000-000000000002
-3 312d1c21-0000-0000-0000-000000000007
-2 312d1c21-0000-0000-0000-000000000001
-1 312d1c21-0000-0000-0000-000000000006
-0 312d1c21-0000-0000-0000-000000000000
+-  312d1c21-0000-0000-0000-000000000002
+-  312d1c21-0000-0000-0000-000000000006
+8  312d1c21-0000-0000-0000-000000000008 Item09    
+7  312d1c21-0000-0000-0000-000000000005 Item08    
+6  312d1c21-0000-0000-0000-000000000004 Item07    
+-  312d1c21-0000-0000-0000-000000000009
+5  312d1c21-0000-0000-0000-000000000003 Item06    
+-  312d1c21-0000-0000-0000-000000000004
+4  312d1c21-0000-0000-0000-000000000002 Item05    
+3  312d1c21-0000-0000-0000-000000000007 Item04    
+2  312d1c21-0000-0000-0000-000000000001 Item03    
+1  312d1c21-0000-0000-0000-000000000006 Item02    
+0  312d1c21-0000-0000-0000-000000000000 Item01    
 model"
                 ;
 
@@ -399,24 +406,24 @@ model"
                 builder =
                     xlast
                     .Ascendors(StdModelElement.item, includeSelf: true)
-                    .SkipLast(1)
-                    .Select(_ => $"{_.Attribute(StdModelAttribute.index)!.Value} {_.Attribute(StdModelAttribute.text)!.Value}")
+                    .Select(_ => _.Formatted())
                     .ToArray();
-                { }
 
                 actual = string.Join(Environment.NewLine, builder);
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-9 312d1c21-0000-0000-0000-000000000009
-8 312d1c21-0000-0000-0000-000000000008
-7 312d1c21-0000-0000-0000-000000000005
-6 312d1c21-0000-0000-0000-000000000004
-5 312d1c21-0000-0000-0000-000000000003
-4 312d1c21-0000-0000-0000-000000000002
-3 312d1c21-0000-0000-0000-000000000007
-2 312d1c21-0000-0000-0000-000000000001
-1 312d1c21-0000-0000-0000-000000000006";
+9  312d1c21-0000-0000-0000-000000000009 Item10    
+8  312d1c21-0000-0000-0000-000000000008 Item09    
+7  312d1c21-0000-0000-0000-000000000005 Item08    
+6  312d1c21-0000-0000-0000-000000000004 Item07    
+5  312d1c21-0000-0000-0000-000000000003 Item06    
+4  312d1c21-0000-0000-0000-000000000002 Item05    
+3  312d1c21-0000-0000-0000-000000000007 Item04    
+2  312d1c21-0000-0000-0000-000000000001 Item03    
+1  312d1c21-0000-0000-0000-000000000006 Item02    
+0  312d1c21-0000-0000-0000-000000000000 Item01    "
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -426,8 +433,7 @@ model"
                 builder =
                     xlast
                     .Ascendors(StdModelElement.item, includeSelf: false)
-                    .SkipLast(1)
-                    .Select(_ => $"{_.Attribute(StdModelAttribute.index)!.Value} {_.Attribute(StdModelAttribute.text)!.Value}")
+                    .Select(_ => _.Formatted())
                     .ToArray();
                 { }
 
@@ -435,14 +441,16 @@ model"
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-8 312d1c21-0000-0000-0000-000000000008
-7 312d1c21-0000-0000-0000-000000000005
-6 312d1c21-0000-0000-0000-000000000004
-5 312d1c21-0000-0000-0000-000000000003
-4 312d1c21-0000-0000-0000-000000000002
-3 312d1c21-0000-0000-0000-000000000007
-2 312d1c21-0000-0000-0000-000000000001
-1 312d1c21-0000-0000-0000-000000000006";
+8  312d1c21-0000-0000-0000-000000000008 Item09    
+7  312d1c21-0000-0000-0000-000000000005 Item08    
+6  312d1c21-0000-0000-0000-000000000004 Item07    
+5  312d1c21-0000-0000-0000-000000000003 Item06    
+4  312d1c21-0000-0000-0000-000000000002 Item05    
+3  312d1c21-0000-0000-0000-000000000007 Item04    
+2  312d1c21-0000-0000-0000-000000000001 Item03    
+1  312d1c21-0000-0000-0000-000000000006 Item02    
+0  312d1c21-0000-0000-0000-000000000000 Item01    "
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -451,8 +459,21 @@ model"
                 );
             }
 
-            void subtest_AscendFromSibling()
+            void subtest_Offsettor()
             {
+                for (int i = 0; i < ocm.Count; i++)
+                {
+                    var ddor = ocm.Model.OffsettorAt(
+                        StdModelElement.item, +i, OffsetZeroPolicy.FirstFilterMatch);
+                    Assert.AreEqual(
+                        i, 
+                        int.Parse(ddor?.Attribute(StdModelAttribute.index)?.Value ?? string.Empty));
+                }
+                { }
+            }
+            void subtest_AscendFromOffsettor()
+            {
+                // TODO
                 // var ddor = ocm.Model.OffsettorAt(StdModelElement.item, 4);
             }
             #endregion S U B T E S T S
@@ -521,14 +542,23 @@ model"
         }
         public static string Formatted(this XElement @this)
         {
-            if (@this.Attribute(StdModelAttribute.text) is { } text)
+            var builder = new List<string>();
+            if (@this.Attribute(StdModelAttribute.text) is { } attrText)
             {
-                return $"{(@this.Attribute(StdModelAttribute.index)?.Value ?? "-").PadRight(2)} {text.Value}";
+                builder.Add((@this.Attribute(StdModelAttribute.index)?.Value ?? "-").PadRight(2));
+                builder.Add(attrText.Value);
+                if (@this.To<PlaceableModel>() is { } model)
+                {
+                    builder.Add(model.Description.PadRightAndTruncate());
+                }
+                return string.Join(" ", builder);
             }
             else
             {
                 return @this.Name.LocalName;
             }
         }
+        public static string PadRightAndTruncate(this string? @this, int length=10)
+            => (@this ??= string.Empty).PadRight(length).Substring(0, length);
     }
 }
