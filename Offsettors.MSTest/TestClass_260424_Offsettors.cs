@@ -29,11 +29,6 @@ namespace Offsettors.MSTest
                     .ToArray();
                 for (int i = 0; i < count; i++)
                 {
-                    Debug.WriteLine($"Index={i:D2}");
-#if DEBUG
-                    if (i == 11)
-                    { }
-#endif
                     HashSet<string> visited = new();
                     int length = Rando.Next(maxDepth + 1);
                     List<string> segments = new();
