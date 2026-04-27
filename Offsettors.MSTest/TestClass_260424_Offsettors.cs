@@ -161,8 +161,6 @@ namespace Offsettors.MSTest
 </model>"
             ;
 
-            Assert.Fail(actual);
-
             Assert.AreEqual(
                 expected.NormalizeResult(),
                 actual.NormalizeResult(),
