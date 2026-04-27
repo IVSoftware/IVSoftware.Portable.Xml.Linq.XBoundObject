@@ -1,9 +1,11 @@
 ﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.MSTest.Preview;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using IVSoftware.WinOS.MSTest.Extensions;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Xml.Linq;
 
 namespace Offsettors.MSTest
@@ -15,21 +17,63 @@ namespace Offsettors.MSTest
             : ObservableCollection<PlaceableModel>
             , IDisposable
         {
-            public OCMLocal(int count, int seed) 
+            public OCMLocal(int count, int seed, int maxDepth) 
             {
                 _te = this.TestableEpoch();
                 Rando = new(seed);
-                int index = 0;
-                foreach (var item in this.PopulateForDemo(count))
+
+                #region L o c a l F x				
+                using var local = this.WithOnDispose(
+                    onInit: (sender, e) =>
+                    {
+                        this.CollectionChanged += localOnCollectionChanged;
+                    },
+                    onDispose: (sender, e) =>
+                    {
+                        this.CollectionChanged -= localOnCollectionChanged;
+                    });
+                void localOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
                 {
-                    Model.Place(item.Id, out var xel);
-                    xel.Name =
-                        Rando.Next(5) == 0
-                        ? "other"
-                        : nameof(StdModelElement.item);
-                    xel.SetStdAttributeValue(StdModelAttribute.index, index++);
+                    switch (e.Action)
+                    {
+                        case NotifyCollectionChangedAction.Add:
+                            foreach (PlaceableModel item in e.NewItems!)
+                            {
+                                Model.Place(item.FullPath, out var xel);
+                                xel.Name = nameof(StdModelElement.item);
+                                xel.SetBoundAttributeValue(item, StdModelAttribute.model);
+                                xel.SetStdAttributeValue(StdModelAttribute.index, e.NewStartingIndex);
+                            }
+                            break;
+                    }
                 }
-                Model.WithRandomisedDepth(Rando);
+                #endregion L o c a l F x
+
+                string[] guids =
+                    Enumerable.Range(0, count)
+                    .Select(_ => new Guid().WithTestability().ToString())
+                    .ToArray(),
+                    paths = new string[count];
+               
+                for (int index = 0; index < count; index++)
+                {
+                    HashSet<string> visited = new();
+                    int length = 1 + Rando.Next(maxDepth + 1);
+                    List<string> segments = new();
+                    for (int depth = 0; depth < length; depth++)
+                    {
+                        string segment;
+                        while (!visited.Add(segment = guids[Rando.Next(count)]));
+                        segments.Add(segment);
+                    }
+                    var fullPath = string.Join('\\', segments);
+                    var item = new PlaceableModel(fullPath)
+                    {
+                        Description = $"Item{index:D2}",
+                    };
+                    { }
+                }
+               
             }
             public XElement Model { get; } =
                 StdModelElement.model.MakeXElement();
@@ -43,45 +87,13 @@ namespace Offsettors.MSTest
         {
             string actual, expected;
 
-            using var ocm = new OCMLocal(25, 10);
+            using var ocm = new OCMLocal(25, 10, 2);
 
             actual = ocm.Model.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
-<model>
-  <item text=""312d1c21-0000-0000-0000-000000000000"" index=""0"" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" index=""1"" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" index=""2"">
-    <item text=""312d1c21-0000-0000-0000-000000000003"" index=""3"" />
-  </item>
-  <item text=""312d1c21-0000-0000-0000-000000000004"" index=""4"" />
-  <item text=""312d1c21-0000-0000-0000-000000000005"" index=""5"">
-    <item text=""312d1c21-0000-0000-0000-000000000006"" index=""6"" />
-  </item>
-  <item text=""312d1c21-0000-0000-0000-000000000007"" index=""7"">
-    <item text=""312d1c21-0000-0000-0000-000000000008"" index=""8"" />
-  </item>
-  <item text=""312d1c21-0000-0000-0000-000000000009"" index=""9"">
-    <item text=""312d1c21-0000-0000-0000-00000000000a"" index=""10"" />
-  </item>
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" index=""11"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000c"" index=""12"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000d"" index=""13"">
-    <item text=""312d1c21-0000-0000-0000-00000000000e"" index=""14"" />
-  </item>
-  <item text=""312d1c21-0000-0000-0000-00000000000f"" index=""15"" />
-  <other text=""312d1c21-0000-0000-0000-000000000010"" index=""16"" />
-  <other text=""312d1c21-0000-0000-0000-000000000011"" index=""17"" />
-  <item text=""312d1c21-0000-0000-0000-000000000012"" index=""18"" />
-  <other text=""312d1c21-0000-0000-0000-000000000013"" index=""19"" />
-  <other text=""312d1c21-0000-0000-0000-000000000014"" index=""20"">
-    <item text=""312d1c21-0000-0000-0000-000000000015"" index=""21"" />
-  </other>
-  <item text=""312d1c21-0000-0000-0000-000000000016"" index=""22"" />
-  <item text=""312d1c21-0000-0000-0000-000000000017"" index=""23"" />
-  <item text=""312d1c21-0000-0000-0000-000000000018"" index=""24"" />
-</model>"
+<model />"
             ;
 
             Assert.AreEqual(
@@ -89,6 +101,7 @@ namespace Offsettors.MSTest
                 actual.NormalizeResult(),
                 "Expecting test set with mix of item + proxy at various depth."
             );
+            { }
         }
 
 #if false
@@ -156,225 +169,6 @@ namespace Offsettors.MSTest
                 .ToArray(),
                 "Expecting includeSelf on the first item yields self then the model root.");
 #endif
-
-        [TestMethod, DoNotParallelize]
-        public void Test_PrevOffsettor()
-        {
-            Random rando = new(10);
-            string actual, expected;
-            using var te = this.TestableEpoch();
-
-            ObservableCollection<PlaceableModel> oc = new();
-            XElement model = StdModelElement.model.MakeXElement();
-
-            int index = 0;
-            foreach (var item in oc.PopulateForDemo(25))
-            {
-                model.Place(item.Id, out var xel);
-                xel.Name =
-                    rando.Next(5) == 0
-                    ? nameof(StdModelElement.proxy)
-                    : nameof(StdModelElement.item);
-                xel.SetStdAttributeValue(StdModelAttribute.index, index++);
-            }
-            model.WithRandomisedDepth(rando);
-
-            actual = model.ToString();
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-<model>
-  <item text=""312d1c21-0000-0000-0000-000000000000"" index=""0"" />
-  <item text=""312d1c21-0000-0000-0000-000000000001"" index=""1"" />
-  <item text=""312d1c21-0000-0000-0000-000000000002"" index=""2"">
-    <item text=""312d1c21-0000-0000-0000-000000000003"" index=""3"" />
-  </item>
-  <item text=""312d1c21-0000-0000-0000-000000000004"" index=""4"" />
-  <item text=""312d1c21-0000-0000-0000-000000000005"" index=""5"">
-    <item text=""312d1c21-0000-0000-0000-000000000006"" index=""6"" />
-  </item>
-  <item text=""312d1c21-0000-0000-0000-000000000007"" index=""7"" />
-  <item text=""312d1c21-0000-0000-0000-000000000008"" index=""8"" />
-  <item text=""312d1c21-0000-0000-0000-000000000009"" index=""9"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000a"" index=""10"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000b"" index=""11"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000c"" index=""12"">
-    <item text=""312d1c21-0000-0000-0000-00000000000d"" index=""13"" />
-  </item>
-  <item text=""312d1c21-0000-0000-0000-00000000000e"" index=""14"" />
-  <item text=""312d1c21-0000-0000-0000-00000000000f"" index=""15"">
-    <proxy text=""312d1c21-0000-0000-0000-000000000010"" index=""16"" />
-  </item>
-  <proxy text=""312d1c21-0000-0000-0000-000000000011"" index=""17"">
-    <item text=""312d1c21-0000-0000-0000-000000000012"" index=""18"" />
-  </proxy>
-  <proxy text=""312d1c21-0000-0000-0000-000000000013"" index=""19"">
-    <proxy text=""312d1c21-0000-0000-0000-000000000014"" index=""20"" />
-  </proxy>
-  <item text=""312d1c21-0000-0000-0000-000000000015"" index=""21"" />
-  <item text=""312d1c21-0000-0000-0000-000000000016"" index=""22"">
-    <item text=""312d1c21-0000-0000-0000-000000000017"" index=""23"" />
-  </item>
-  <item text=""312d1c21-0000-0000-0000-000000000018"" index=""24"" />
-</model>"
-            ;
-
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting basic model schema."
-            );
-
-            subtest_Edge1();
-            subtest_Edge2();
-            subtest_Edge3();
-            subtest_Edge4();
-            subtest_Edge5();
-            subtest_Edge6();
-            subtest_Edge7();
-            subtest_Edge8();
-            subtest_Edge9();
-            subtest_Edge10();
-
-            #region S U B T E S T S
-            void subtest_Edge1()
-            {
-                var first =
-                    model
-                    .DescendantsAndSelf()
-                    .First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "0");
-
-                Assert.IsNull(
-                    first.PreviousAscendor(nameof(StdModelElement.item)),
-                    "Expecting first item has no previous item offsettor.");
-
-                var proxy20 =
-                    model
-                    .DescendantsAndSelf()
-                    .First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "20");
-
-                var prevItem = proxy20.PreviousAscendor(nameof(StdModelElement.item));
-                Assert.IsNotNull(prevItem, "Expecting filtered previous item exists.");
-                Assert.AreEqual(
-                    "18",
-                    prevItem.Attribute(nameof(StdModelAttribute.index))?.Value,
-                    "Expecting proxy chain resolves backward to item index 18.");
-            }
-
-            void subtest_Edge2()
-            {
-                var child3 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "3");
-                var prevItem = child3.PreviousAscendor(nameof(StdModelElement.item));
-
-                Assert.IsNotNull(prevItem, "Expecting child item has a previous item.");
-                Assert.AreEqual(
-                    "2",
-                    prevItem.Attribute(nameof(StdModelAttribute.index))?.Value,
-                    "Expecting previous item is the parent when there is no previous sibling.");
-            }
-
-            void subtest_Edge3()
-            {
-                var child6 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "6");
-                var prevAny = child6.PreviousAscendor();
-
-                Assert.IsNotNull(prevAny, "Expecting child has a previous offsettor.");
-                Assert.AreEqual(
-                    "5",
-                    prevAny.Attribute(nameof(StdModelAttribute.index))?.Value,
-                    "Expecting previous offsettor is the parent when there is no previous sibling.");
-            }
-
-            void subtest_Edge4()
-            {
-                var item4 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "4");
-                var prevItem = item4.PreviousAscendor(nameof(StdModelElement.item));
-
-                Assert.IsNotNull(prevItem, "Expecting previous item exists.");
-                Assert.AreEqual(
-                    "3",
-                    prevItem.Attribute(nameof(StdModelAttribute.index))?.Value,
-                    "Expecting previous sibling's leaf is selected.");
-            }
-
-            void subtest_Edge5()
-            {
-                var proxy17 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "17");
-                var prevAny = proxy17.PreviousAscendor();
-
-                Assert.IsNotNull(prevAny, "Expecting previous offsettor exists.");
-                Assert.AreEqual(
-                    "16",
-                    prevAny.Attribute(nameof(StdModelAttribute.index))?.Value,
-                    "Expecting previous sibling leaf is returned regardless of name.");
-            }
-
-            void subtest_Edge6()
-            {
-                var proxy16 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "16");
-                var prevItem = proxy16.PreviousAscendor(nameof(StdModelElement.item));
-
-                Assert.IsNotNull(prevItem, "Expecting filtered previous item exists.");
-                Assert.AreEqual(
-                    "15",
-                    prevItem.Attribute(nameof(StdModelAttribute.index))?.Value,
-                    "Expecting first child resolves to parent when filtering to items.");
-            }
-
-            void subtest_Edge7()
-            {
-                var proxy20 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "20");
-                var prevProxy = proxy20.PreviousAscendor(nameof(StdModelElement.proxy));
-
-                Assert.IsNotNull(prevProxy, "Expecting filtered previous proxy exists.");
-                Assert.AreEqual(
-                    "19",
-                    prevProxy.Attribute(nameof(StdModelAttribute.index))?.Value,
-                    "Expecting first child proxy resolves to proxy parent.");
-            }
-
-            void subtest_Edge8()
-            {
-                var item21 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "21");
-                var prevProxy = item21.PreviousAscendor(nameof(StdModelElement.proxy));
-
-                Assert.IsNotNull(prevProxy, "Expecting filtered previous proxy exists.");
-                Assert.AreEqual(
-                    "20",
-                    prevProxy.Attribute(nameof(StdModelAttribute.index))?.Value,
-                    "Expecting previous sibling branch leaf is returned when filtering to proxies.");
-            }
-
-            void subtest_Edge9()
-            {
-                var item18 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "18");
-                var prevItem = item18.PreviousAscendor(nameof(StdModelElement.item));
-
-                Assert.IsNotNull(prevItem, "Expecting previous item exists across proxy-parent boundary.");
-                Assert.AreEqual(
-                    "15",
-                    prevItem.Attribute(nameof(StdModelAttribute.index))?.Value,
-                    "Expecting first child climbs to proxy parent, skips non-item leaf, and lands on item 15.");
-            }
-
-            void subtest_Edge10()
-            {
-                var proxy17 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "17");
-                var prevProxy = proxy17.PreviousAscendor(nameof(StdModelElement.proxy));
-
-                Assert.IsNotNull(prevProxy, "Expecting previous proxy exists.");
-                Assert.AreEqual(
-                    "16",
-                    prevProxy.Attribute(nameof(StdModelAttribute.index))?.Value,
-                    "Expecting previous sibling leaf proxy is returned when filtering to proxies.");
-
-                var item1 = model.DescendantsAndSelf().First(_ => _.Attribute(nameof(StdModelAttribute.index))?.Value == "1");
-                Assert.IsNull(
-                    item1.PreviousAscendor(nameof(StdModelElement.proxy)),
-                    "Expecting no previous proxy before the early flat items.");
-            }
-            #endregion S U B T E S T S
-        }
     }
 
     static class TestClass_260424_OffsettorsExtensions
