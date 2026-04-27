@@ -521,6 +521,189 @@ model"
   <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[PlaceableModel]"" index=""9"" />
 </model>"
             ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting test set with mix of item + default at various depth."
+            );
+
+            subtest_DescendFromModel();
+            subtest_DescendFromFirst();
+            subtest_DescendFromOffsettor();
+
+            #region S U B T E S T S
+            void subtest_DescendFromModel()
+            {
+                builder =
+                    ocm.Model
+                    .Descendors(includeSelf: true)
+                    .Select(_ => _.Formatted())
+                    .ToArray();
+
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+model
+-  312d1c21-0000-0000-0000-000000000004
+-  312d1c21-0000-0000-0000-000000000001
+0  312d1c21-0000-0000-0000-000000000000 Item01    
+-  312d1c21-0000-0000-0000-000000000002
+1  312d1c21-0000-0000-0000-000000000002 Item02    
+-  312d1c21-0000-0000-0000-000000000001
+-  312d1c21-0000-0000-0000-000000000003
+2  312d1c21-0000-0000-0000-000000000001 Item03    
+3  312d1c21-0000-0000-0000-000000000003 Item04    
+4  312d1c21-0000-0000-0000-000000000009 Item05    
+-  312d1c21-0000-0000-0000-000000000000
+-  312d1c21-0000-0000-0000-000000000005
+5  312d1c21-0000-0000-0000-000000000004 Item06    
+-  312d1c21-0000-0000-0000-000000000002
+6  312d1c21-0000-0000-0000-000000000005 Item07    
+-  312d1c21-0000-0000-0000-000000000007
+7  312d1c21-0000-0000-0000-000000000006 Item08    
+8  312d1c21-0000-0000-0000-000000000007 Item09    
+9  312d1c21-0000-0000-0000-000000000008 Item10    "
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting builder content to match."
+                );
+
+                builder =
+                    ocm.Model
+                    .Descendors(StdModelElement.item, includeSelf: true)
+                    .Select(_ => _.Formatted())
+                    .ToArray();
+
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+0  312d1c21-0000-0000-0000-000000000000 Item01    
+1  312d1c21-0000-0000-0000-000000000002 Item02    
+2  312d1c21-0000-0000-0000-000000000001 Item03    
+3  312d1c21-0000-0000-0000-000000000003 Item04    
+4  312d1c21-0000-0000-0000-000000000009 Item05    
+5  312d1c21-0000-0000-0000-000000000004 Item06    
+6  312d1c21-0000-0000-0000-000000000005 Item07    
+7  312d1c21-0000-0000-0000-000000000006 Item08    
+8  312d1c21-0000-0000-0000-000000000007 Item09    
+9  312d1c21-0000-0000-0000-000000000008 Item10    "
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting builder content to match."
+                );
+            }
+
+            void subtest_DescendFromFirst()
+            {
+                var xfirst = ocm.Model.Descendors().First();
+
+                builder =
+                    xfirst
+                    .Descendors(includeSelf: true)
+                    .Select(_ => _.Formatted())
+                    .ToArray();
+
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+-  312d1c21-0000-0000-0000-000000000004
+-  312d1c21-0000-0000-0000-000000000001
+0  312d1c21-0000-0000-0000-000000000000 Item01    
+-  312d1c21-0000-0000-0000-000000000002
+1  312d1c21-0000-0000-0000-000000000002 Item02    
+-  312d1c21-0000-0000-0000-000000000001
+-  312d1c21-0000-0000-0000-000000000003
+2  312d1c21-0000-0000-0000-000000000001 Item03    
+3  312d1c21-0000-0000-0000-000000000003 Item04    
+4  312d1c21-0000-0000-0000-000000000009 Item05    
+-  312d1c21-0000-0000-0000-000000000000
+-  312d1c21-0000-0000-0000-000000000005
+5  312d1c21-0000-0000-0000-000000000004 Item06    
+-  312d1c21-0000-0000-0000-000000000002
+6  312d1c21-0000-0000-0000-000000000005 Item07    
+-  312d1c21-0000-0000-0000-000000000007
+7  312d1c21-0000-0000-0000-000000000006 Item08    
+8  312d1c21-0000-0000-0000-000000000007 Item09    
+9  312d1c21-0000-0000-0000-000000000008 Item10    "
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting builder content to match."
+                );
+
+                builder =
+                    xfirst
+                    .Descendors(StdModelElement.item, includeSelf: true)
+                    .Select(_ => _.Formatted())
+                    .ToArray();
+
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+0  312d1c21-0000-0000-0000-000000000000 Item01    
+1  312d1c21-0000-0000-0000-000000000002 Item02    
+2  312d1c21-0000-0000-0000-000000000001 Item03    
+3  312d1c21-0000-0000-0000-000000000003 Item04    
+4  312d1c21-0000-0000-0000-000000000009 Item05    
+5  312d1c21-0000-0000-0000-000000000004 Item06    
+6  312d1c21-0000-0000-0000-000000000005 Item07    
+7  312d1c21-0000-0000-0000-000000000006 Item08    
+8  312d1c21-0000-0000-0000-000000000007 Item09    
+9  312d1c21-0000-0000-0000-000000000008 Item10    "
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting builder content to match."
+                );
+            }
+
+            void subtest_DescendFromOffsettor()
+            {
+                var ddor = ocm.Model.OffsettorAt(
+                    StdModelElement.item,
+                    +4,
+                    OffsetZeroPolicy.FirstFilterMatch);
+
+                builder =
+                    ddor!
+                    .Descendors(StdModelElement.item, includeSelf: true)
+                    .Select(_ => _.Formatted())
+                    .ToArray();
+
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+4  312d1c21-0000-0000-0000-000000000009 Item05    
+5  312d1c21-0000-0000-0000-000000000004 Item06    
+6  312d1c21-0000-0000-0000-000000000005 Item07    
+7  312d1c21-0000-0000-0000-000000000006 Item08    
+8  312d1c21-0000-0000-0000-000000000007 Item09    
+9  312d1c21-0000-0000-0000-000000000008 Item10    "
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting builder content to match."
+                );
+            }
+            #endregion S U B T E S T S
         }
     }
 
