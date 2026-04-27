@@ -72,7 +72,7 @@ namespace Offsettors.MSTest
                 }
                 foreach (var xel in Model.Descendants())
                 {
-                    if(xel.To<PlaceableModel>() is { } item)
+                    if (xel.To<PlaceableModel>() is { } item)
                     {
                         xel.Name = nameof(StdModelElement.item);
                         xel.SetStdAttributeValue(StdModelAttribute.index, Count);
@@ -466,7 +466,7 @@ model"
                     var ddor = ocm.Model.OffsettorAt(
                         StdModelElement.item, +i, OffsetZeroPolicy.FirstFilterMatch);
                     Assert.AreEqual(
-                        i, 
+                        i,
                         int.Parse(ddor?.Attribute(StdModelAttribute.index)?.Value ?? string.Empty));
                 }
                 { }
@@ -477,6 +477,50 @@ model"
                 // var ddor = ocm.Model.OffsettorAt(StdModelElement.item, 4);
             }
             #endregion S U B T E S T S
+        }
+
+        [TestMethod, DoNotParallelize]
+        public void Test_Descendor()
+        {
+            string actual, expected;
+            string[] builder;
+            using var ocm = new OCMLocal(count: 10, seed: 2);
+            actual = ocm.Model.ToString();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model>
+  <xnode text=""312d1c21-0000-0000-0000-000000000004"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000001"">
+      <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""0"" />
+    </xnode>
+    <xnode text=""312d1c21-0000-0000-0000-000000000002"">
+      <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""1"" />
+    </xnode>
+  </xnode>
+  <xnode text=""312d1c21-0000-0000-0000-000000000001"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000003"">
+      <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""2"" />
+    </xnode>
+  </xnode>
+  <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""3"">
+    <item text=""312d1c21-0000-0000-0000-000000000009"" model=""[PlaceableModel]"" index=""4"" />
+  </item>
+  <xnode text=""312d1c21-0000-0000-0000-000000000000"">
+    <xnode text=""312d1c21-0000-0000-0000-000000000005"">
+      <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[PlaceableModel]"" index=""5"" />
+    </xnode>
+  </xnode>
+  <xnode text=""312d1c21-0000-0000-0000-000000000002"">
+    <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[PlaceableModel]"" index=""6"" />
+    <xnode text=""312d1c21-0000-0000-0000-000000000007"">
+      <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[PlaceableModel]"" index=""7"" />
+    </xnode>
+  </xnode>
+  <item text=""312d1c21-0000-0000-0000-000000000007"" model=""[PlaceableModel]"" index=""8"" />
+  <item text=""312d1c21-0000-0000-0000-000000000008"" model=""[PlaceableModel]"" index=""9"" />
+</model>"
+            ;
         }
     }
 
