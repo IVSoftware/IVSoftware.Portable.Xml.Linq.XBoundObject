@@ -143,14 +143,15 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         {
             if (name is null)
             {
-                return resolveRawOffset();
+                return localResolveRawOffset();
             }
 
-            return resolveFilteredOffset();
+            return localResolveFilteredOffset();
 
-            XElement? resolveRawOffset()
+            #region L o c a l F x
+            XElement? localResolveRawOffset()
             {
-                var current = getRawAnchor();
+                XElement? current = localGetRawAnchor();
 
                 if (plusOrMinus == 0)
                 {
@@ -190,9 +191,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 return current;
             }
 
-            XElement? resolveFilteredOffset()
+            XElement? localResolveFilteredOffset()
             {
-                var anchor = getFilteredAnchor();
+                var anchor = localGetFilteredAnchor();
 
                 if (plusOrMinus == 0)
                 {
@@ -202,9 +203,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                             name,
                             StringComparison.Ordinal)
                             ? xel
-                            : returnFilteredZeroMiss();
+                            : localReturnFilteredZeroMiss();
                     }
-                    return returnFilteredZeroMiss();
+                    return localReturnFilteredZeroMiss();
                 }
 
                 if (anchor is not XElement current)
@@ -214,17 +215,17 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 
                 if (plusOrMinus > 0)
                 {
-                    return filteredDescendorsFrom(current)
+                    return localFilteredDescendorsFrom(current)
                         .Skip(plusOrMinus)
                         .FirstOrDefault();
                 }
 
-                return filteredAscendorsFrom(current)
+                return localFilteredAscendorsFrom(current)
                     .Skip(-plusOrMinus)
                     .FirstOrDefault();
             }
 
-            XElement? getRawAnchor()
+            XElement? localGetRawAnchor()
             {
                 return offsetZeroPolicy switch
                 {
@@ -238,7 +239,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 };
             }
 
-            XElement? getFilteredAnchor()
+            XElement? localGetFilteredAnchor()
             {
                 return offsetZeroPolicy switch
                 {
@@ -254,7 +255,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 };
             }
 
-            IEnumerable<XElement> filteredDescendorsFrom(XElement anchor)
+            IEnumerable<XElement> localFilteredDescendorsFrom(XElement anchor)
             {
                 foreach (var xel in anchor.Descendors(name, includeSelf: true))
                 {
@@ -262,7 +263,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 }
             }
 
-            IEnumerable<XElement> filteredAscendorsFrom(XElement anchor)
+            IEnumerable<XElement> localFilteredAscendorsFrom(XElement anchor)
             {
                 foreach (var xel in anchor.Ascendors(name, includeSelf: true))
                 {
@@ -270,7 +271,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 }
             }
 
-            XElement? returnFilteredZeroMiss()
+            XElement? localReturnFilteredZeroMiss()
             {
                 @this.ThrowSoft<InvalidOperationException>(
                     "FilteredZeroMiss",
@@ -278,6 +279,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     $"within the filtered domain.");
                 return null;
             }
+            #endregion L o c a l F x
         }
 
         /// <summary>
