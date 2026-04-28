@@ -45,6 +45,11 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     public enum AffinityOption
     {
         /// <summary>
+        /// Attributes that are <see cref="StdModelAttribute.above"/> receive no special treatment.
+        /// </summary>
+        None,
+
+        /// <summary>
         /// Process <see cref="StdModelAttribute.above"/> as leading the parent node where first child yields first.
         /// </summary>
         /// <remarks>
@@ -75,11 +80,12 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public static IEnumerable<XElement> Ascendors(
             this XElement @this,
             string? localName = null,
-            bool includeSelf = false)
+            bool includeSelf = false,
+            AffinityOption affinity = AffinityOption.None)
         {
             XElement? current = includeSelf
                 ? @this
-                : @this.PreviousAscendor();
+                : @this.PreviousAscendor(affinity);
 
             while (current is not null)
             {
@@ -97,8 +103,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public static IEnumerable<XElement> Ascendors(
             this XElement @this,
             Enum stdName,
-            bool includeSelf = false)
-            => @this.Ascendors(stdName.ToString(), includeSelf);
+            bool includeSelf = false,
+            AffinityOption affinity = AffinityOption.None)
+            => @this.Ascendors(stdName.ToString(), includeSelf, affinity);
 
         /// <summary>
         /// Descends modeled linear order using a BCL-style local-name filter.
@@ -114,7 +121,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public static IEnumerable<XElement> Descendors(
             this XElement @this,
             string? localName = null,
-            bool includeSelf = false)
+            bool includeSelf = false,
+            AffinityOption affinity = AffinityOption.None)
         {
             XElement? current = includeSelf
                 ? @this
@@ -136,8 +144,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public static IEnumerable<XElement> Descendors(
             this XElement @this,
             Enum stdName,
-            bool includeSelf = false)
-            => @this.Descendors(stdName.ToString(), includeSelf);
+            bool includeSelf = false,
+            AffinityOption affinity = AffinityOption.None)
+            => @this.Descendors(stdName.ToString(), includeSelf, affinity);
 
         /// <summary>
         /// Resolves an element by relative offset within modeled linear order.
@@ -146,8 +155,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             this XElement @this,
             Enum stdName,
             int plusOrMinus,
-            OffsetZeroPolicy offsetZeroPolicy = OffsetZeroPolicy.Absolute)
-            => @this.OffsettorAt(stdName.ToString(), plusOrMinus, offsetZeroPolicy);
+            OffsetZeroPolicy offsetZeroPolicy = OffsetZeroPolicy.Absolute,
+            AffinityOption affinity = AffinityOption.None)
+            => @this.OffsettorAt(stdName.ToString(), plusOrMinus, offsetZeroPolicy, affinity);
 
         /// <summary>
         /// Resolves an element by relative offset within modeled linear order.
@@ -157,7 +167,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             this XElement @this,
             string? name,
             int plusOrMinus,
-            OffsetZeroPolicy offsetZeroPolicy = OffsetZeroPolicy.Absolute)
+            OffsetZeroPolicy offsetZeroPolicy = OffsetZeroPolicy.Absolute,
+            AffinityOption affinity = AffinityOption.None)
         {
             if (name is null)
             {
@@ -305,14 +316,20 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// <summary>
         /// Resolves the previous element in modeled linear order.
         /// </summary>
-        public static XElement? PreviousAscendor(this XElement @this, Enum stdEnum)
-            => @this.PreviousAscendor(stdEnum.ToString());
+        public static XElement? PreviousAscendor(
+            this XElement @this,
+            Enum stdEnum,
+            AffinityOption affinity = AffinityOption.None)
+            => @this.PreviousAscendor(stdEnum.ToString(), affinity);
 
         /// <summary>
         /// Resolves the previous element in modeled linear order.
         /// </summary>
         [Canonical]
-        public static XElement? PreviousAscendor(this XElement @this, string? name=null)
+        public static XElement? PreviousAscendor(
+            this XElement @this,
+            string? name = null,
+            AffinityOption affinity = AffinityOption.None)
         {
             XElement current = @this;
 
@@ -343,14 +360,20 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// <summary>
         /// Resolves the next element in modeled linear order.
         /// </summary>
-        public static XElement? NextDescendor(this XElement @this, Enum stdEnum)
-            => @this.NextDescendor(stdEnum.ToString());
+        public static XElement? NextDescendor(
+            this XElement @this, 
+            Enum stdEnum,
+            AffinityOption affinity = AffinityOption.None)
+            => @this.NextDescendor(stdEnum.ToString(), affinity);
 
         /// <summary>
         /// Resolves the next element in modeled linear order.
         /// </summary>
         [Canonical]
-        public static XElement? NextDescendor(this XElement @this, string? name = null)
+        public static XElement? NextDescendor(
+            this XElement @this, 
+            string? name = null,
+            AffinityOption affinity = AffinityOption.None)
         {
             XElement? current = @this;
             while (true)
