@@ -1,4 +1,5 @@
 using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.MSTest.Preview;
@@ -8,6 +9,7 @@ using IVSoftware.WinOS.MSTest.Extensions;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Xml.Linq;
 
@@ -1056,25 +1058,23 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                 "Expecting MRE test data for affinity enumerator."
             );
 
-            builder =
-            [
-                ..xroot
-                .MockAffinityDescendors(StdModelElement.item)
-                .Select(x => x.Formatted())
-            ];
-            actual = string.Join(Environment.NewLine, builder);
-            actual.ToClipboardExpected();
-            { }
-            expected = @" 
-4  312d1c21-0000-0000-0000-000000000004 Desc. #4  
-5  312d1c21-0000-0000-0000-000000000005 Desc. #5  
-6  312d1c21-0000-0000-0000-000000000006 Desc. #6  ";
 
-            Assert.AreEqual(
-                expected.NormalizeResult(),
-                actual.NormalizeResult(),
-                "Expecting mock affinity descendor to skip leading 'above' items."
-            );
+            subtest_MockAffinityLinearLookAhead();
+            subtest_MockAffinityReverseLookAhead();
+
+            #region S U B T E S T S
+            // Strategy explainer using xroot.Descendors() to mock xroot.Descendors(affinity: AffinityOption.Linear)
+            [Scaffolding]
+            void subtest_MockAffinityLinearLookAhead()
+            {
+            }
+
+            // Strategy explainer using xroot.Descendors() to mock xroot.Descendors(affinity: AffinityOption.Linear)
+            [Scaffolding]
+            void subtest_MockAffinityReverseLookAhead()
+            {
+            }
+            #endregion S U B T E S T S
         }
     }
 
@@ -1158,11 +1158,6 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
         }
         public static string PadRightAndTruncate(this string? @this, int length=10)
             => (@this ??= string.Empty).PadRight(length).Substring(0, length);
-
-        public static IEnumerable<XElement> MockAffinityDescendors(
-            this XElement @this,
-            Enum stdName)
-            => @this.MockAffinityDescendors(stdName.ToString());
 
         public static IEnumerable<XElement> MockAffinityDescendors(
             this XElement @this,
