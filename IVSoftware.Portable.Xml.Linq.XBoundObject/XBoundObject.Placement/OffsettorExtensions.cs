@@ -93,7 +93,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 {
                     yield return current;
                 }
-                current = current.PreviousAscendor();
+                current = current.PreviousAscendor(affinity);
             }
         }
 
@@ -126,7 +126,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         {
             XElement? current = includeSelf
                 ? @this
-                : @this.NextDescendor();
+                : @this.NextDescendor(affinity);
 
             while (current is not null)
             {
