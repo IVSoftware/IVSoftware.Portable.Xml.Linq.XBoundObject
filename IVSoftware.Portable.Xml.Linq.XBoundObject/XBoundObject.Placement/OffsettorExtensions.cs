@@ -85,7 +85,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         {
             XElement? current = includeSelf
                 ? @this
-                : @this.PreviousAscendor(affinity);
+                : Extensions.PreviousAscendor(
+                    @this: @this,
+                    name: null,
+                    affinity: affinity);
 
             while (current is not null)
             {
@@ -93,7 +96,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 {
                     yield return current;
                 }
-                current = current.PreviousAscendor(affinity);
+                current = Extensions.PreviousAscendor(
+                    @this: current,
+                    name: null,
+                    affinity: affinity);
             }
         }
 
@@ -105,7 +111,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             Enum stdName,
             bool includeSelf = false,
             AffinityOption affinity = AffinityOption.None)
-            => @this.Ascendors(stdName.ToString(), includeSelf, affinity);
+            => @this.Ascendors(
+                localName: stdName.ToString(),
+                includeSelf: includeSelf,
+                affinity: affinity);
 
         /// <summary>
         /// Descends modeled linear order using a BCL-style local-name filter.
@@ -126,7 +135,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         {
             XElement? current = includeSelf
                 ? @this
-                : @this.NextDescendor(affinity);
+                : Extensions.NextDescendor(
+                    @this: @this,
+                    name: null,
+                    affinity: affinity);
 
             while (current is not null)
             {
@@ -134,7 +146,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 {
                     yield return current;
                 }
-                current = current.NextDescendor();
+                current = Extensions.NextDescendor(
+                    @this: current,
+                    name: null,
+                    affinity: affinity);
             }
         }
 
@@ -146,7 +161,10 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             Enum stdName,
             bool includeSelf = false,
             AffinityOption affinity = AffinityOption.None)
-            => @this.Descendors(stdName.ToString(), includeSelf, affinity);
+            => @this.Descendors(
+                localName: stdName.ToString(),
+                includeSelf: includeSelf,
+                affinity: affinity);
 
         /// <summary>
         /// Resolves an element by relative offset within modeled linear order.
@@ -157,7 +175,11 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             int plusOrMinus,
             OffsetZeroPolicy offsetZeroPolicy = OffsetZeroPolicy.Absolute,
             AffinityOption affinity = AffinityOption.None)
-            => @this.OffsettorAt(stdName.ToString(), plusOrMinus, offsetZeroPolicy, affinity);
+            => @this.OffsettorAt(
+                name: stdName.ToString(),
+                plusOrMinus: plusOrMinus,
+                offsetZeroPolicy: offsetZeroPolicy,
+                affinity: affinity);
 
         /// <summary>
         /// Resolves an element by relative offset within modeled linear order.
@@ -170,6 +192,8 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             OffsetZeroPolicy offsetZeroPolicy = OffsetZeroPolicy.Absolute,
             AffinityOption affinity = AffinityOption.None)
         {
+            localThrowIfAffinityMasqueradesAsName();
+
             if (name is null)
             {
                 return localResolveRawOffset();
@@ -196,7 +220,13 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 {
                     for (int i = 0; i < plusOrMinus; i++)
                     {
-                        current = current?.NextDescendor();
+                        current =
+                            current is null
+                            ? null
+                            : Extensions.NextDescendor(
+                                @this: current,
+                                name: null,
+                                affinity: affinity);
                         if (current is not XElement)
                         {
                             @this.ThrowSoft<InvalidOperationException>(
@@ -209,7 +239,13 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 {
                     for (int i = 0; i < -plusOrMinus; i++)
                     {
-                        current = current?.PreviousAscendor();
+                        current =
+                            current is null
+                            ? null
+                            : Extensions.PreviousAscendor(
+                                @this: current,
+                                name: null,
+                                affinity: affinity);
                         if (current is not XElement)
                         {
                             @this.ThrowSoft<InvalidOperationException>(
@@ -262,9 +298,17 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 {
                     OffsetZeroPolicy.Absolute => @this,
                     OffsetZeroPolicy.FirstFilterMatch =>
-                        @this.Descendors(includeSelf: true).FirstOrDefault(),
+                        Extensions.Descendors(
+                            @this: @this,
+                            localName: null,
+                            includeSelf: true,
+                            affinity: affinity)
+                        .FirstOrDefault(),
                     OffsetZeroPolicy.ForceAscendingFilterMatch =>
-                        @this.PreviousAscendor(),
+                        Extensions.PreviousAscendor(
+                            @this: @this,
+                            name: null,
+                            affinity: affinity),
                     _ => throw new NotImplementedException(
                         $"Bad case: {offsetZeroPolicy}"),
                 };
@@ -276,10 +320,18 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 {
                     OffsetZeroPolicy.Absolute => @this,
                     OffsetZeroPolicy.FirstFilterMatch =>
-                        @this.Descendors(name, includeSelf: true)
+                        Extensions.Descendors(
+                            @this: @this,
+                            localName: name,
+                            includeSelf: true,
+                            affinity: affinity)
                             .FirstOrDefault(),
                     OffsetZeroPolicy.ForceAscendingFilterMatch =>
-                        @this.Ascendors(name, includeSelf: false)
+                        Extensions.Ascendors(
+                            @this: @this,
+                            localName: name,
+                            includeSelf: false,
+                            affinity: affinity)
                             .FirstOrDefault(),
                     _ => throw new NotImplementedException(
                         $"Bad case: {offsetZeroPolicy}"),
@@ -288,7 +340,11 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 
             IEnumerable<XElement> localFilteredDescendorsFrom(XElement anchor)
             {
-                foreach (var xel in anchor.Descendors(name, includeSelf: true))
+                foreach (var xel in Extensions.Descendors(
+                    @this: anchor,
+                    localName: name,
+                    includeSelf: true,
+                    affinity: affinity))
                 {
                     yield return xel;
                 }
@@ -296,9 +352,24 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
 
             IEnumerable<XElement> localFilteredAscendorsFrom(XElement anchor)
             {
-                foreach (var xel in anchor.Ascendors(name, includeSelf: true))
+                foreach (var xel in Extensions.Ascendors(
+                    @this: anchor,
+                    localName: name,
+                    includeSelf: true,
+                    affinity: affinity))
                 {
                     yield return xel;
+                }
+            }
+
+            void localThrowIfAffinityMasqueradesAsName()
+            {
+                if (name is string localName &&
+                    Enum.TryParse<AffinityOption>(localName, ignoreCase: false, out _))
+                {
+                    @this.ThrowHard<InvalidOperationException>(
+                        $"'{localName}' is an {nameof(AffinityOption)} value and cannot be used as a filter name. " +
+                        $"Pass it only as the named trailing argument '{nameof(affinity)}: ...'.");
                 }
             }
 
@@ -320,7 +391,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             this XElement @this,
             Enum stdEnum,
             AffinityOption affinity = AffinityOption.None)
-            => @this.PreviousAscendor(stdEnum.ToString(), affinity);
+            => @this.PreviousAscendor(
+                name: stdEnum.ToString(),
+                affinity: affinity);
 
         /// <summary>
         /// Resolves the previous element in modeled linear order.
@@ -364,7 +437,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             this XElement @this, 
             Enum stdEnum,
             AffinityOption affinity = AffinityOption.None)
-            => @this.NextDescendor(stdEnum.ToString(), affinity);
+            => @this.NextDescendor(
+                name: stdEnum.ToString(),
+                affinity: affinity);
 
         /// <summary>
         /// Resolves the next element in modeled linear order.

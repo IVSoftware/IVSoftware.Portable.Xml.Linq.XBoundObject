@@ -292,3 +292,4 @@ D:\Codex\IVSoftware\IVSoftware.Portable.Xml.Linq.XBoundObject\Offsettors.MSTest\
 D:\Codex\IVSoftware\IVSoftware.Portable.Xml.Linq.XBoundObject\Offsettors.MSTest\.codexobj\Offsettors.MSTest.pdb
 D:\Codex\IVSoftware\IVSoftware.Portable.Xml.Linq.XBoundObject\Offsettors.MSTest\.codexobj\Offsettors.MSTest.genruntimeconfig.cache
 D:\Codex\IVSoftware\IVSoftware.Portable.Xml.Linq.XBoundObject\Offsettors.MSTest\.codexobj\ref\Offsettors.MSTest.dll
+D:\Codex\IVSoftware\IVSoftware.Portable.Xml.Linq.XBoundObject\Offsettors.MSTest\bin\Debug\net10.0-windows\IVSoftware.Portable.SQLiteMarkdown.dll
