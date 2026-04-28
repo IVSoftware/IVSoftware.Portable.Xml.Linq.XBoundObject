@@ -42,6 +42,24 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// </remarks>
         ForceAscendingFilterMatch = 2,
     }
+    public enum AffinityOption
+    {
+        /// <summary>
+        /// Process <see cref="StdModelAttribute.above"/> as leading the parent node where first child yields first.
+        /// </summary>
+        /// <remarks>
+        /// Corresponds to the index order of the modeled collection.
+        /// </remarks>
+        Linear,
+
+        /// <summary>
+        /// Process <see cref="StdModelAttribute.above"/> as leading the parent node where first child yields last.
+        /// </summary>
+        /// <remarks>
+        /// This is used, for example, then the parent holds a starting time for calculating "countdown times".
+        /// </remarks>
+        Reverse,
+    }
 
     public static partial class Extensions
     {
