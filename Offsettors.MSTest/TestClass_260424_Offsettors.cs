@@ -895,6 +895,27 @@ ThrowSoft: Explicit filter 'Linear' requires zero to resolve within the filtered
                     "Expecting SINGLE EXCEPTION in build queue."
                 );
 
+                // Violate policy on a single offsettor call
+                xrtn = ocm.Model.OffsettorAt(
+                    stdName: AffinityOption.Linear,
+                    plusOrMinus: 0,
+                    offsetZeroPolicy: OffsetZeroPolicy.Absolute);
+
+                Assert.IsNull(
+                    xrtn,
+                    "Expecting enum affinity misuse in the filter slot to return null when handled.");
+
+                actual = string.Join(Environment.NewLine, builderThrow); builderThrow.Clear();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last.";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting SINGLE EXCEPTION in build queue."
+                );
 
                 // Violate policy on an enumerator call
                 nrtn = ocm.Model.Ascendors(stdName: AffinityOption.Linear);
@@ -916,44 +937,62 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                     "Expecting SINGLE EXCEPTION in build queue."
                 );
 
-                // CODEX: Continue in this one-off style foe the remaining fault injects.
-#if false
+                // Violate policy on an enumerator call
+                nrtn = ocm.Model.Descendors(stdName: AffinityOption.Linear);
+
                 Assert.HasCount(0,
-                    ocm.Model.Descendors(stdName: AffinityOption.Linear),
+                    nrtn,
                     "Expecting enum affinity misuse to produce no descending results.");
 
-                Assert.IsNull(
-                    ocm.Model.OffsettorAt(
-                        stdName: AffinityOption.Linear,
-                        plusOrMinus: 0,
-                        offsetZeroPolicy: OffsetZeroPolicy.Absolute),
-                    "Expecting enum affinity misuse in the filter slot to return null when handled.");
+                actual = string.Join(Environment.NewLine, builderThrow); builderThrow.Clear();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last.";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting SINGLE EXCEPTION in build queue."
+                );
+
+                // Violate policy on an call to Prev
+                xrtn = xitem.PreviousAscendor(stdEnum: AffinityOption.Linear);
 
                 Assert.IsNull(
-                    xitem.PreviousAscendor(stdEnum: AffinityOption.Linear),
+                    xrtn,
                     "Expecting enum affinity misuse to produce no previous ascendor.");
 
+                actual = string.Join(Environment.NewLine, builderThrow); builderThrow.Clear();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last.";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting SINGLE EXCEPTION in build queue."
+                );
+
+                // Violate policy on an call to Next
+                xrtn = xitem.NextDescendor(stdEnum: AffinityOption.Linear);
+
                 Assert.IsNull(
-                    xitem.NextDescendor(stdEnum: AffinityOption.Linear),
+                    xrtn,
                     "Expecting enum affinity misuse to produce no next descendor.");
 
                 actual = string.Join(Environment.NewLine, builderThrow); builderThrow.Clear();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last.
-ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last.
-ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last.
-ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last.
-ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last."
-                ;
+ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last.";
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting builder content to match."
+                    "Expecting SINGLE EXCEPTION in build queue."
                 );
-#endif
             }
             #endregion S U B T E S T S
         }
