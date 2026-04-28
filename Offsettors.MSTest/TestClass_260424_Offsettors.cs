@@ -866,13 +866,21 @@ ThrowSoft: Modeled offset exceeds the available forward range.";
             void subtest_IsAffinityPositionalPolicyViolation()
             {
                 Assert.HasCount(0, builderThrow);
-                var xitem = ocm.Model.Descendors(StdModelElement.item).First();
+                XElement
+                    xitem = ocm.Model.Descendors(StdModelElement.item).First();
+                XElement?
+                    xrtn;
+                IEnumerable<XElement>
+                    nrtn;
 
-                Assert.IsNull(
-                    ocm.Model.OffsettorAt(
+                // Violate policy on a single offsettor call
+                xrtn = ocm.Model.OffsettorAt(
                         name: nameof(AffinityOption.Linear),
                         plusOrMinus: 0,
-                        offsetZeroPolicy: OffsetZeroPolicy.Absolute),
+                        offsetZeroPolicy: OffsetZeroPolicy.Absolute);
+
+                Assert.IsNull(
+                    xrtn,
                     "Expecting explicit string filter to remain a normal filtered zero miss.");
                 actual = string.Join(Environment.NewLine, builderThrow); builderThrow.Clear();
                 actual.ToClipboardExpected();
@@ -884,18 +892,35 @@ ThrowSoft: Explicit filter 'Linear' requires zero to resolve within the filtered
                 Assert.AreEqual(
                     expected.NormalizeResult(),
                     actual.NormalizeResult(),
-                    "Expecting builder content to match."
+                    "Expecting SINGLE EXCEPTION in build queue."
                 );
 
-#if false
-                Assert.HasCount(0,
-                    ocm.Model.Ascendors(stdName: AffinityOption.Linear).Count(),
-                    "Expecting enum affinity misuse to produce no ascending results.");
+
+                // Violate policy on an enumerator call
+                nrtn = ocm.Model.Ascendors(stdName: AffinityOption.Linear);
 
                 Assert.HasCount(0,
-                    ocm.Model.Descendors(stdName: AffinityOption.Linear).Count(),
+                    nrtn,
+                    "Expecting enum affinity misuse to produce no ascending results.");
+
+
+                actual = string.Join(Environment.NewLine, builderThrow); builderThrow.Clear();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last.";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting SINGLE EXCEPTION in build queue."
+                );
+
+                // CODEX: Continue in this one-off style foe the remaining fault injects.
+#if false
+                Assert.HasCount(0,
+                    ocm.Model.Descendors(stdName: AffinityOption.Linear),
                     "Expecting enum affinity misuse to produce no descending results.");
-#endif
 
                 Assert.IsNull(
                     ocm.Model.OffsettorAt(
@@ -928,6 +953,7 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                     actual.NormalizeResult(),
                     "Expecting builder content to match."
                 );
+#endif
             }
             #endregion S U B T E S T S
         }
