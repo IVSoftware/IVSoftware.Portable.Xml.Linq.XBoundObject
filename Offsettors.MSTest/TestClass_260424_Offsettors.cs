@@ -1009,7 +1009,7 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
         public void Test_AffinityDescendor()
         {
             string actual, expected;
-            string[] builder;
+            List<string> builder = new();
             using var ocm = new OCMLocal(count: 7, seed: 2, maxDepth: 0);
             foreach (var xel in ocm.Model.Descendants().Skip(1))
             {
@@ -1059,20 +1059,146 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
             );
 
 
+
             subtest_MockAffinityLinearLookAhead();
             subtest_MockAffinityReverseLookAhead();
 
             #region S U B T E S T S
-            // Strategy explainer using xroot.Descendors() to mock xroot.Descendors(affinity: AffinityOption.Linear)
+            // Strategy explainer:
+            // If the current node has a first child marked above=True, then
+            // the affinity descendor should not descend into that leading band
+            // in normal forward order. Instead, for Linear, the descendor
+            // should look ahead until the above=True run is over, and then
+            // continue with the first ordinary trailing child.
             [Scaffolding]
             void subtest_MockAffinityLinearLookAhead()
             {
+                // CODEX: Posit "If we're doing strings, I'm expecting"
+                builder =
+                    [..
+                    ocm.Model.Descendors()
+                        .Select(xel =>
+                            xel.To<PlaceableModel>()
+                               .Description
+                               .PadRightAndTruncate())
+                    ];
+
+
+                actual = string.Join(Environment.NewLine, builder); builder.Clear();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+Item01    
+Item02    
+Item03    
+Item04    
+Item05    
+Item06    
+Item07    ";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting numbered 'Item' descriptions."
+                );
+
+                foreach (var xel in xroot.Descendors(StdModelElement.item))
+                {
+                    if (xel.Attribute(StdModelAttribute.above)?.Value.Equals(
+                        bool.TrueString,
+                        StringComparison.Ordinal) == true)
+                    {
+                        continue;
+                    }
+                    builder.Add(xel.Formatted());
+                }
+
+                actual = string.Join(Environment.NewLine, builder); builder.Clear();
+                actual.ToClipboardExpected();
+                { }
+                // CODEX: This is the human clipboard.
+                expected = @" 
+4  312d1c21-0000-0000-0000-000000000004 Item05    
+5  312d1c21-0000-0000-0000-000000000005 Item06    
+6  312d1c21-0000-0000-0000-000000000006 Item07    "
+                ;
+#if false                
+                // CODEX: This is how you rendered the limit. It doesn't really source from anywhere. Let's nail down this flow!
+                // Expecting: Original limit is expected = @"";
+                // Then, a run by CODEX asserts. There is an "expected" v "actual" readout in the assert.
+                // POSIT: You don't have to read the clipboard in order to accuratly close on a limit, just read the assert log.
+                // DEBUNK THIS NOTION: list.Add(xel.Formatted()) does not produce strings like Desc. #4
+                expected = @" 
+4  312d1c21-0000-0000-0000-000000000004 Desc. #4  
+5  312d1c21-0000-0000-0000-000000000005 Desc. #5  
+6  312d1c21-0000-0000-0000-000000000006 Desc. #6  ";
+
+#endif
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting linear look-ahead to skip the leading 'above' band."
+                );
             }
 
-            // Strategy explainer using xroot.Descendors() to mock xroot.Descendors(affinity: AffinityOption.Linear)
+            // Strategy explainer:
+            // The same look-ahead begins at the same place, but Reverse treats
+            // the leading above=True run as meaningful output. So the first hit
+            // is the last node in that leading run, then the rest of the run
+            // walks backward, and only after that does traversal rejoin the
+            // ordinary trailing children.
             [Scaffolding]
             void subtest_MockAffinityReverseLookAhead()
             {
+                builder.Clear();
+                var leadingAbove = new List<XElement>();
+
+                foreach (var xel in xroot.Descendors(StdModelElement.item))
+                {
+                    if (xel.Attribute(StdModelAttribute.above)?.Value.Equals(
+                        bool.TrueString,
+                        StringComparison.Ordinal) == true)
+                    {
+                        leadingAbove.Add(xel);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                for (int i = leadingAbove.Count - 1; i >= 0; i--)
+                {
+                    builder.Add(leadingAbove[i].Formatted());
+                }
+
+                foreach (var xel in xroot.Descendors(StdModelElement.item))
+                {
+                    if (xel.Attribute(StdModelAttribute.above)?.Value.Equals(
+                        bool.TrueString,
+                        StringComparison.Ordinal) == true)
+                    {
+                        continue;
+                    }
+                    builder.Add(xel.Formatted());
+                }
+                actual = string.Join(Environment.NewLine, builder);
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+3  312d1c21-0000-0000-0000-000000000003 Desc. #3  
+2  312d1c21-0000-0000-0000-000000000002 Desc. #2  
+1  312d1c21-0000-0000-0000-000000000001 Desc. #1  
+4  312d1c21-0000-0000-0000-000000000004 Desc. #4  
+5  312d1c21-0000-0000-0000-000000000005 Desc. #5  
+6  312d1c21-0000-0000-0000-000000000006 Desc. #6  ";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting reverse look-ahead to emit the leading 'above' band in reverse order."
+                );
             }
             #endregion S U B T E S T S
         }
@@ -1159,48 +1285,5 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
         public static string PadRightAndTruncate(this string? @this, int length=10)
             => (@this ??= string.Empty).PadRight(length).Substring(0, length);
 
-        public static IEnumerable<XElement> MockAffinityDescendors(
-            this XElement @this,
-            string? localName = null)
-        {
-            XElement? current = @this;
-
-            while (true)
-            {
-                current = localGetNext(current);
-                if (current is null)
-                {
-                    yield break;
-                }
-                if (localName is null || current.Name.LocalName.Equals(localName, StringComparison.Ordinal))
-                {
-                    yield return current;
-                }
-            }
-
-            #region L o c a l F x
-            XElement? localGetNext(XElement? current)
-            {
-                XElement? next = null;
-
-                if (current is XElement xelCurrent)
-                {
-                    next =
-                        xelCurrent.FirstNode is XElement xelChild &&
-                        xelChild.Attribute(StdModelAttribute.above)?.Value.Equals(
-                            bool.TrueString,
-                            StringComparison.Ordinal) == true
-                        ? xelChild
-                            .ElementsAfterSelf()
-                            .SkipWhile(x => x.Attribute(StdModelAttribute.above)?.Value.Equals(
-                                bool.TrueString,
-                                StringComparison.Ordinal) == true)
-                            .FirstOrDefault()
-                        : xelCurrent.NextDescendor();
-                }
-                return next;
-            }
-            #endregion L o c a l F x
-        }
     }
 }
