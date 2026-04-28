@@ -863,6 +863,61 @@ ThrowSoft: Modeled offset exceeds the available forward range.";
             }
             #endregion S U B T E S T S
         }
+        
+
+        [TestMethod, DoNotParallelize]
+        public void Test_AffinityAscendor()
+        {
+        }
+
+        [TestMethod, DoNotParallelize]
+        public void Test_AffinityDescendor()
+        {
+            string actual, expected;
+            string[] builder;
+            using var ocm = new OCMLocal(count: 7, seed: 2, maxDepth: 0);
+            foreach (var xel in ocm.Model.Descendants().Skip(1))
+            {
+                xel.MoveRight();
+            }
+            var xroot = 
+                ocm
+                .Model
+                .OffsettorAt(StdModelElement.item, 0, OffsetZeroPolicy.FirstFilterMatch)!;
+
+            actual = xroot.ToShallow().ToString();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""0"" />";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting root is correctly identified."
+            );
+
+            foreach (var xel in xroot.Descendors(StdModelElement.item).Take(3))
+            {
+                xel.SetStdAttributeValue(StdModelAttribute.above, bool.TrueString);
+            }
+            actual = ocm.Model.ToString();
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<model>
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""0"">
+    <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""1"" above=""True"" />
+    <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""2"" above=""True"" />
+    <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""3"" above=""True"" />
+    <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[PlaceableModel]"" index=""4"" />
+    <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[PlaceableModel]"" index=""5"" />
+    <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[PlaceableModel]"" index=""6"" />
+  </item>
+</model>"
+            ;
+            
+        }
     }
 
     static class TestClass_260424_OffsettorsExtensions
