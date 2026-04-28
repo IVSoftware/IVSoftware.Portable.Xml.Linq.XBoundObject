@@ -1049,7 +1049,12 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
   </item>
 </model>"
             ;
-            
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting MRE test data for affinity enumerator."
+            );
         }
     }
 
