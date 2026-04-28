@@ -1,4 +1,4 @@
-﻿using IVSoftware.Portable.Collections;
+using IVSoftware.Portable.Collections;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.MSTest.Preview;
@@ -777,7 +777,7 @@ model
             subtest_FilteredZeroMiss();
             subtest_FilteredExhaustion();
             subtest_RawOverrun();
-            subtest_AffinityMasquerade();
+            subtest_IsAffinityPositionalPolicyViolation();
 
             #region S U B T E S T S
             void subtest_TerminalNulls()
@@ -863,20 +863,22 @@ ThrowSoft: Modeled offset exceeds the available forward range.";
                 );
             }
 
-            void subtest_AffinityMasquerade()
+            void subtest_IsAffinityPositionalPolicyViolation()
             {
                 Assert.HasCount(0, builderThrow);
+                var xitem = ocm.Model.Descendors(StdModelElement.item).First();
 
                 Assert.IsNull(
                     ocm.Model.OffsettorAt(
                         name: nameof(AffinityOption.Linear),
                         plusOrMinus: 0,
                         offsetZeroPolicy: OffsetZeroPolicy.Absolute),
-                    "Expecting affinity misuse in the filter slot to return null when handled.");
+                    "Expecting explicit string filter to remain a normal filtered zero miss.");
+                actual = string.Join(Environment.NewLine, builderThrow); builderThrow.Clear();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-ThrowSoft: Modeled offset exceeds the available forward range."
+ThrowSoft: Explicit filter 'Linear' requires zero to resolve within the filtered domain."
                 ;
 
                 Assert.AreEqual(
@@ -885,6 +887,16 @@ ThrowSoft: Modeled offset exceeds the available forward range."
                     "Expecting builder content to match."
                 );
 
+#if false
+                Assert.HasCount(0,
+                    ocm.Model.Ascendors(stdName: AffinityOption.Linear).Count(),
+                    "Expecting enum affinity misuse to produce no ascending results.");
+
+                Assert.HasCount(0,
+                    ocm.Model.Descendors(stdName: AffinityOption.Linear).Count(),
+                    "Expecting enum affinity misuse to produce no descending results.");
+#endif
+
                 Assert.IsNull(
                     ocm.Model.OffsettorAt(
                         stdName: AffinityOption.Linear,
@@ -892,11 +904,22 @@ ThrowSoft: Modeled offset exceeds the available forward range."
                         offsetZeroPolicy: OffsetZeroPolicy.Absolute),
                     "Expecting enum affinity misuse in the filter slot to return null when handled.");
 
+                Assert.IsNull(
+                    xitem.PreviousAscendor(stdEnum: AffinityOption.Linear),
+                    "Expecting enum affinity misuse to produce no previous ascendor.");
+
+                Assert.IsNull(
+                    xitem.NextDescendor(stdEnum: AffinityOption.Linear),
+                    "Expecting enum affinity misuse to produce no next descendor.");
+
                 actual = string.Join(Environment.NewLine, builderThrow); builderThrow.Clear();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-ThrowSoft: Explicit filter 'Linear' requires zero to resolve within the filtered domain.
+ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last.
+ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last.
+ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last.
+ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last.
 ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last."
                 ;
 

@@ -111,10 +111,22 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             Enum stdName,
             bool includeSelf = false,
             AffinityOption affinity = AffinityOption.None)
-            => @this.Ascendors(
-                localName: stdName.ToString(),
-                includeSelf: includeSelf,
-                affinity: affinity);
+        {
+            IEnumerable<XElement> result;
+
+            if (stdName.IsAffinityPositionalPolicyViolation())
+            {
+                result = Enumerable.Empty<XElement>();
+            }
+            else
+            {
+                result = @this.Ascendors(
+                    localName: stdName.ToString(),
+                    includeSelf: includeSelf,
+                    affinity: affinity);
+            }
+            return result;
+        }
 
         /// <summary>
         /// Descends modeled linear order using a BCL-style local-name filter.
@@ -161,10 +173,22 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             Enum stdName,
             bool includeSelf = false,
             AffinityOption affinity = AffinityOption.None)
-            => @this.Descendors(
-                localName: stdName.ToString(),
-                includeSelf: includeSelf,
-                affinity: affinity);
+        {
+            IEnumerable<XElement> result;
+
+            if (stdName.IsAffinityPositionalPolicyViolation())
+            {
+                result = Enumerable.Empty<XElement>();
+            }
+            else
+            {
+                result = @this.Descendors(
+                    localName: stdName.ToString(),
+                    includeSelf: includeSelf,
+                    affinity: affinity);
+            }
+            return result;
+        }
 
         /// <summary>
         /// Resolves an element by relative offset within modeled linear order.
@@ -176,7 +200,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             OffsetZeroPolicy offsetZeroPolicy = OffsetZeroPolicy.Absolute,
             AffinityOption affinity = AffinityOption.None)
         {
-            if (stdName.IsAffinityOptionPositionalViolation())
+            if (stdName.IsAffinityPositionalPolicyViolation())
             {
                 return null;
             }
@@ -377,7 +401,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             #endregion L o c a l F x
         }
 
-        private static bool IsAffinityOptionPositionalViolation(this Enum sbFilter)
+        private static bool IsAffinityPositionalPolicyViolation(this Enum sbFilter)
         {
             bool isPositionalViolation = false;
             if (sbFilter is AffinityOption)
@@ -396,9 +420,21 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             this XElement @this,
             Enum stdEnum,
             AffinityOption affinity = AffinityOption.None)
-            => @this.PreviousAscendor(
-                name: stdEnum.ToString(),
-                affinity: affinity);
+        {
+            XElement? result;
+
+            if (stdEnum.IsAffinityPositionalPolicyViolation())
+            {
+                result = null;
+            }
+            else
+            {
+                result = @this.PreviousAscendor(
+                    name: stdEnum.ToString(),
+                    affinity: affinity);
+            }
+            return result;
+        }
 
         /// <summary>
         /// Resolves the previous element in modeled linear order.
@@ -442,9 +478,21 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             this XElement @this, 
             Enum stdEnum,
             AffinityOption affinity = AffinityOption.None)
-            => @this.NextDescendor(
-                name: stdEnum.ToString(),
-                affinity: affinity);
+        {
+            XElement? result;
+
+            if (stdEnum.IsAffinityPositionalPolicyViolation())
+            {
+                result = null;
+            }
+            else
+            {
+                result = @this.NextDescendor(
+                    name: stdEnum.ToString(),
+                    affinity: affinity);
+            }
+            return result;
+        }
 
         /// <summary>
         /// Resolves the next element in modeled linear order.
