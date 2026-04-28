@@ -777,6 +777,7 @@ model
             subtest_FilteredZeroMiss();
             subtest_FilteredExhaustion();
             subtest_RawOverrun();
+            subtest_AffinityMasquerade();
 
             #region S U B T E S T S
             void subtest_TerminalNulls()
@@ -854,6 +855,32 @@ ThrowSoft: Explicit filter 'item' requires zero to resolve within the filtered d
                 { }
                 expected = @" 
 ThrowSoft: Modeled offset exceeds the available forward range.";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting builder content to match."
+                );
+            }
+
+            void subtest_AffinityMasquerade()
+            {
+                Assert.HasCount(0, builderThrow);
+
+                Assert.IsNull(
+                    ocm.Model.OffsettorAt(
+                        name: nameof(AffinityOption.Linear),
+                        plusOrMinus: 0,
+                        offsetZeroPolicy: OffsetZeroPolicy.Absolute),
+                    "Expecting affinity misuse in the filter slot to return null when handled.");
+
+                actual = string.Join(Environment.NewLine, builderThrow); builderThrow.Clear();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+ThrowHard: 'Linear' is an AffinityOption value and cannot be used as a filter name. Pass it only as the named trailing argument 'affinity: ...'.
+ThrowSoft: Explicit filter 'Linear' requires zero to resolve within the filtered domain."
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
