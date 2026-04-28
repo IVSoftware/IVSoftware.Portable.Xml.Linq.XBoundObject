@@ -1,6 +1,8 @@
-﻿using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
+﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -812,5 +814,290 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                     throw new InvalidOperationException("Multiple items in queue.");
             }
         }
+
+        #region V E R S I O N    2 . 1
+        /// <summary>
+        /// Returns the <see cref="XAttribute"/> identified by the specified <see cref="Enum"/> key.
+        /// </summary>
+        /// <remarks>
+        /// - Resolves the attribute using the enum name as the attribute key.
+        /// - When the attribute is not present, behavior is governed by <paramref name="throw"/>. 
+        /// - Advisory or unspecified returns <c>null</c>.
+        /// </remarks>
+        public static XAttribute? Attribute(
+            this XElement @this,
+            Enum stdEnum, ThrowOrAdvise? @throw = null)
+        {
+            string msg;
+            if (@this.Attribute(stdEnum.ToString()) is not XAttribute attr)
+            {
+                msg = $"The {stdEnum.ToFullKey()} attribute was not found.";
+            }
+            else
+            {
+                return attr;
+            }
+            switch (@throw)
+            {
+                case ThrowOrAdvise.ThrowHard:
+                    @this.ThrowHard<InvalidOperationException>(msg);
+                    break;
+                case ThrowOrAdvise.ThrowSoft:
+                    @this.ThrowSoft<InvalidOperationException>(msg);
+                    break;
+                case ThrowOrAdvise.ThrowFramework:
+                    @this.ThrowFramework<InvalidOperationException>(msg);
+                    break;
+                case ThrowOrAdvise.Advisory:
+                    @this.Advisory(msg);
+                    break;
+                case null:
+                default: break;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Fluently assigns the value of the attribute identified by the specified <see cref="StdModelAttribute"/>.
+        /// </summary>
+        /// <remarks>
+        /// Mental Model: "Write canonical attribute text with controlled length semantics."
+        /// The value is converted to string and written using the enum name as the attribute key.       
+        /// - When the resulting string exceeds <paramref name="maxLength"/>, the value is truncated
+        ///   and the configured throw policy is invoked.
+        /// - When <paramref name="padToMaxLength"/> is <c>true</c>, the value is right-padded to the specified length.
+        /// </remarks>
+        public static XElement SetStdAttributeValue(
+            this XElement @this,
+            Enum stdEnum,
+            object? value,
+            byte maxLength = byte.MaxValue,
+            bool padToMaxLength = false,
+            ThrowOrAdvise? @throw = null)
+        {
+            if (value is null)
+            {
+                @this.SetAttributeValue(stdEnum.ToString(), null);
+                return @this;
+            }
+
+            string @string = value.ToString() ?? string.Empty;
+            if (@string.Length > maxLength)
+            {
+                @string = @string.Substring(0, maxLength);
+
+                var msg = $"Value for {stdEnum.ToFullKey()} exceeded {maxLength} characters and has been truncated.";
+                switch (@throw)
+                {
+                    case ThrowOrAdvise.ThrowHard:
+                        @this.ThrowHard<InvalidOperationException>(msg);
+                        break;
+                    case ThrowOrAdvise.ThrowSoft:
+                        @this.ThrowSoft<InvalidOperationException>(msg);
+                        break;
+                    case ThrowOrAdvise.ThrowFramework:
+                        @this.ThrowFramework<InvalidOperationException>(msg);
+                        break;
+                    case ThrowOrAdvise.Advisory:
+                        @this.Advisory(msg);
+                        break;
+                    case null:
+                    default:
+                        break;
+                }
+            }
+            else if (padToMaxLength)
+            {
+                @string = @string.PadRight(maxLength);
+            }
+            @this.SetAttributeValue(stdEnum.ToString(), @string);
+            return @this;
+        }
+
+        /// <summary>
+        /// Gets the first custom attribute of the specified type
+        /// applied to an enum value or null in its absence.
+        /// </summary>
+        public static TAttribute? GetCustomAttribute<TAttribute>(
+            this Enum value)
+            where TAttribute : Attribute
+        {
+            TAttribute? preview;
+            var enumType = value.GetType();
+            preview =
+                enumType
+               .GetFields()
+               .SingleOrDefault(_ => _.Name == Enum.GetName(enumType, value))
+               ?.GetCustomAttribute<TAttribute>();
+
+            return preview;
+        }
+
+
+        /// <summary>
+        /// Gets the first custom attribute of the specified open generic
+        /// type applied to an enum value or null in its absence.
+        /// </summary>
+        /// <remarks>
+        /// <c>var attr = member.GetCustomAttribute(typeof(TrackAttribute<>)</c>
+        /// </remarks>
+        public static Attribute? GetCustomAttribute(
+            this Enum value,
+            Type openGenericType)
+        {
+            var enumType = value.GetType();
+            var field = enumType
+                .GetFields()
+                .SingleOrDefault(f => f.Name == Enum.GetName(enumType, value));
+
+            return field?
+                .GetCustomAttributes()
+                .FirstOrDefault(attr =>
+                    attr.GetType().IsGenericType &&
+                    attr.GetType().GetGenericTypeDefinition() == openGenericType);
+        }
+
+        /// <summary>
+        /// Returns the attribute value converted to <typeparamref name="T"/>.
+        /// </summary>
+        /// <remarks>
+        /// When the attribute is missing or unusable, recovery proceeds as follows:
+        /// 1. SAFE: If T is nullable, returns default(T).
+        /// 2. SAFE: If @default is T, @default is returned as T.
+        /// 3. ADVISED SAFE: If [DefaultValue] is supplied, attempt conversion.
+        /// 4. ADVISED UNSAFE: Throw policy is invoked; if the throw is handled,
+        ///    default(T) is returned after the notification.
+        /// </remarks>
+        internal static T? GetStdAttributeValue<T>(
+            this XElement @this,
+            Enum stdEnum,
+            object? @default = null,
+            ThrowOrAdvise? @throw = null)
+        {
+            var targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+
+            // [Careful] Attribute method already has error handling!
+            if (@this.Attribute(stdEnum, @throw) is { } attr)
+            {
+                try
+                {
+                    return localConvertValue(attr.Value, targetType);
+                }
+                catch (Exception ex)
+                {
+                    @this.RethrowFramework(ex);
+                }
+            }
+
+            // If explicit default not supplied, consult [DefaultValue].
+            // NOTE: This line is a minor duplication that keeps both reflections out of the hot path unless needed.
+            @default ??= stdEnum.GetCustomAttribute<DefaultValueAttribute>()?.Value;
+
+            // Direct default match (explicit @default or [DefaultValue])
+            if (@default is T defaultT)
+                return defaultT;
+
+            // Attempt conversion of default
+            if (@default is not null)
+            {
+                try
+                {
+                    return localConvertValue(@default, targetType);
+                }
+                catch
+                {
+                    // Ignore conversion failure and fall through to policy enforcement.
+                }
+            }
+
+            // No usable value resolved; enforce non-nullable contract
+            bool isNullable = targetType != typeof(T) || !typeof(T).IsValueType;
+
+            if (!isNullable)
+            {
+                localThrowHelper($"Non-nullable type({typeof(T).Name}) requires {nameof(@default)}");
+            }
+
+            return default;
+
+            #region L o c a l F x
+            T localConvertValue(object? value, Type targetType)
+            {
+                var s = value?.ToString() ?? string.Empty;
+
+                if (targetType == typeof(string))
+                    return (T)(object)s;
+
+                // Fast reject obvious non-numeric input when numeric expected
+                if (value is string sVal && localIsNumericType(targetType))
+                {
+                    if (!double.TryParse(sVal, out _))
+                    {
+                        // If explicit default not supplied, consult [DefaultValue].
+                        // NOTE: This line is a minor duplication that keeps both reflections out of the hot path unless needed.
+                        @default ??= stdEnum.GetCustomAttribute<DefaultValueAttribute>()?.Value;
+                        if (@default is T defaultT)
+                        {
+                            return defaultT;
+                        }
+                        else
+                        {
+                            // If no explicit @throw level then throw hard.
+                            @throw ??= ThrowOrAdvise.ThrowHard;
+                            localThrowHelper($"The string provided '{sVal}' is not numeric.");
+                            return default!; // We warned you.
+                        }
+                    }
+                }
+
+                if (targetType.IsEnum)
+                    return (T)Enum.Parse(targetType, s, ignoreCase: true);
+
+                return (T)Convert.ChangeType(value, targetType);
+            }
+
+            static bool localIsNumericType(Type t)
+            {
+                return t == typeof(byte) ||
+                       t == typeof(sbyte) ||
+                       t == typeof(short) ||
+                       t == typeof(ushort) ||
+                       t == typeof(int) ||
+                       t == typeof(uint) ||
+                       t == typeof(long) ||
+                       t == typeof(ulong) ||
+                       t == typeof(float) ||
+                       t == typeof(double) ||
+                       t == typeof(decimal);
+            }
+
+            void localThrowHelper(string msg)
+            {
+                switch (@throw ?? ThrowOrAdvise.ThrowHard)
+                {
+                    case ThrowOrAdvise.ThrowHard:
+                        @this.ThrowHard<InvalidOperationException>(msg);
+                        break;
+                    case ThrowOrAdvise.ThrowSoft:
+                        @this.ThrowSoft<InvalidOperationException>(msg);
+                        break;
+                    case ThrowOrAdvise.ThrowFramework:
+                        @this.ThrowFramework<InvalidOperationException>(msg);
+                        break;
+                    case ThrowOrAdvise.Advisory:
+                        @this.Advisory(msg);
+                        break;
+                }
+            }
+            #endregion
+        }
+
+        /// <summary>
+        /// Returns a new XElement with LocalName set to the member name.
+        /// </summary>
+        public static XElement MakeXElement(this Enum @this)
+            => new XElement(@this.ToString());
+
+        #endregion V E R S I O N    2 . 1
     }
 }

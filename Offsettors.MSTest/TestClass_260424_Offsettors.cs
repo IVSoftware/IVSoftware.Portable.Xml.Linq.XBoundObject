@@ -1058,8 +1058,6 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                 "Expecting MRE test data for affinity enumerator."
             );
 
-
-
             subtest_MockAffinityLinearLookAhead();
             subtest_MockAffinityReverseLookAhead();
 
@@ -1101,9 +1099,15 @@ Item07    ";
                     actual.NormalizeResult(),
                     "Expecting numbered 'Item' descriptions."
                 );
-
-                foreach (var xel in xroot.Descendors(StdModelElement.item))
+                AffinityOption affinity = AffinityOption.Linear;
+                foreach (var xel in xroot.Descendors(StdModelElement.item, includeSelf: true))
                 {
+                    // Invariant: Detect an ascendent affinity
+                    if(bool.TryParse(xel.Descendants().FirstOrDefault()?.Attribute(StdModelAttribute.above)?.Value, out _))
+                    {
+
+                    }
+
                     if (xel.Attribute(StdModelAttribute.above)?.Value.Equals(
                         bool.TrueString,
                         StringComparison.Ordinal) == true)
@@ -1122,18 +1126,6 @@ Item07    ";
 5  312d1c21-0000-0000-0000-000000000005 Item06    
 6  312d1c21-0000-0000-0000-000000000006 Item07    "
                 ;
-#if false                
-                // CODEX: This is how you rendered the limit. It doesn't really source from anywhere. Let's nail down this flow!
-                // Expecting: Original limit is expected = @"";
-                // Then, a run by CODEX asserts. There is an "expected" v "actual" readout in the assert.
-                // POSIT: You don't have to read the clipboard in order to accuratly close on a limit, just read the assert log.
-                // DEBUNK THIS NOTION: list.Add(xel.Formatted()) does not produce strings like Desc. #4
-                expected = @" 
-4  312d1c21-0000-0000-0000-000000000004 Desc. #4  
-5  312d1c21-0000-0000-0000-000000000005 Desc. #5  
-6  312d1c21-0000-0000-0000-000000000006 Desc. #6  ";
-
-#endif
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
