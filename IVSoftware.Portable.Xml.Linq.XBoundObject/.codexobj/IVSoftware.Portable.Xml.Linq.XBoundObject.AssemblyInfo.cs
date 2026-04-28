@@ -17,7 +17,7 @@ using System.Reflection;
 			A lightweight extension for System.Xml.Linq that adds runtime object binding, hierarchical modeling, and flexible path resolution via enriched XAttribute support. Includes enum-based metadata, tree construction from flat paths, and event-driven behaviors — ideal for dynamic UIs, workflows, and cross-platform .NET apps. (Ever wish XAttribute had a Tag property? Now it does.)
 		")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("2.0.3.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("2.0.3+c9f34b149a9fc97aa160608bab6e1c6ff438ff22")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("2.0.3+bf2852c2c769dd028203b5ee921964338a462eef")]
 [assembly: System.Reflection.AssemblyProductAttribute("IVSoftware.Portable.Xml.Linq.XBoundObject")]
 [assembly: System.Reflection.AssemblyTitleAttribute("IVSoftware.Portable.Xml.Linq.XBoundObject")]
 [assembly: System.Reflection.AssemblyVersionAttribute("2.0.3.0")]

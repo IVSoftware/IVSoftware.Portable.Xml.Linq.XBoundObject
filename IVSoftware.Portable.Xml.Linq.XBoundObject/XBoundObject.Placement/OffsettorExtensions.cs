@@ -175,11 +175,17 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             int plusOrMinus,
             OffsetZeroPolicy offsetZeroPolicy = OffsetZeroPolicy.Absolute,
             AffinityOption affinity = AffinityOption.None)
-            => @this.OffsettorAt(
+        {
+            if (stdName.IsAffinityOptionPositionalViolation())
+            {
+                return null;
+            }
+            return @this.OffsettorAt(
                 name: stdName.ToString(),
                 plusOrMinus: plusOrMinus,
                 offsetZeroPolicy: offsetZeroPolicy,
                 affinity: affinity);
+        }
 
         /// <summary>
         /// Resolves an element by relative offset within modeled linear order.
@@ -192,8 +198,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             OffsetZeroPolicy offsetZeroPolicy = OffsetZeroPolicy.Absolute,
             AffinityOption affinity = AffinityOption.None)
         {
-            localThrowIfAffinityMasqueradesAsName();
-
             if (name is null)
             {
                 return localResolveRawOffset();
@@ -362,17 +366,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 }
             }
 
-            void localThrowIfAffinityMasqueradesAsName()
-            {
-                if (name is string localName &&
-                    Enum.TryParse<AffinityOption>(localName, ignoreCase: false, out _))
-                {
-                    @this.ThrowHard<InvalidOperationException>(
-                        $"'{localName}' is an {nameof(AffinityOption)} value and cannot be used as a filter name. " +
-                        $"Pass it only as the named trailing argument '{nameof(affinity)}: ...'.");
-                }
-            }
-
             XElement? localReturnFilteredZeroMiss()
             {
                 @this.ThrowSoft<InvalidOperationException>(
@@ -382,6 +375,18 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 return null;
             }
             #endregion L o c a l F x
+        }
+
+        private static bool IsAffinityOptionPositionalViolation(this Enum sbFilter)
+        {
+            bool isPositionalViolation = false;
+            if (sbFilter is AffinityOption)
+            {
+                isPositionalViolation = true;
+                sbFilter.ThrowHard<InvalidOperationException>(
+                    $"'{sbFilter}' is an {nameof(AffinityOption)} and must be explicitly named or positionally last.");
+            }
+            return isPositionalViolation;
         }
 
         /// <summary>

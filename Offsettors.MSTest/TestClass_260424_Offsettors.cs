@@ -873,13 +873,31 @@ ThrowSoft: Modeled offset exceeds the available forward range.";
                         plusOrMinus: 0,
                         offsetZeroPolicy: OffsetZeroPolicy.Absolute),
                     "Expecting affinity misuse in the filter slot to return null when handled.");
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+ThrowSoft: Modeled offset exceeds the available forward range."
+                ;
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting builder content to match."
+                );
+
+                Assert.IsNull(
+                    ocm.Model.OffsettorAt(
+                        stdName: AffinityOption.Linear,
+                        plusOrMinus: 0,
+                        offsetZeroPolicy: OffsetZeroPolicy.Absolute),
+                    "Expecting enum affinity misuse in the filter slot to return null when handled.");
 
                 actual = string.Join(Environment.NewLine, builderThrow); builderThrow.Clear();
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-ThrowHard: 'Linear' is an AffinityOption value and cannot be used as a filter name. Pass it only as the named trailing argument 'affinity: ...'.
-ThrowSoft: Explicit filter 'Linear' requires zero to resolve within the filtered domain."
+ThrowSoft: Explicit filter 'Linear' requires zero to resolve within the filtered domain.
+ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last."
                 ;
 
                 Assert.AreEqual(
