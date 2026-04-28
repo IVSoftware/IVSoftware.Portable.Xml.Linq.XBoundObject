@@ -1,9 +1,0 @@
-D:\Codex\IVSoftware\IVSoftware.Portable.Xml.Linq.XBoundObject\IVSoftware.Portable.Xml.Linq.XBoundObject\.codexobj\IVSoftware.Portable.Xml.Linq.XBoundObject.csproj.AssemblyReference.cache
-D:\Codex\IVSoftware\IVSoftware.Portable.Xml.Linq.XBoundObject\IVSoftware.Portable.Xml.Linq.XBoundObject\bin\Debug\netstandard2.0\IVSoftware.Portable.Xml.Linq.XBoundObject.deps.json
-D:\Codex\IVSoftware\IVSoftware.Portable.Xml.Linq.XBoundObject\IVSoftware.Portable.Xml.Linq.XBoundObject\bin\Debug\netstandard2.0\IVSoftware.Portable.Xml.Linq.XBoundObject.dll
-D:\Codex\IVSoftware\IVSoftware.Portable.Xml.Linq.XBoundObject\IVSoftware.Portable.Xml.Linq.XBoundObject\.codexobj\IVSoftware.Portable.Xml.Linq.XBoundObject.GeneratedMSBuildEditorConfig.editorconfig
-D:\Codex\IVSoftware\IVSoftware.Portable.Xml.Linq.XBoundObject\IVSoftware.Portable.Xml.Linq.XBoundObject\.codexobj\IVSoftware.Portable.Xml.Linq.XBoundObject.AssemblyInfoInputs.cache
-D:\Codex\IVSoftware\IVSoftware.Portable.Xml.Linq.XBoundObject\IVSoftware.Portable.Xml.Linq.XBoundObject\.codexobj\IVSoftware.Portable.Xml.Linq.XBoundObject.AssemblyInfo.cs
-D:\Codex\IVSoftware\IVSoftware.Portable.Xml.Linq.XBoundObject\IVSoftware.Portable.Xml.Linq.XBoundObject\.codexobj\IVSoftware.Portable.Xml.Linq.XBoundObject.csproj.CoreCompileInputs.cache
-D:\Codex\IVSoftware\IVSoftware.Portable.Xml.Linq.XBoundObject\IVSoftware.Portable.Xml.Linq.XBoundObject\.codexobj\IVSoftware.Portable.Xml.Linq.XBoundObject.sourcelink.json
-D:\Codex\IVSoftware\IVSoftware.Portable.Xml.Linq.XBoundObject\IVSoftware.Portable.Xml.Linq.XBoundObject\.codexobj\IVSoftware.Portable.Xml.Linq.XBoundObject.dll

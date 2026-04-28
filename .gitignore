@@ -32,6 +32,7 @@ bld/
 [Oo]ut/
 [Ll]og/
 [Ll]ogs/
+.codexobj/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -361,3 +362,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/IVSoftware.Portable.Xml.Linq.XBoundObject/.codexobj/IVSoftware.Portable.Xml.Linq.XBoundObject.dll
+/Offsettors.MSTest/.codexobj/ref/Offsettors.MSTest.dll
+/Offsettors.MSTest/.codexobj/refint/Offsettors.MSTest.dll
+/Offsettors.MSTest/.codexobj/Offsettors.MSTest.dll
+/Offsettors.MSTest/.codexobj/Offsettors.MSTest.AssemblyInfo.cs
+/Offsettors.MSTest/.codexobj/Offsettors.MSTest.sourcelink.json
