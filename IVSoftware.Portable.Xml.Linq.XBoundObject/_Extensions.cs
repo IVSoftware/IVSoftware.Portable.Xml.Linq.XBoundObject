@@ -968,7 +968,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
         /// 4. ADVISED UNSAFE: Throw policy is invoked; if the throw is handled,
         ///    default(T) is returned after the notification.
         /// </remarks>
-        internal static T? GetStdAttributeValue<T>(
+        public static T? GetStdAttributeValue<T>(
             this XElement @this,
             Enum stdEnum,
             object? @default = null,
