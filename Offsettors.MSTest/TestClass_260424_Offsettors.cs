@@ -3,15 +3,10 @@ using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.MSTest.Preview;
-using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using IVSoftware.WinOS.MSTest.Extensions;
-using System.Collections;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.Xml.Linq;
 
 namespace Offsettors.MSTest
@@ -19,6 +14,16 @@ namespace Offsettors.MSTest
     [TestClass]
     public sealed class TestClass_260424_Offsettors
     {
+        // STEP THREE
+        // - "AND we will need to RENAME to reflect the new intent."
+        private static XElement? _nextSibMarkedAbove(XElement cxel) =>
+            cxel.NextNode is XElement { } xnext
+            && bool.TryParse(xnext.Attribute(StdOffsettorAttribute.above)?.Value, out var @bool)
+            && @bool
+            ? xnext
+            : null;
+
+
         /// <summary>
         /// Generates a deterministic flat-to-hierarchal modeled test fixture.
         /// </summary>
@@ -86,6 +91,9 @@ namespace Offsettors.MSTest
                 StdModelElement.model.MakeXElement();
             public Random Rando { get; }
         }
+
+
+
 
         [TestMethod, DoNotParallelize]
         public void Test_OCMLocal_CTor()
@@ -1108,71 +1116,73 @@ Item07    ";
                 );
 
                 var tod = DateTimeOffset.Now.WithTestability().TimeOfDay;
-                xroot.SetBoundAttributeValue(tod, "tod", $"[{tod.ToString()}]");
+                xroot.SetBoundAttributeValue(tod, "tod", $"[{tod}]");
 
                 foreach (var xel in xroot.Descendors(StdModelElement.item, includeSelf: true))
                 {
-                    builder.Add(xel.ToShallow().ToString());
                     // Look ahead to first child
-                    if (xel.Elements().FirstOrDefault() is { } cxel)
+                    if (xel.Elements().FirstOrDefault() is { } cxel && _nextSibMarkedAbove(cxel) is { } cxelNext)
                     {
-                        if (cxel.Attribute(StdOffsettorAttribute.above)?.Value.Equals(
-                            bool.TrueString,
-                            StringComparison.Ordinal) == true)
+                        next:
+                        XElement? cxelPrevAscending = null;
+                        cxel.SetStdAttributeValue(StdOffsettorAttribute.direction, LeadingAffinity.Ascending);
+                        cxel.SetBoundAttributeValue(xel, StdOffsettorAttribute.pxel);
+                        if (cxelPrevAscending is not null)
                         {
-                            XElement? cxelPrevAscending = null;
-                            next:
-                            cxel.SetStdAttributeValue(StdOffsettorAttribute.direction, LeadingAffinity.Ascending);
-                            cxel.SetBoundAttributeValue(xel, StdOffsettorAttribute.pxel);
-                            if (cxelPrevAscending is not null)
-                            {
-                                cxel.SetBoundAttributeValue(cxelPrevAscending, StdOffsettorAttribute.xascprev);
-                            }
+                            cxel.SetBoundAttributeValue(cxelPrevAscending, StdOffsettorAttribute.xascprev);
+                        }
+                        while(_nextSibMarkedAbove(cxel) is { } cxel_)
+                        {
+                            cxel = cxel_;
+                        }
 
-                            // Affinity sample calculation on yield cxel
-                            if(cxel.Attribute(StdOffsettorAttribute.xascprev) is { } ascPrev)
-                            {
+#if false
 
-                            }
-                            else
-                            {
-                                if((cxel.Attribute(StdOffsettorAttribute.pxel) as XBoundAttribute)?.Tag is XElement pxel
-                                    && pxel.To<TimeSpan>() is { } todRoot)
-                                {
+                        // Affinity sample calculation on yield cxel
+                        if (cxel.Attribute(StdOffsettorAttribute.xascprev) is { } ascPrev)
+                        {
 
-                                }
-                            }
-
-
-                            { }
-                            //foreach (var xasc in xel.Elements())
-                            //{
-                            //    if (xasc.Attribute(StdOffsettorAttribute.above)?.Value.Equals(
-                            //        bool.TrueString,
-                            //        StringComparison.Ordinal) == true)
-                            //    {
-                            //        xasc.SetBoundAttributeValue(xel, StdOffsettorAttribute.pxel);
-                            //        xasc.SetStdAttributeValue(
-                            //            StdOffsettorAttribute.direction,
-                            //            LeadingAffinity.Ascending);
-                            //        builder.Add(xasc.ToShallow().ToString());
-                            //    }
-                            //    else
-                            //    {
-                            //        xasc.SetBoundAttributeValue(xel, StdOffsettorAttribute.pxel);
-                            //        xasc.SetBoundAttributeValue(
-                            //            LeadingAffinity.Linear,
-                            //            StdOffsettorAttribute.direction);
-                            //        builder.Add(xasc.ToShallow().ToString());
-                            //        break;
-                            //    }
-                            //}
                         }
                         else
                         {
-                            builder.Add(xel.Formatted());
+                            if ((cxel.Attribute(StdOffsettorAttribute.pxel) as XBoundAttribute)?.Tag is XElement pxel
+                                && pxel.To<TimeSpan>() is { } todRoot)
+                            {
+                                cxel.SetBoundAttributeValue(tod, "tod", $"[{(todRoot - TimeSpan.FromMinutes(5))}]");
+                            }
+                            builder.Add($"Yield: {cxel.ToShallow().ToString()}");
                         }
+
+
+                        { }
+                        //foreach (var xasc in xel.Elements())
+                        //{
+                        //    if (xasc.Attribute(StdOffsettorAttribute.above)?.Value.Equals(
+                        //        bool.TrueString,
+                        //        StringComparison.Ordinal) == true)
+                        //    {
+                        //        xasc.SetBoundAttributeValue(xel, StdOffsettorAttribute.pxel);
+                        //        xasc.SetStdAttributeValue(
+                        //            StdOffsettorAttribute.direction,
+                        //            LeadingAffinity.Ascending);
+                        //        builder.Add(xasc.ToShallow().ToString());
+                        //    }
+                        //    else
+                        //    {
+                        //        xasc.SetBoundAttributeValue(xel, StdOffsettorAttribute.pxel);
+                        //        xasc.SetBoundAttributeValue(
+                        //            LeadingAffinity.Linear,
+                        //            StdOffsettorAttribute.direction);
+                        //        builder.Add(xasc.ToShallow().ToString());
+                        //        break;
+                        //    }
+                        //}
+
+#endif
+                        if (_nextSibMarkedAbove(cxel) is { } z)
+                        { }
                     }
+                    builder.Add(xel.ToShallow().ToString());
                 }
 
                 actual = string.Join(Environment.NewLine, builder); builder.Clear();
