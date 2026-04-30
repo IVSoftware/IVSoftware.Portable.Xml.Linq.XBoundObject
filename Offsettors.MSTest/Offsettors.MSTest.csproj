@@ -18,6 +18,7 @@
 	  <ProjectReference Include="..\..\..\..\Github\IVSoftware\Portable\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.Extensions\IVSoftware.MSTest.Extensions.csproj" />
 	  <ProjectReference Include="..\..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.Extensions\IVSoftware.MSTest.Extensions.csproj" />
 	  <ProjectReference Include="..\IVSoftware.Portable.Xml.Linq.XBoundObject\IVSoftware.Portable.Xml.Linq.XBoundObject.csproj" />
+	  <ProjectReference Include="..\..\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown.csproj" />
 	</ItemGroup>
 
   <ItemGroup>

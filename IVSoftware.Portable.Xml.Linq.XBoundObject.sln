@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Offsettors.MSTest", "Offset
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.MSTest.Extensions", "..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.Extensions\IVSoftware.MSTest.Extensions.csproj", "{8A8ED005-8125-21DF-4156-1C6D559EC3CF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.SQLiteMarkdown", "..\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown.csproj", "{289543DE-65E1-4251-941F-D7C74D11A923}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{8A8ED005-8125-21DF-4156-1C6D559EC3CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A8ED005-8125-21DF-4156-1C6D559EC3CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A8ED005-8125-21DF-4156-1C6D559EC3CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{289543DE-65E1-4251-941F-D7C74D11A923}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{289543DE-65E1-4251-941F-D7C74D11A923}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{289543DE-65E1-4251-941F-D7C74D11A923}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{289543DE-65E1-4251-941F-D7C74D11A923}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

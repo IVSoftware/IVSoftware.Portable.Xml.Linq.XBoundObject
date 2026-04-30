@@ -877,7 +877,7 @@ ThrowSoft: Modeled offset exceeds the available forward range.";
 
                 // Violate policy on a single offsettor call
                 xrtn = ocm.Model.OffsettorAt(
-                        name: nameof(AffinityOption.Linear),
+                        name: nameof(ChildAboveOrder.Linear),
                         plusOrMinus: 0,
                         offsetZeroPolicy: OffsetZeroPolicy.Absolute);
 
@@ -899,7 +899,7 @@ ThrowSoft: Explicit filter 'Linear' requires zero to resolve within the filtered
 
                 // Violate policy on a single offsettor call
                 xrtn = ocm.Model.OffsettorAt(
-                    stdName: AffinityOption.Linear,
+                    stdName: ChildAboveOrder.Linear,
                     plusOrMinus: 0,
                     offsetZeroPolicy: OffsetZeroPolicy.Absolute);
 
@@ -920,7 +920,7 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                 );
 
                 // Violate policy on an enumerator call
-                nrtn = ocm.Model.Ascendors(stdName: AffinityOption.Linear);
+                nrtn = ocm.Model.Ascendors(stdName: ChildAboveOrder.Linear);
 
                 Assert.HasCount(0,
                     nrtn,
@@ -940,7 +940,7 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                 );
 
                 // Violate policy on an enumerator call
-                nrtn = ocm.Model.Descendors(stdName: AffinityOption.Linear);
+                nrtn = ocm.Model.Descendors(stdName: ChildAboveOrder.Linear);
 
                 Assert.HasCount(0,
                     nrtn,
@@ -959,7 +959,7 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                 );
 
                 // Violate policy on an call to Prev
-                xrtn = xitem.PreviousAscendor(stdEnum: AffinityOption.Linear);
+                xrtn = xitem.PreviousAscendor(stdEnum: ChildAboveOrder.Linear);
 
                 Assert.IsNull(
                     xrtn,
@@ -978,7 +978,7 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                 );
 
                 // Violate policy on an call to Next
-                xrtn = xitem.NextDescendor(stdEnum: AffinityOption.Linear);
+                xrtn = xitem.NextDescendor(stdEnum: ChildAboveOrder.Linear);
 
                 Assert.IsNull(
                     xrtn,
@@ -1011,6 +1011,8 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
             string actual, expected;
             List<string> builder = new();
             using var ocm = new OCMLocal(count: 7, seed: 2, maxDepth: 0);
+
+            #region G E N    D A T A
             foreach (var xel in ocm.Model.Descendants().Skip(1))
             {
                 xel.MoveRight();
@@ -1034,7 +1036,7 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
 
             foreach (var xel in xroot.Descendors(StdModelElement.item).Take(3))
             {
-                xel.SetStdAttributeValue(StdModelAttribute.above, bool.TrueString);
+                xel.SetStdAttributeValue(StdOffsettorAttribute.above, bool.TrueString);
             }
             actual = ocm.Model.ToString();
             actual.ToClipboardExpected();
@@ -1057,6 +1059,7 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                 actual.NormalizeResult(),
                 "Expecting MRE test data for affinity enumerator."
             );
+            #endregion G E N    D A T A
 
             subtest_MockAffinityLinearLookAhead();
             subtest_MockAffinityReverseLookAhead();
@@ -1071,16 +1074,15 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
             [Scaffolding]
             void subtest_MockAffinityLinearLookAhead()
             {
-                // CODEX: Posit "If we're doing strings, I'm expecting"
+                // Lens: Normal Descendant iteration
                 builder =
                     [..
-                    ocm.Model.Descendors()
+                    ocm.Model.Descendants()
                         .Select(xel =>
                             xel.To<PlaceableModel>()
                                .Description
                                .PadRightAndTruncate())
                     ];
-
 
                 actual = string.Join(Environment.NewLine, builder); builder.Clear();
                 actual.ToClipboardExpected();
@@ -1099,22 +1101,21 @@ Item07    ";
                     actual.NormalizeResult(),
                     "Expecting numbered 'Item' descriptions."
                 );
-                AffinityOption affinity = AffinityOption.Linear;
+                ChildAboveOrder affinity = ChildAboveOrder.Linear;
                 foreach (var xel in xroot.Descendors(StdModelElement.item, includeSelf: true))
                 {
-                    // Invariant: Detect an ascendent affinity
-                    if(bool.TryParse(xel.Descendants().FirstOrDefault()?.Attribute(StdModelAttribute.above)?.Value, out _))
+                    // Look ahead to first child
+                    if (xel.Descendants().FirstOrDefault() is { } cxel)
                     {
-
+                        if (bool.TryParse(cxel.Attribute(StdOffsettorAttribute.above)?.Value, out _))
+                        {
+                            cxel.SetBoundAttributeValue(xel);
+                        }
+                        else
+                        {
+                            builder.Add(xel.Formatted());
+                        }
                     }
-
-                    if (xel.Attribute(StdModelAttribute.above)?.Value.Equals(
-                        bool.TrueString,
-                        StringComparison.Ordinal) == true)
-                    {
-                        continue;
-                    }
-                    builder.Add(xel.Formatted());
                 }
 
                 actual = string.Join(Environment.NewLine, builder); builder.Clear();
@@ -1148,7 +1149,7 @@ Item07    ";
 
                 foreach (var xel in xroot.Descendors(StdModelElement.item))
                 {
-                    if (xel.Attribute(StdModelAttribute.above)?.Value.Equals(
+                    if (xel.Attribute(StdOffsettorAttribute.above)?.Value.Equals(
                         bool.TrueString,
                         StringComparison.Ordinal) == true)
                     {
@@ -1167,7 +1168,7 @@ Item07    ";
 
                 foreach (var xel in xroot.Descendors(StdModelElement.item))
                 {
-                    if (xel.Attribute(StdModelAttribute.above)?.Value.Equals(
+                    if (xel.Attribute(StdOffsettorAttribute.above)?.Value.Equals(
                         bool.TrueString,
                         StringComparison.Ordinal) == true)
                     {

@@ -42,7 +42,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// </remarks>
         ForceAscendingFilterMatch = 2,
     }
-    public enum AffinityOption
+    public enum ChildAboveOrder
     {
         /// <summary>
         /// Attributes that are <see cref="StdModelAttribute.above"/> receive no special treatment.
@@ -50,7 +50,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         None,
 
         /// <summary>
-        /// Process <see cref="StdModelAttribute.above"/> as leading the parent node where first child yields first.
+        /// Process <see cref="StdOffsettorAttribute.above"/> as leading the parent node where first child yields first.
         /// </summary>
         /// <remarks>
         /// Corresponds to the index order of the modeled collection.
@@ -58,12 +58,47 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         Linear,
 
         /// <summary>
-        /// Process <see cref="StdModelAttribute.above"/> as leading the parent node where first child yields last.
+        /// Process <see cref="StdOffsettorAttribute.above"/> as leading the parent node where first child yields last.
         /// </summary>
         /// <remarks>
         /// This is used, for example, then the parent holds a starting time for calculating "countdown times".
         /// </remarks>
         Reverse,
+    }
+
+    /// <summary>
+    /// Standard attributes used to annotate an affinity-style offset field.
+    /// </summary>
+    /// <remarks>
+    /// In IVS shorthand:
+    /// - <c>xel</c> is the current <see cref="XElement"/>.
+    /// - <c>pxel</c> is the parent <see cref="XElement"/>.
+    /// - <c>cxel</c> is a child <see cref="XElement"/>.
+    /// </remarks>
+    public enum StdOffsettorAttribute
+    {
+        /// <summary>
+        /// Marks a child <see cref="XElement"/> (<c>cxel</c>) as belonging to the leading band of its parent.
+        /// </summary>
+        /// <remarks>
+        /// - These are the child nodes that participate in the ascending
+        ///   field rather than in its ordinary trailing band.
+        /// - The <see cref="ChildAboveOrder"/> determines the yield sequence of the enumeration.
+        /// </remarks>
+        above,
+
+        /// <summary>
+        /// Marks the parent <see cref="XElement"/> (<c>pxel</c>) of the ascending field.
+        /// </summary>
+        /// <remarks>
+        /// This is the governing root.
+        /// EXAMPLE
+        /// - Think of this as, perhaps, a "pinned" point in time.
+        /// - As the field ascends, the "duration" of such nodes 
+        ///   would then be progressively subtracted from that point.
+        /// </remarks>
+        [Canonical("The effective depth of pxel is authoritatively defined as 0.")]
+        pxel,
     }
 
     public static partial class Extensions
@@ -81,7 +116,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             this XElement @this,
             string? localName = null,
             bool includeSelf = false,
-            AffinityOption affinity = AffinityOption.None)
+            ChildAboveOrder affinity = ChildAboveOrder.None)
         {
             XElement? current = includeSelf
                 ? @this
@@ -110,7 +145,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             this XElement @this,
             Enum stdName,
             bool includeSelf = false,
-            AffinityOption affinity = AffinityOption.None)
+            ChildAboveOrder affinity = ChildAboveOrder.None)
         {
             IEnumerable<XElement> result;
 
@@ -143,7 +178,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             this XElement @this,
             string? localName = null,
             bool includeSelf = false,
-            AffinityOption affinity = AffinityOption.None)
+            ChildAboveOrder affinity = ChildAboveOrder.None)
         {
             XElement? current = includeSelf
                 ? @this
@@ -172,7 +207,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             this XElement @this,
             Enum stdName,
             bool includeSelf = false,
-            AffinityOption affinity = AffinityOption.None)
+            ChildAboveOrder affinity = ChildAboveOrder.None)
         {
             IEnumerable<XElement> result;
 
@@ -198,7 +233,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             Enum stdName,
             int plusOrMinus,
             OffsetZeroPolicy offsetZeroPolicy = OffsetZeroPolicy.Absolute,
-            AffinityOption affinity = AffinityOption.None)
+            ChildAboveOrder affinity = ChildAboveOrder.None)
         {
             if (stdName.IsAffinityPositionalPolicyViolation())
             {
@@ -214,13 +249,27 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// <summary>
         /// Resolves an element by relative offset within modeled linear order.
         /// </summary>
+        public static XElement? OffsettorAt(
+            this XElement @this,
+            int plusOrMinus,
+            OffsetZeroPolicy offsetZeroPolicy = OffsetZeroPolicy.Absolute,
+            ChildAboveOrder affinity = ChildAboveOrder.None)
+            => @this.OffsettorAt(
+                name: null,
+                plusOrMinus: plusOrMinus,
+                offsetZeroPolicy: offsetZeroPolicy,
+                affinity: affinity);
+
+        /// <summary>
+        /// Resolves an element by relative offset within modeled linear order.
+        /// </summary>
         [Canonical]
         public static XElement? OffsettorAt(
             this XElement @this,
             string? name,
             int plusOrMinus,
             OffsetZeroPolicy offsetZeroPolicy = OffsetZeroPolicy.Absolute,
-            AffinityOption affinity = AffinityOption.None)
+            ChildAboveOrder affinity = ChildAboveOrder.None)
         {
             if (name is null)
             {
@@ -404,11 +453,11 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         private static bool IsAffinityPositionalPolicyViolation(this Enum sbFilter)
         {
             bool isPositionalViolation = false;
-            if (sbFilter is AffinityOption)
+            if (sbFilter is ChildAboveOrder)
             {
                 isPositionalViolation = true;
                 sbFilter.ThrowHard<InvalidOperationException>(
-                    $"'{sbFilter}' is an {nameof(AffinityOption)} and must be explicitly named or positionally last.");
+                    $"'{sbFilter}' is an {nameof(ChildAboveOrder)} and must be explicitly named or positionally last.");
             }
             return isPositionalViolation;
         }
@@ -419,7 +468,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public static XElement? PreviousAscendor(
             this XElement @this,
             Enum stdEnum,
-            AffinityOption affinity = AffinityOption.None)
+            ChildAboveOrder affinity = ChildAboveOrder.None)
         {
             XElement? result;
 
@@ -443,7 +492,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public static XElement? PreviousAscendor(
             this XElement @this,
             string? name = null,
-            AffinityOption affinity = AffinityOption.None)
+            ChildAboveOrder affinity = ChildAboveOrder.None)
         {
             XElement current = @this;
 
@@ -477,7 +526,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public static XElement? NextDescendor(
             this XElement @this, 
             Enum stdEnum,
-            AffinityOption affinity = AffinityOption.None)
+            ChildAboveOrder affinity = ChildAboveOrder.None)
         {
             XElement? result;
 
@@ -501,7 +550,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public static XElement? NextDescendor(
             this XElement @this, 
             string? name = null,
-            AffinityOption affinity = AffinityOption.None)
+            ChildAboveOrder affinity = ChildAboveOrder.None)
         {
             XElement? current = @this;
             while (true)
