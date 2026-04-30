@@ -14,10 +14,39 @@ namespace Offsettors.MSTest
     [TestClass]
     public sealed class TestClass_260424_Offsettors
     {
-        // STEP THREE
-        // - "AND we will need to RENAME to reflect the new intent."
-        private static XElement? _nextSibMarkedAbove(XElement cxel) =>
+        private static bool _isMarkedAbove(XElement xel)
+            => bool.TryParse(xel.Attribute(StdOffsettorAttribute.above)?.Value, out var @bool) && @bool;
+
+        private static bool _hasLeading(XElement xel, out XElement[] aboves, out XElement[] belows, string? name = null)
+        {
+            List<XElement>
+                listAboves = new(),
+                listBelows = new();
+
+            var elements =
+                name is null
+                ? xel.Elements()
+                : xel.Elements(name);
+
+            foreach (var cxel in elements)
+            {
+                if(_isMarkedAbove(cxel))
+                {
+                    listAboves.Add(cxel);
+                }
+                else
+                {                    
+                    listBelows.Add(cxel);
+                }
+            }
+            aboves = listAboves.ToArray();
+            belows = listBelows.ToArray();
+            return aboves.Length != 0;
+        }
+
+        private static XElement? _nextSibMarkedAbove(XElement cxel, string? name = null) =>
             cxel.NextNode is XElement { } xnext
+            && (name is null || xnext.Name.LocalName.Equals(name, StringComparison.Ordinal))
             && bool.TryParse(xnext.Attribute(StdOffsettorAttribute.above)?.Value, out var @bool)
             && @bool
             ? xnext
@@ -1118,25 +1147,35 @@ Item07    ";
                 var tod = DateTimeOffset.Now.WithTestability().TimeOfDay;
                 xroot.SetBoundAttributeValue(tod, "tod", $"[{tod}]");
 
+                // This is using the non-affinity Descendors to cull out the filter matches.
                 foreach (var xel in xroot.Descendors(StdModelElement.item, includeSelf: true))
                 {
                     // Look ahead to first child
-                    if (xel.Elements().FirstOrDefault() is { } cxel && _nextSibMarkedAbove(cxel) is { } cxelNext)
+                    if (_nextSibMarkedAbove(xel, nameof(StdModelElement.item)) is { } cxel)
                     {
-                        next:
-                        XElement? cxelPrevAscending = null;
                         cxel.SetStdAttributeValue(StdOffsettorAttribute.direction, LeadingAffinity.Ascending);
                         cxel.SetBoundAttributeValue(xel, StdOffsettorAttribute.pxel);
-                        if (cxelPrevAscending is not null)
+                        builder.Add($"Yield: {cxel.ToShallow().ToString()}");
+                        while(_nextSibMarkedAbove(cxel, nameof(StdModelElement.item)) is { } cxel_)
                         {
-                            cxel.SetBoundAttributeValue(cxelPrevAscending, StdOffsettorAttribute.xascprev);
-                        }
-                        while(_nextSibMarkedAbove(cxel) is { } cxel_)
-                        {
+                            cxel_.SetStdAttributeValue(StdOffsettorAttribute.direction, LeadingAffinity.Ascending);
+                            cxel_.SetBoundAttributeValue(cxel, StdOffsettorAttribute.xascprev);
+                            builder.Add($"Yield: {cxel.ToShallow().ToString()}");
                             cxel = cxel_;
                         }
 
+                        actual = string.Join(Environment.NewLine, builder);
+                        actual.ToClipboardExpected();
+                        { } 
+                        expected = @"";
+
+                        Assert.AreEqual(
+                            expected.NormalizeResult(),
+                            actual.NormalizeResult(),
+                            "Expecting builder content to match."
+                        );
 #if false
+                        { }
 
                         // Affinity sample calculation on yield cxel
                         if (cxel.Attribute(StdOffsettorAttribute.xascprev) is { } ascPrev)
@@ -1179,8 +1218,6 @@ Item07    ";
                         //}
 
 #endif
-                        if (_nextSibMarkedAbove(cxel) is { } z)
-                        { }
                     }
                     builder.Add(xel.ToShallow().ToString());
                 }
