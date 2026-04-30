@@ -877,7 +877,7 @@ ThrowSoft: Modeled offset exceeds the available forward range.";
 
                 // Violate policy on a single offsettor call
                 xrtn = ocm.Model.OffsettorAt(
-                        name: nameof(ChildAboveAffinity.Linear),
+                        name: nameof(LeadingAffinity.Linear),
                         plusOrMinus: 0,
                         offsetZeroPolicy: OffsetZeroPolicy.Absolute);
 
@@ -899,7 +899,7 @@ ThrowSoft: Explicit filter 'Linear' requires zero to resolve within the filtered
 
                 // Violate policy on a single offsettor call
                 xrtn = ocm.Model.OffsettorAt(
-                    stdName: ChildAboveAffinity.Linear,
+                    stdName: LeadingAffinity.Linear,
                     plusOrMinus: 0,
                     offsetZeroPolicy: OffsetZeroPolicy.Absolute);
 
@@ -920,7 +920,7 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                 );
 
                 // Violate policy on an enumerator call
-                nrtn = ocm.Model.Ascendors(stdName: ChildAboveAffinity.Linear);
+                nrtn = ocm.Model.Ascendors(stdName: LeadingAffinity.Linear);
 
                 Assert.HasCount(0,
                     nrtn,
@@ -940,7 +940,7 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                 );
 
                 // Violate policy on an enumerator call
-                nrtn = ocm.Model.Descendors(stdName: ChildAboveAffinity.Linear);
+                nrtn = ocm.Model.Descendors(stdName: LeadingAffinity.Linear);
 
                 Assert.HasCount(0,
                     nrtn,
@@ -959,7 +959,7 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                 );
 
                 // Violate policy on an call to Prev
-                xrtn = xitem.PreviousAscendor(stdEnum: ChildAboveAffinity.Linear);
+                xrtn = xitem.PreviousAscendor(stdEnum: LeadingAffinity.Linear);
 
                 Assert.IsNull(
                     xrtn,
@@ -978,7 +978,7 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                 );
 
                 // Violate policy on an call to Next
-                xrtn = xitem.NextDescendor(stdEnum: ChildAboveAffinity.Linear);
+                xrtn = xitem.NextDescendor(stdEnum: LeadingAffinity.Linear);
 
                 Assert.IsNull(
                     xrtn,
@@ -1106,13 +1106,41 @@ Item07    ";
                 {
                     builder.Add(xel.ToShallow().ToString());
                     // Look ahead to first child
-                    if (xel.Descendants().FirstOrDefault() is { } cxel)
+                    if (xel.Elements().FirstOrDefault() is { } cxel)
                     {
-                        if (bool.TryParse(cxel.Attribute(StdOffsettorAttribute.above)?.Value, out _))
+                        if (cxel.Attribute(StdOffsettorAttribute.above)?.Value.Equals(
+                            bool.TrueString,
+                            StringComparison.Ordinal) == true)
                         {
+                            XElement? cxelPrevAscending = null;
                             cxel.SetBoundAttributeValue(xel, StdOffsettorAttribute.pxel);
-                            cxel.SetBoundAttributeValue(ChildAboveAffinity.Ascending, StdOffsettorAttribute.direction);
-                            builder.Add(cxel.ToShallow().ToString());
+                            if (cxelPrevAscending is not null)
+                            {
+                                cxel.SetBoundAttributeValue(cxelPrevAscending, StdOffsettorAttribute.xprevasc);
+                            }
+                            { }
+                            //foreach (var xasc in xel.Elements())
+                            //{
+                            //    if (xasc.Attribute(StdOffsettorAttribute.above)?.Value.Equals(
+                            //        bool.TrueString,
+                            //        StringComparison.Ordinal) == true)
+                            //    {
+                            //        xasc.SetBoundAttributeValue(xel, StdOffsettorAttribute.pxel);
+                            //        xasc.SetStdAttributeValue(
+                            //            StdOffsettorAttribute.direction,
+                            //            LeadingAffinity.Ascending);
+                            //        builder.Add(xasc.ToShallow().ToString());
+                            //    }
+                            //    else
+                            //    {
+                            //        xasc.SetBoundAttributeValue(xel, StdOffsettorAttribute.pxel);
+                            //        xasc.SetBoundAttributeValue(
+                            //            LeadingAffinity.Linear,
+                            //            StdOffsettorAttribute.direction);
+                            //        builder.Add(xasc.ToShallow().ToString());
+                            //        break;
+                            //    }
+                            //}
                         }
                         else
                         {
@@ -1128,10 +1156,13 @@ Item07    ";
                 expected = @" 
 <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""0"" />
 <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""1"" above=""True"" pxel=""[XElement]"" direction=""[ChildAboveAffinity.Ascending]"" />
+<item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""2"" above=""True"" pxel=""[XElement]"" direction=""[ChildAboveAffinity.Ascending]"" />
+<item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""3"" above=""True"" pxel=""[XElement]"" direction=""[ChildAboveAffinity.Ascending]"" />
+<item text=""312d1c21-0000-0000-0000-000000000004"" model=""[PlaceableModel]"" index=""4"" pxel=""[XElement]"" direction=""[ChildAboveAffinity.Linear]"" />
 <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""1"" above=""True"" pxel=""[XElement]"" direction=""[ChildAboveAffinity.Ascending]"" />
-<item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""2"" above=""True"" />
-<item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""3"" above=""True"" />
-<item text=""312d1c21-0000-0000-0000-000000000004"" model=""[PlaceableModel]"" index=""4"" />
+<item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""2"" above=""True"" pxel=""[XElement]"" direction=""[ChildAboveAffinity.Ascending]"" />
+<item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""3"" above=""True"" pxel=""[XElement]"" direction=""[ChildAboveAffinity.Ascending]"" />
+<item text=""312d1c21-0000-0000-0000-000000000004"" model=""[PlaceableModel]"" index=""4"" pxel=""[XElement]"" direction=""[ChildAboveAffinity.Linear]"" />
 <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[PlaceableModel]"" index=""5"" />
 <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[PlaceableModel]"" index=""6"" />"
                 ;

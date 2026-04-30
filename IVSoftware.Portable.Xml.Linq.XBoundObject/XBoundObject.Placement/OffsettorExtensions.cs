@@ -42,7 +42,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// </remarks>
         ForceAscendingFilterMatch = 2,
     }
-    public enum ChildAboveAffinity
+    public enum LeadingAffinity
     {
         /// <summary>
         /// Attributes that are <see cref="StdModelAttribute.above"/> receive no special treatment.
@@ -83,7 +83,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// <remarks>
         /// - These are the child nodes that participate in the ascending
         ///   field rather than in its ordinary trailing band.
-        /// - The <see cref="ChildAboveAffinity"/> determines the yield sequence of the enumeration.
+        /// - The <see cref="LeadingAffinity"/> determines the yield sequence of the enumeration.
         /// </remarks>
         above,
 
@@ -104,6 +104,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// Indicates the current direction of the field enumeration.
         /// </summary>
         direction,
+        xprevasc,
     }
 
     public static partial class Extensions
@@ -121,7 +122,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             this XElement @this,
             string? localName = null,
             bool includeSelf = false,
-            ChildAboveAffinity affinity = ChildAboveAffinity.None)
+            LeadingAffinity affinity = LeadingAffinity.None)
         {
             XElement? current = includeSelf
                 ? @this
@@ -150,7 +151,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             this XElement @this,
             Enum stdName,
             bool includeSelf = false,
-            ChildAboveAffinity affinity = ChildAboveAffinity.None)
+            LeadingAffinity affinity = LeadingAffinity.None)
         {
             IEnumerable<XElement> result;
 
@@ -183,7 +184,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             this XElement @this,
             string? localName = null,
             bool includeSelf = false,
-            ChildAboveAffinity affinity = ChildAboveAffinity.None)
+            LeadingAffinity affinity = LeadingAffinity.None)
         {
             XElement? current = includeSelf
                 ? @this
@@ -212,7 +213,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             this XElement @this,
             Enum stdName,
             bool includeSelf = false,
-            ChildAboveAffinity affinity = ChildAboveAffinity.None)
+            LeadingAffinity affinity = LeadingAffinity.None)
         {
             IEnumerable<XElement> result;
 
@@ -238,7 +239,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             Enum stdName,
             int plusOrMinus,
             OffsetZeroPolicy offsetZeroPolicy = OffsetZeroPolicy.Absolute,
-            ChildAboveAffinity affinity = ChildAboveAffinity.None)
+            LeadingAffinity affinity = LeadingAffinity.None)
         {
             if (stdName.IsAffinityPositionalPolicyViolation())
             {
@@ -258,7 +259,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             this XElement @this,
             int plusOrMinus,
             OffsetZeroPolicy offsetZeroPolicy = OffsetZeroPolicy.Absolute,
-            ChildAboveAffinity affinity = ChildAboveAffinity.None)
+            LeadingAffinity affinity = LeadingAffinity.None)
             => @this.OffsettorAt(
                 name: null,
                 plusOrMinus: plusOrMinus,
@@ -274,7 +275,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             string? name,
             int plusOrMinus,
             OffsetZeroPolicy offsetZeroPolicy = OffsetZeroPolicy.Absolute,
-            ChildAboveAffinity affinity = ChildAboveAffinity.None)
+            LeadingAffinity affinity = LeadingAffinity.None)
         {
             if (name is null)
             {
@@ -458,11 +459,11 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         private static bool IsAffinityPositionalPolicyViolation(this Enum sbFilter)
         {
             bool isPositionalViolation = false;
-            if (sbFilter is ChildAboveAffinity)
+            if (sbFilter is LeadingAffinity)
             {
                 isPositionalViolation = true;
                 sbFilter.ThrowHard<InvalidOperationException>(
-                    $"'{sbFilter}' is an {nameof(ChildAboveAffinity)} and must be explicitly named or positionally last.");
+                    $"'{sbFilter}' is an {nameof(LeadingAffinity)} and must be explicitly named or positionally last.");
             }
             return isPositionalViolation;
         }
@@ -473,7 +474,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public static XElement? PreviousAscendor(
             this XElement @this,
             Enum stdEnum,
-            ChildAboveAffinity affinity = ChildAboveAffinity.None)
+            LeadingAffinity affinity = LeadingAffinity.None)
         {
             XElement? result;
 
@@ -497,7 +498,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public static XElement? PreviousAscendor(
             this XElement @this,
             string? name = null,
-            ChildAboveAffinity affinity = ChildAboveAffinity.None)
+            LeadingAffinity affinity = LeadingAffinity.None)
         {
             XElement current = @this;
 
@@ -531,7 +532,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public static XElement? NextDescendor(
             this XElement @this, 
             Enum stdEnum,
-            ChildAboveAffinity affinity = ChildAboveAffinity.None)
+            LeadingAffinity affinity = LeadingAffinity.None)
         {
             XElement? result;
 
@@ -555,7 +556,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         public static XElement? NextDescendor(
             this XElement @this, 
             string? name = null,
-            ChildAboveAffinity affinity = ChildAboveAffinity.None)
+            LeadingAffinity affinity = LeadingAffinity.None)
         {
             XElement? current = @this;
             while (true)
