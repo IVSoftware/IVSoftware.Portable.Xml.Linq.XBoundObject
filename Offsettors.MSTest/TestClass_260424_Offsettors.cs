@@ -34,9 +34,7 @@ namespace Offsettors.MSTest
         /// Only item nodes receive index attributes, which keeps assertions
         /// aligned with the modeled collection rather than helper path nodes.
         /// </remarks>
-        private class OCMLocal
-            : ObservableCollection<PlaceableModel>
-            , IDisposable
+        private class OCMLocal : ObservableCollection<PlaceableModel>
         {
             /// <summary>
             /// Builds a seeded scatter of modeled items with bounded path depth.
@@ -50,7 +48,6 @@ namespace Offsettors.MSTest
             /// </remarks>
             public OCMLocal(int count, int seed = 1, int maxDepth = 2)
             {
-                _te = this.TestableEpoch();
                 Rando = new(seed);
 
                 string[] guids =
@@ -87,15 +84,15 @@ namespace Offsettors.MSTest
             public XElement Model { get; } =
                 StdModelElement.model.MakeXElement();
             public Random Rando { get; }
-            public void Dispose() => _te.Dispose();
-            private IDisposable _te;
         }
 
         [TestMethod, DoNotParallelize]
         public void Test_OCMLocal_CTor()
         {
             string actual, expected;
-            using var ocm = new OCMLocal(25, 10, 2);
+            using var te = this.TestableEpoch();
+
+            var ocm = new OCMLocal(25, 10, 2);
 
             actual = ocm.Model.ToString();
             actual.ToClipboardExpected();
@@ -181,10 +178,11 @@ namespace Offsettors.MSTest
         public void Test_Ascendor()
         {
             string actual, expected;
+            using var te = this.TestableEpoch();
+
             string[] builder;
             OCMLocal ocm = null!;
-            using (ocm = new OCMLocal(count: 10, seed: 1))
-            {
+            ocm = new OCMLocal(count: 10, seed: 1);
                 actual = ocm.Model.ToString();
                 actual.ToClipboardExpected();
                 { }
@@ -221,9 +219,10 @@ namespace Offsettors.MSTest
                 subtest_AscendFromLast();
                 subtest_AscendFromModel();
                 subtest_Offsettor();
-            }
-            using (ocm = new OCMLocal(count: 25, seed: 1))
-            {
+
+            te.ResetEpoch();
+            ocm = new OCMLocal(count: 25, seed: 1);
+
                 actual = ocm.Model.ToString(); ;
                 actual.ToClipboardExpected();
                 { }
@@ -293,7 +292,6 @@ namespace Offsettors.MSTest
                     "Expecting test set with mix of item + default at various depth."
                 );
                 subtest_AscendFromOffsettor();
-            }
 
             #region S U B T E S T S
             void subtest_AscendFromModel()
@@ -487,7 +485,7 @@ model"
         {
             string actual, expected;
             string[] builder;
-            using var ocm = new OCMLocal(count: 10, seed: 2);
+            var ocm = new OCMLocal(count: 10, seed: 2);
             actual = ocm.Model.ToString();
             actual.ToClipboardExpected();
             { }
@@ -713,7 +711,7 @@ model
         public void Test_EdgeSentinels()
         {
             string actual, expected;
-            using var ocm = new OCMLocal(count: 10, seed: 3);
+            var ocm = new OCMLocal(count: 10, seed: 3);
 
             #region L o c a l F x
             var builderThrow = new List<string>();
@@ -998,21 +996,15 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
             }
             #endregion S U B T E S T S
         }
-        
 
-        [TestMethod, DoNotParallelize]
-        public void Test_AffinityAscendor()
-        {
-        }
-
-        [TestMethod, DoNotParallelize]
+        [TestMethod, DoNotParallelize, Ignore]
         public void Test_AffinityDescendor()
         {
             string actual, expected;
             using var te = this.TestableEpoch();
 
             List<string> builder = new();
-            using var ocm = new OCMLocal(count: 7, seed: 2, maxDepth: 0);
+            var ocm = new OCMLocal(count: 7, seed: 2, maxDepth: 0);
 
             #region G E N    D A T A
             foreach (var xel in ocm.Model.Descendants().Skip(1))
