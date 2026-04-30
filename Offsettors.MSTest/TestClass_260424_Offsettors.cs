@@ -877,7 +877,7 @@ ThrowSoft: Modeled offset exceeds the available forward range.";
 
                 // Violate policy on a single offsettor call
                 xrtn = ocm.Model.OffsettorAt(
-                        name: nameof(ChildAboveOrder.Linear),
+                        name: nameof(ChildAboveAffinity.Linear),
                         plusOrMinus: 0,
                         offsetZeroPolicy: OffsetZeroPolicy.Absolute);
 
@@ -899,7 +899,7 @@ ThrowSoft: Explicit filter 'Linear' requires zero to resolve within the filtered
 
                 // Violate policy on a single offsettor call
                 xrtn = ocm.Model.OffsettorAt(
-                    stdName: ChildAboveOrder.Linear,
+                    stdName: ChildAboveAffinity.Linear,
                     plusOrMinus: 0,
                     offsetZeroPolicy: OffsetZeroPolicy.Absolute);
 
@@ -920,7 +920,7 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                 );
 
                 // Violate policy on an enumerator call
-                nrtn = ocm.Model.Ascendors(stdName: ChildAboveOrder.Linear);
+                nrtn = ocm.Model.Ascendors(stdName: ChildAboveAffinity.Linear);
 
                 Assert.HasCount(0,
                     nrtn,
@@ -940,7 +940,7 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                 );
 
                 // Violate policy on an enumerator call
-                nrtn = ocm.Model.Descendors(stdName: ChildAboveOrder.Linear);
+                nrtn = ocm.Model.Descendors(stdName: ChildAboveAffinity.Linear);
 
                 Assert.HasCount(0,
                     nrtn,
@@ -959,7 +959,7 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                 );
 
                 // Violate policy on an call to Prev
-                xrtn = xitem.PreviousAscendor(stdEnum: ChildAboveOrder.Linear);
+                xrtn = xitem.PreviousAscendor(stdEnum: ChildAboveAffinity.Linear);
 
                 Assert.IsNull(
                     xrtn,
@@ -978,7 +978,7 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                 );
 
                 // Violate policy on an call to Next
-                xrtn = xitem.NextDescendor(stdEnum: ChildAboveOrder.Linear);
+                xrtn = xitem.NextDescendor(stdEnum: ChildAboveAffinity.Linear);
 
                 Assert.IsNull(
                     xrtn,
@@ -1101,15 +1101,18 @@ Item07    ";
                     actual.NormalizeResult(),
                     "Expecting numbered 'Item' descriptions."
                 );
-                ChildAboveOrder affinity = ChildAboveOrder.Linear;
+
                 foreach (var xel in xroot.Descendors(StdModelElement.item, includeSelf: true))
                 {
+                    builder.Add(xel.ToShallow().ToString());
                     // Look ahead to first child
                     if (xel.Descendants().FirstOrDefault() is { } cxel)
                     {
                         if (bool.TryParse(cxel.Attribute(StdOffsettorAttribute.above)?.Value, out _))
                         {
-                            cxel.SetBoundAttributeValue(xel);
+                            cxel.SetBoundAttributeValue(xel, StdOffsettorAttribute.pxel);
+                            cxel.SetBoundAttributeValue(ChildAboveAffinity.Ascending, StdOffsettorAttribute.direction);
+                            builder.Add(cxel.ToShallow().ToString());
                         }
                         else
                         {
@@ -1123,9 +1126,14 @@ Item07    ";
                 { }
                 // CODEX: This is the human clipboard.
                 expected = @" 
-4  312d1c21-0000-0000-0000-000000000004 Item05    
-5  312d1c21-0000-0000-0000-000000000005 Item06    
-6  312d1c21-0000-0000-0000-000000000006 Item07    "
+<item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""0"" />
+<item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""1"" above=""True"" pxel=""[XElement]"" direction=""[ChildAboveAffinity.Ascending]"" />
+<item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""1"" above=""True"" pxel=""[XElement]"" direction=""[ChildAboveAffinity.Ascending]"" />
+<item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""2"" above=""True"" />
+<item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""3"" above=""True"" />
+<item text=""312d1c21-0000-0000-0000-000000000004"" model=""[PlaceableModel]"" index=""4"" />
+<item text=""312d1c21-0000-0000-0000-000000000005"" model=""[PlaceableModel]"" index=""5"" />
+<item text=""312d1c21-0000-0000-0000-000000000006"" model=""[PlaceableModel]"" index=""6"" />"
                 ;
 
                 Assert.AreEqual(
