@@ -104,7 +104,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// Indicates the current direction of the field enumeration.
         /// </summary>
         direction,
-        xprevasc,
+        xascprev,
     }
 
     public static partial class Extensions
@@ -463,7 +463,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             {
                 isPositionalViolation = true;
                 sbFilter.ThrowHard<InvalidOperationException>(
-                    $"'{sbFilter}' is an {nameof(LeadingAffinity)} and must be explicitly named or positionally last.");
+                    $"Detected {nameof(LeadingAffinity)} in filter position; This qualifier must be explicitly named or positionally last.");
             }
             return isPositionalViolation;
         }

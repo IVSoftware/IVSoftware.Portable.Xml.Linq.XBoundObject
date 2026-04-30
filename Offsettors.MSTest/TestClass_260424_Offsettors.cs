@@ -3,6 +3,7 @@ using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.MSTest.Preview;
+using IVSoftware.Portable.Xml.Linq;
 using IVSoftware.Portable.Xml.Linq.XBoundObject;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using IVSoftware.WinOS.MSTest.Extensions;
@@ -484,6 +485,8 @@ model"
         public void Test_Descendor()
         {
             string actual, expected;
+            using var te = this.TestableEpoch();
+
             string[] builder;
             var ocm = new OCMLocal(count: 10, seed: 2);
             actual = ocm.Model.ToString();
@@ -711,6 +714,9 @@ model
         public void Test_EdgeSentinels()
         {
             string actual, expected;
+            using var te = this.TestableEpoch();
+
+
             var ocm = new OCMLocal(count: 10, seed: 3);
 
             #region L o c a l F x
@@ -909,7 +915,8 @@ ThrowSoft: Explicit filter 'Linear' requires zero to resolve within the filtered
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last.";
+ThrowHard: Detected LeadingAffinity in filter position; This qualifier must be explicitly named or positionally last."
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -929,7 +936,8 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last.";
+ThrowHard: Detected LeadingAffinity in filter position; This qualifier must be explicitly named or positionally last."
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -948,7 +956,8 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last.";
+ThrowHard: Detected LeadingAffinity in filter position; This qualifier must be explicitly named or positionally last."
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -967,7 +976,8 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last.";
+ThrowHard: Detected LeadingAffinity in filter position; This qualifier must be explicitly named or positionally last."
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -986,7 +996,8 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positionally last.";
+ThrowHard: Detected LeadingAffinity in filter position; This qualifier must be explicitly named or positionally last."
+                ;
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),
@@ -997,7 +1008,7 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
             #endregion S U B T E S T S
         }
 
-        [TestMethod, DoNotParallelize, Ignore]
+        [TestMethod, DoNotParallelize]
         public void Test_AffinityDescendor()
         {
             string actual, expected;
@@ -1096,7 +1107,8 @@ Item07    ";
                     "Expecting numbered 'Item' descriptions."
                 );
 
-                xroot.SetBoundAttributeValue(DateTimeOffset.Now.WithTestability());
+                var tod = DateTimeOffset.Now.WithTestability().TimeOfDay;
+                xroot.SetBoundAttributeValue(tod, "tod", $"[{tod.ToString()}]");
 
                 foreach (var xel in xroot.Descendors(StdModelElement.item, includeSelf: true))
                 {
@@ -1114,8 +1126,24 @@ Item07    ";
                             cxel.SetBoundAttributeValue(xel, StdOffsettorAttribute.pxel);
                             if (cxelPrevAscending is not null)
                             {
-                                cxel.SetBoundAttributeValue(cxelPrevAscending, StdOffsettorAttribute.xprevasc);
+                                cxel.SetBoundAttributeValue(cxelPrevAscending, StdOffsettorAttribute.xascprev);
                             }
+
+                            // Affinity sample calculation on yield cxel
+                            if(cxel.Attribute(StdOffsettorAttribute.xascprev) is { } ascPrev)
+                            {
+
+                            }
+                            else
+                            {
+                                if((cxel.Attribute(StdOffsettorAttribute.pxel) as XBoundAttribute)?.Tag is XElement pxel
+                                    && pxel.To<TimeSpan>() is { } todRoot)
+                                {
+
+                                }
+                            }
+
+
                             { }
                             //foreach (var xasc in xel.Elements())
                             //{
