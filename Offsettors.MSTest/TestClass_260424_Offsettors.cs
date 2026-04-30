@@ -1009,6 +1009,8 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
         public void Test_AffinityDescendor()
         {
             string actual, expected;
+            using var te = this.TestableEpoch();
+
             List<string> builder = new();
             using var ocm = new OCMLocal(count: 7, seed: 2, maxDepth: 0);
 
@@ -1071,7 +1073,7 @@ ThrowHard: 'Linear' is an AffinityOption and must be explicitly named or positio
             // in normal forward order. Instead, for Linear, the descendor
             // should look ahead until the above=True run is over, and then
             // continue with the first ordinary trailing child.
-            [Scaffolding]
+            [Scaffolding, DoNotParallelize]
             void subtest_MockAffinityLinearLookAhead()
             {
                 // Lens: Normal Descendant iteration
@@ -1102,6 +1104,8 @@ Item07    ";
                     "Expecting numbered 'Item' descriptions."
                 );
 
+                xroot.SetBoundAttributeValue(DateTimeOffset.Now.WithTestability());
+
                 foreach (var xel in xroot.Descendors(StdModelElement.item, includeSelf: true))
                 {
                     builder.Add(xel.ToShallow().ToString());
@@ -1113,6 +1117,8 @@ Item07    ";
                             StringComparison.Ordinal) == true)
                         {
                             XElement? cxelPrevAscending = null;
+                            next:
+                            cxel.SetStdAttributeValue(StdOffsettorAttribute.direction, LeadingAffinity.Ascending);
                             cxel.SetBoundAttributeValue(xel, StdOffsettorAttribute.pxel);
                             if (cxelPrevAscending is not null)
                             {
