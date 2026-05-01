@@ -77,7 +77,6 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// </remarks>
         Ascending,
 
-
         /// <summary>
         /// Process <see cref="StdOffsettorAttribute.above"/> where yields occur in both directions.
         /// </summary>
@@ -305,24 +304,102 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
             bool includeSelf = false,
             LeadingAffinity affinity = LeadingAffinity.None)
         {
-            XElement? current = includeSelf
+            XElement? current =
+                includeSelf
                 ? @this
                 : Extensions.NextDescendor(
                     @this: @this,
                     name: null,
-                    affinity: affinity);
+                    affinity: LeadingAffinity.None);
 
             while (current is not null)
             {
-                if (localName is null || current.Name.LocalName.Equals(localName, StringComparison.Ordinal))
+                if (affinity != LeadingAffinity.None
+                    && current.HasLeadingAffinity(out var lai))
                 {
-                    yield return current;
+                    foreach (var xel in localAffinitySegment(lai))
+                    {
+                        if (localName is null || xel.Name.LocalName.Equals(localName, StringComparison.Ordinal))
+                        {
+                            yield return xel;
+                        }
+                    }
+
+                    current =
+                        Extensions.NextDescendor(
+                            @this: localSegmentTail(lai),
+                            name: null,
+                            affinity: LeadingAffinity.None);
                 }
-                current = Extensions.NextDescendor(
-                    @this: current,
-                    name: null,
-                    affinity: affinity);
+                else
+                {
+                    if (localName is null || current.Name.LocalName.Equals(localName, StringComparison.Ordinal))
+                    {
+                        yield return current;
+                    }
+                    current =
+                        Extensions.NextDescendor(
+                            @this: current,
+                            name: null,
+                            affinity: LeadingAffinity.None);
+                }
             }
+
+            #region L o c a l F x
+            IEnumerable<XElement> localAffinitySegment(LeadingAffinityInfo lai)
+            {
+                switch (affinity)
+                {
+                    case LeadingAffinity.Linear:
+                        foreach (var xel in lai.Aboves)
+                        {
+                            yield return xel;
+                        }
+                        yield return lai.Root;
+                        foreach (var xel in lai.Descend)
+                        {
+                            yield return xel;
+                        }
+                        break;
+
+                    case LeadingAffinity.Ascending:
+                        foreach (var xel in lai.Ascend)
+                        {
+                            yield return xel;
+                        }
+                        yield return lai.Root;
+                        foreach (var xel in lai.Descend)
+                        {
+                            yield return xel;
+                        }
+                        break;
+
+                    case LeadingAffinity.AscendingFirst:
+                        foreach (var xel in lai.Ascend)
+                        {
+                            yield return xel;
+                        }
+                        for (int index = 1; index < lai.Aboves.Length; index++)
+                        {
+                            yield return lai.Aboves[index];
+                        }
+                        yield return lai.Root;
+                        foreach (var xel in lai.Descend)
+                        {
+                            yield return xel;
+                        }
+                        break;
+
+                    case LeadingAffinity.None:
+                    default:
+                        yield return lai.Root;
+                        break;
+                }
+            }
+
+            XElement localSegmentTail(LeadingAffinityInfo lai)
+                => lai.Belows.LastOrDefault() ?? lai.Root;
+            #endregion L o c a l F x
         }
 
         /// <summary>
