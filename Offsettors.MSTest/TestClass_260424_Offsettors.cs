@@ -71,10 +71,14 @@ namespace Offsettors.MSTest
                     if (xel.To<PlaceableModel>() is { } item)
                     {
                         xel.Name = nameof(StdModelElement.item);
-                        xel.SetStdAttributeValue(StdModelAttribute.index, Count);
                         Add(item);
                         item.Description = $"Item{Count:D2}";
                     }
+                }
+                int index = 0;
+                foreach (var xel in Model.Descendors(StdModelElement.item))
+                {
+                    xel.SetStdAttributeValue(StdModelAttribute.index, index++);
                 }
             }
             public XElement Model { get; } =
