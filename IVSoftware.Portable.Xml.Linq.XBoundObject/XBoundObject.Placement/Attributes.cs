@@ -15,7 +15,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
     [DebuggerDisplay("{Placement} {DisplayName} FullKey={AlwaysUseFullKey}")]
     public class PlacementAttribute : Attribute 
     {
-        public PlacementAttribute(EnumPlacement placement, string name = null, bool alwaysUseFullKey = false)
+        public PlacementAttribute(EnumPlacement placement, string? name = null, bool alwaysUseFullKey = false)
         {
             Placement = placement;
             Name = 
@@ -26,9 +26,9 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         }
         public EnumPlacement Placement { get; }
         public bool AlwaysUseFullKey { get; } = false;
-        public string Name { get; }
+        public string? Name { get; }
 
-        internal string DisplayName =>
+        internal string? DisplayName =>
             string.IsNullOrWhiteSpace(Name)
             ? Name
             : $"Name='{Name}'";

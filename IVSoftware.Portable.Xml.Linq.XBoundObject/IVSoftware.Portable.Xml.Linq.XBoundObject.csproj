@@ -11,17 +11,20 @@
 		<PackageProjectUrl>https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject.git</PackageProjectUrl>
 		<RootNamespace>IVSoftware.Portable.Xml.Linq</RootNamespace>
 		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Author>Thomas C. Gregor</Author>
 		<Owner>IVSoftware LLC</Owner>
-		<Copyright>Copyright © 2023-2025 IVSoftware LLC</Copyright>
+		<Copyright>Copyright © 2023-2026 IVSoftware LLC</Copyright>
 		<FileVersion>$(AssemblyVersion)</FileVersion>
 		<Version>$(AssemblyVersion)</Version>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>		
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+
 		<PackageReleaseNotes>
-			Stable release 2.0.3
+			2.1.0-beta
 			
 			- OnPropertyChanged([CallerMemberName] overload now laterals to a proper (sender, e) signature.
 			- DualKeyLookup is now observable.
@@ -40,8 +43,8 @@
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
-		<BaseVersion>2.0.3</BaseVersion>
-		<VersionPrefix>$(BaseVersion)</VersionPrefix>
+		<BaseVersion>2.1.0</BaseVersion>
+		<VersionPrefix>$(BaseVersion)-beta</VersionPrefix>
 	</PropertyGroup>
 	<ItemGroup>
 	  <Compile Remove="Screenshots\**" />
@@ -62,5 +65,6 @@
 		<PackageReference Include="IVSoftware.Portable.Disposable" Version="*" />
 		<PackageReference Include="IVSoftware.Portable.Threading" Version="*" />
 		<PackageReference Include="IVSoftware.Portable.WatchdogTimer" Version="1.3.0" />
+		<PackageReference Include="IVSoftware.Portable.Common" Version="*" />
 	</ItemGroup>
 </Project>
