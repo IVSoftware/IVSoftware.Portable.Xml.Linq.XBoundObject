@@ -14,7 +14,7 @@ ___
 
 - [Binding](README/Binding.md)
 - [Placer](README/Placer.md)
-- [Enumeration](README/Enumeration.md)
+- [Specialized Collection Modeling](README/SpecializedCollectionModeling.md)
 - [Examples](#examples)
 
 ___
@@ -50,6 +50,16 @@ MyObjectType myObject = xel.To<MyObjectType>();
 `Has<T>()` is the companion question when the caller wants to check for presence first.
 
 From there, `Placer` is the structural engine that turns flat path-like descriptions into a working XML tree.
+
+Ordinary enumeration still works exactly the way you expect:
+
+```csharp
+foreach (var xel in xroot.Descendants().Where(_ => _.Has<Person>()))
+{
+}
+```
+
+`XBoundObject` does not replace normal LINQ to XML traversal. It gives those nodes richer runtime meaning.
 
 ___
 
@@ -106,9 +116,13 @@ var offset = root.OffsettorAt(plusOrMinus: 3);
 
 ___
 
-## Enumeration In One Paragraph
+## Specialized Collection Modeling In One Paragraph
 
-`Ascendors` and `Descendors` provide a LINQ-like enumeration grammar over a hierarchical in-memory tree. That matters when a hierarchy needs to behave like a calibrated sequence instead of only as nested XML. `Ascendors` walk toward prior modeled context, `Descendors` walk toward next modeled context, and `OffsettorAt` resolves relative position from a chosen zero policy.
+Sometimes a flat collection wants an internal tree model so that depth, filtering, collapsible structure, or temporal semantics can become part of the runtime surface. That is where specialized collection modeling begins, and that is where concepts like `Ascendors`, `Descendors`, and `OffsettorAt(...)` come into play.
+
+_Ascendors_ because the next ascending node is the deepest leaf of the previous node.
+_Descendors_ because it's possible for a given node to have children below, in the traditional send, but also leading children above that can, for example, "look back in time".
+
 
 ___
 
