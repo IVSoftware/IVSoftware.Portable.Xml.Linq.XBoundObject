@@ -80,7 +80,8 @@ Bind an object to an element:
 var xel = new XElement("node");
 var person = new Person { Name = "Ada" };
 
-xel.SetBoundAttributeValue(person, "model", "[Person]");
+// With default arguments for `name` and `text`
+xel.SetBoundAttributeValue(person);   // <xel person=""[Person]"" />
 
 if (xel.To<Person>() is { } boundPerson)
 {
