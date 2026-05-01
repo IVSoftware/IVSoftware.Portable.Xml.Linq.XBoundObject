@@ -1,4 +1,4 @@
-﻿using IVSoftware.Portable.Common.Exceptions;
+using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
 using System;
 using System.Collections.Generic;
@@ -911,6 +911,27 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject
                 @string = @string.PadRight(maxLength);
             }
             @this.SetAttributeValue(stdEnum.ToString(), @string);
+            return @this;
+        }
+
+        /// <summary>
+        /// Fluently removes one or more ephemeral attributes identified by
+        /// enum values.
+        /// </summary>
+        /// <remarks>
+        /// Uses the enum names as attribute keys and ignores missing
+        /// attributes.
+        /// </remarks>
+        public static XElement RemoveEphemerals(
+            this XElement @this,
+            Enum first,
+            params Enum[] others)
+        {
+            @this.SetAttributeValue(first.ToString(), null);
+            foreach (var stdEnum in others)
+            {
+                @this.SetAttributeValue(stdEnum.ToString(), null);
+            }
             return @this;
         }
 

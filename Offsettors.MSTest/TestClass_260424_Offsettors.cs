@@ -17,6 +17,7 @@ namespace Offsettors.MSTest
         private static bool _isMarkedAbove(XElement xel)
             => bool.TryParse(xel.Attribute(StdOffsettorAttribute.above)?.Value, out var @bool) && @bool;
 
+#if false // Ported to LeadingAffinityInfo 
         private static bool _hasLeading(XElement xel, out XElement[] aboves, out XElement[] belows, string? name = null)
         {
             List<XElement>
@@ -43,6 +44,7 @@ namespace Offsettors.MSTest
             belows = listBelows.ToArray();
             return aboves.Length != 0;
         }
+#endif
 
         private static XElement? _nextSibMarkedAbove(XElement cxel, string? name = null) =>
             cxel.NextNode is XElement { } xnext
@@ -1147,26 +1149,106 @@ Item07    ";
                 var tod = DateTimeOffset.Now.WithTestability().TimeOfDay;
                 xroot.SetBoundAttributeValue(tod, "tod", $"[{tod}]");
 
-                // This is using the non-affinity Descendors to cull out the filter matches.
+
+                actual = xroot.ToShallow().ToString();
+                actual.ToClipboardExpected();
+                { }
+                expected = @" 
+<item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""0"" tod=""[09:00:00]"" />";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting root Time of Day (tod)."
+                );
+
+                // Pseudocode
+                // call HasLeadingAffinity on xel
+                // calculate a new XAttribute 'start' assuming 5 minute durations for each 'above' node
+                // Display yields, which should be 3, 2, 1, 0, 4, 5, 6
+
+                if (xroot.HasLeadingAffinity(out var lai))
+                {
+
+                }
+                else Assert.Fail("Expecting xroot to expose a leading affinity group as part of the overall field.");
+
+
+#if false && LAB_2
+                // This is the newer lab using triaged leading children.
                 foreach (var xel in xroot.Descendors(StdModelElement.item, includeSelf: true))
                 {
-                    // Look ahead to first child
+                    if (_hasLeading(xel, out var aboves, out var belows))
+                    {
+                        XElement? cxelprevasc = null;
+                        int apex = aboves.Length - 1;
+
+                        for (int current = 0; current < aboves.Length; current++)
+                        {
+                            var cxel = aboves[current];
+                            cxel.SetBoundAttributeValue(xel, StdOffsettorAttribute.pxel);
+                            cxel.SetBoundAttributeValue(current, "current");
+
+                            if (cxelprevasc is not null)
+                            {
+                                cxel.SetBoundAttributeValue(
+                                    cxelprevasc,
+                                    StdOffsettorAttribute.cxelprevasc);
+                            }
+
+                            cxel.SetStdAttributeValue(
+                                StdOffsettorAttribute.direction,
+                                current == apex
+                                    ? LeadingAffinityTraversal.Apex
+                                    : LeadingAffinityTraversal.Ascending);
+
+                            builder.Add($"Yield: {cxel.ToShallow().ToString()}");
+                            cxelprevasc = cxel;
+                        }
+                    }
+                    else
+                    {
+                        Assert.Fail("Expecting triaged cxels.");
+                    }
+                }
+
+                actual = string.Join(Environment.NewLine, builder); builder.Clear();
+                actual.ToClipboardExpected();
+                { }
+                expected = @"";
+
+                Assert.AreEqual(
+                    expected.NormalizeResult(),
+                    actual.NormalizeResult(),
+                    "Expecting builder content to match."
+                );
+#endif
+
+#if false && LAB_1
+                // This is the earlier sibling look-ahead lab.
+                foreach (var xel in xroot.Descendors(StdModelElement.item, includeSelf: true))
+                {
                     if (_nextSibMarkedAbove(xel, nameof(StdModelElement.item)) is { } cxel)
                     {
-                        cxel.SetStdAttributeValue(StdOffsettorAttribute.direction, LeadingAffinity.Ascending);
+                        cxel.SetStdAttributeValue(
+                            StdOffsettorAttribute.direction,
+                            LeadingAffinityTraversal.Ascending);
                         cxel.SetBoundAttributeValue(xel, StdOffsettorAttribute.pxel);
                         builder.Add($"Yield: {cxel.ToShallow().ToString()}");
-                        while(_nextSibMarkedAbove(cxel, nameof(StdModelElement.item)) is { } cxel_)
+
+                        while (_nextSibMarkedAbove(cxel, nameof(StdModelElement.item)) is { } cxel_)
                         {
-                            cxel_.SetStdAttributeValue(StdOffsettorAttribute.direction, LeadingAffinity.Ascending);
-                            cxel_.SetBoundAttributeValue(cxel, StdOffsettorAttribute.xascprev);
+                            cxel_.SetStdAttributeValue(
+                                StdOffsettorAttribute.direction,
+                                LeadingAffinityTraversal.Ascending);
+                            cxel_.SetBoundAttributeValue(cxel, StdOffsettorAttribute.cxelprevasc);
                             builder.Add($"Yield: {cxel.ToShallow().ToString()}");
                             cxel = cxel_;
                         }
 
-                        actual = string.Join(Environment.NewLine, builder);
+                        actual = string.Join(Environment.NewLine, builder); builder.Clear();
                         actual.ToClipboardExpected();
-                        { } 
+                        { }
                         expected = @"";
 
                         Assert.AreEqual(
@@ -1174,71 +1256,27 @@ Item07    ";
                             actual.NormalizeResult(),
                             "Expecting builder content to match."
                         );
-#if false
-                        { }
 
-                        // Affinity sample calculation on yield cxel
-                        if (cxel.Attribute(StdOffsettorAttribute.xascprev) is { } ascPrev)
+                        if ((cxel.Attribute(StdOffsettorAttribute.pxel) as XBoundAttribute)?.Tag is XElement pxel
+                            && pxel.To<TimeSpan>() is { } todRoot)
                         {
-
-                        }
-                        else
-                        {
-                            if ((cxel.Attribute(StdOffsettorAttribute.pxel) as XBoundAttribute)?.Tag is XElement pxel
-                                && pxel.To<TimeSpan>() is { } todRoot)
-                            {
-                                cxel.SetBoundAttributeValue(tod, "tod", $"[{(todRoot - TimeSpan.FromMinutes(5))}]");
-                            }
+                            cxel.SetBoundAttributeValue(
+                                tod,
+                                "tod",
+                                $"[{(todRoot - TimeSpan.FromMinutes(5))}]");
                             builder.Add($"Yield: {cxel.ToShallow().ToString()}");
                         }
-
-
-                        { }
-                        //foreach (var xasc in xel.Elements())
-                        //{
-                        //    if (xasc.Attribute(StdOffsettorAttribute.above)?.Value.Equals(
-                        //        bool.TrueString,
-                        //        StringComparison.Ordinal) == true)
-                        //    {
-                        //        xasc.SetBoundAttributeValue(xel, StdOffsettorAttribute.pxel);
-                        //        xasc.SetStdAttributeValue(
-                        //            StdOffsettorAttribute.direction,
-                        //            LeadingAffinity.Ascending);
-                        //        builder.Add(xasc.ToShallow().ToString());
-                        //    }
-                        //    else
-                        //    {
-                        //        xasc.SetBoundAttributeValue(xel, StdOffsettorAttribute.pxel);
-                        //        xasc.SetBoundAttributeValue(
-                        //            LeadingAffinity.Linear,
-                        //            StdOffsettorAttribute.direction);
-                        //        builder.Add(xasc.ToShallow().ToString());
-                        //        break;
-                        //    }
-                        //}
-
-#endif
                     }
+
                     builder.Add(xel.ToShallow().ToString());
                 }
+#endif
 
                 actual = string.Join(Environment.NewLine, builder); builder.Clear();
                 actual.ToClipboardExpected();
                 { }
                 // CODEX: This is the human clipboard.
-                expected = @" 
-<item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""0"" />
-<item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""1"" above=""True"" pxel=""[XElement]"" direction=""[ChildAboveAffinity.Ascending]"" />
-<item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""2"" above=""True"" pxel=""[XElement]"" direction=""[ChildAboveAffinity.Ascending]"" />
-<item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""3"" above=""True"" pxel=""[XElement]"" direction=""[ChildAboveAffinity.Ascending]"" />
-<item text=""312d1c21-0000-0000-0000-000000000004"" model=""[PlaceableModel]"" index=""4"" pxel=""[XElement]"" direction=""[ChildAboveAffinity.Linear]"" />
-<item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""1"" above=""True"" pxel=""[XElement]"" direction=""[ChildAboveAffinity.Ascending]"" />
-<item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""2"" above=""True"" pxel=""[XElement]"" direction=""[ChildAboveAffinity.Ascending]"" />
-<item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""3"" above=""True"" pxel=""[XElement]"" direction=""[ChildAboveAffinity.Ascending]"" />
-<item text=""312d1c21-0000-0000-0000-000000000004"" model=""[PlaceableModel]"" index=""4"" pxel=""[XElement]"" direction=""[ChildAboveAffinity.Linear]"" />
-<item text=""312d1c21-0000-0000-0000-000000000005"" model=""[PlaceableModel]"" index=""5"" />
-<item text=""312d1c21-0000-0000-0000-000000000006"" model=""[PlaceableModel]"" index=""6"" />"
-                ;
+                expected = @"";
 
                 Assert.AreEqual(
                     expected.NormalizeResult(),

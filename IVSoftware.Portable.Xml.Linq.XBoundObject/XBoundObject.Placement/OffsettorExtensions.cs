@@ -42,6 +42,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// </remarks>
         ForceAscendingFilterMatch = 2,
     }
+
     public enum LeadingAffinity
     {
         /// <summary>
@@ -64,6 +65,87 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// This is used, for example, then the parent holds a starting time for calculating "countdown times".
         /// </remarks>
         Ascending,
+    }
+
+    public enum LeadingAffinityTraversal
+    {
+        /// <summary>
+        /// Marks the first phase, iterating upward toward lower linear indexes.
+        /// </summary>
+        /// <remarks>
+        /// Mental model: "Moving backwards in time - set start time based on duration".
+        /// </remarks>
+        Ascending,
+
+        /// <summary>
+        /// Marks the highest point of the field before returning downward.
+        /// </summary>
+        Apex,
+
+        /// <summary>
+        /// Marks the return phase, iterating downward toward higher linear indexes.
+        /// </summary>
+        /// <remarks>
+        /// Mental model: "Moving forward in time - set end time based on remaining".
+        /// </remarks>
+        Descending,
+    }
+
+    public class LeadingAffinityInfo
+    {
+        public LeadingAffinityInfo(XElement xel)
+        {
+            Root = xel;
+
+            List<XElement>
+                listAboves = new(),
+                listBelows = new();
+
+            foreach (var cxel in xel.Elements())
+            {
+                if (bool.TryParse(
+                    cxel.Attribute(StdOffsettorAttribute.above)?.Value,
+                    out var @bool) && @bool)
+                {
+                    listAboves.Add(cxel);
+                }
+                else
+                {
+                    listBelows.Add(cxel);
+                }
+            }
+
+            Aboves = listAboves.ToArray();
+            Belows = listBelows.ToArray();
+        }
+
+        public XElement Root { get; }
+
+        public XElement[] Aboves { get; }
+
+        public XElement[] Belows { get; }
+
+        public IEnumerable<XElement> Ascend
+        {
+            get
+            {
+                for (int index = Aboves.Length - 1; index >= 0; index--)
+                {
+                    yield return Aboves[index];
+                }
+            }
+        }
+
+        public IEnumerable<XElement> Descend
+        {
+            get
+            {
+                for (int index = 0; index < Belows.Length; index++)
+                {
+                    yield return Belows[index];
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -104,11 +186,27 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// Indicates the current direction of the field enumeration.
         /// </summary>
         direction,
-        xascprev,
+
+        /// <summary>
+        /// When ascending an affinity field from root, 
+        /// </summary>
+        cxelprevasc,
     }
 
     public static partial class Extensions
     {
+        /// <summary>
+        /// Resolves leading-affinity information for the immediate child
+        /// field of the current element.
+        /// </summary>
+        public static bool HasLeadingAffinity(
+            this XElement @this,
+            out LeadingAffinityInfo lai)
+        {
+            lai = new LeadingAffinityInfo(@this);
+            return lai.Aboves.Length != 0;
+        }
+
         /// <summary>
         /// Ascends modeled linear order using a BCL-style local-name filter.
         /// </summary>
