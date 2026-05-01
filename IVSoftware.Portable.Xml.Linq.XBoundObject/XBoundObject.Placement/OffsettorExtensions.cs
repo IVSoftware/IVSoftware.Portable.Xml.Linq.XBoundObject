@@ -43,6 +43,15 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         ForceAscendingFilterMatch = 2,
     }
 
+    /// <summary>
+    /// Enables affinity semantics.
+    /// </summary>
+    /// <remarks>
+    /// Given:
+    /// An arbitrary XElement 3 at depth 0
+    /// 3 arbitrary child nodes of 3: [0, 1, 2] with above="True" and where 0 is the first element of 3.
+    /// 3 arbitrary child nodes of 3: [4, 5, 6] that are implicitly 'below' 3.
+    /// </remarks>
     public enum LeadingAffinity
     {
         /// <summary>
@@ -55,16 +64,28 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// </summary>
         /// <remarks>
         /// Corresponds to the index order of the modeled collection.
+        /// Yield: 0, 1, 2, 3, 4, 5, 6
         /// </remarks>
         Linear,
 
         /// <summary>
-        /// Process <see cref="StdOffsettorAttribute.above"/> as leading the parent node where first child yields last.
+        /// Process <see cref="StdOffsettorAttribute.above"/> as leading the parent node where apex child yields first.
         /// </summary>
         /// <remarks>
         /// This is used, for example, then the parent holds a starting time for calculating "countdown times".
+        /// Yield: 2, 1, 0, 3, 4, 5, 6
         /// </remarks>
         Ascending,
+
+
+        /// <summary>
+        /// Process <see cref="StdOffsettorAttribute.above"/> where yields occur in both directions.
+        /// </summary>
+        /// <remarks>
+        /// This is used, for example, then the parent holds a starting time for calculating "countdown times".
+        /// Yield: 2, 1, 0, 1, 2, 3, 4, 5, 6
+        /// </remarks>
+        AscendingFirst,
     }
 
     public enum LeadingAffinityTraversal
