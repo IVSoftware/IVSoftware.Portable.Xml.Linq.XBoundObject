@@ -1,8 +1,8 @@
 # [<](../README.md)
 
-## Navigation
+## Enumeration
 
-`Ascendors` and `Descendors` provide a linear navigation grammar over a hierarchical in-memory tree.
+`Ascendors` and `Descendors` provide a LINQ-like enumeration grammar over a hierarchical in-memory tree.
 
 The important idea is not that XML stops being hierarchical. It is that a hierarchical model can still expose a meaningful linear traversal surface.
 
@@ -47,4 +47,4 @@ ___
 
 Affinity semantics are a descension-side concern.
 
-This allows a modeled tree to reinterpret a local leading band while still returning to ordinary forward traversal afterward. The result is a traversal surface that can express more than simple document order without abandoning the underlying model.
+This allows a modeled tree to reinterpret a local leading band while still returning to ordinary forward traversal afterward. The result is an enumeration surface that can express more than simple document order without abandoning the underlying model.

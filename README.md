@@ -1,6 +1,6 @@
 # XBoundObject
 
-`XBoundObject` extends `System.Xml.Linq` with runtime object binding, structural placement, and tree-style navigation over in-memory XML.
+`XBoundObject` extends `System.Xml.Linq` with runtime object binding, structural placement, and LINQ-like enumeration over in-memory instance hierarchies.
 
 The simplest way to think about it is this: sometimes an `XElement` or `XAttribute` wants a runtime companion object the way a UI tree node wants a `Tag` property. `XBoundObject` provides that missing binding surface without changing the serialized XML contract.
 
@@ -14,40 +14,61 @@ ___
 
 - [Binding](README/Binding.md)
 - [Placer](README/Placer.md)
-- [Navigation](README/Navigation.md)
+- [Enumeration](README/Enumeration.md)
 - [Examples](#examples)
-
-___
-
-## Why The Model
-
-A flat collection is good at order. It is not naturally good at depth, placement, or local structural meaning.
-
-An XML model helps when you need:
-
-- durable hierarchy over a flat or partially flattened set of items
-- a readable structural surface for runtime inspection
-- a place to accumulate view-state and routing metadata
-- a way to let live objects participate in a tree without inventing a custom tree format first
-
-This is useful even in a console app. A flattened list can still be modeled as a hierarchical internal tree when the runtime problem is better expressed that way.
 
 ___
 
 ## Start Here
 
-If you only learn three ideas first, make them these:
+If you already know:
 
-1. `Tag`
-   `XBoundAttribute` gives XML a runtime-only binding slot for live objects.
+```csharp
+xel.SetAttributeValue(name, value);
+```
 
-2. `To<T>()` and `Has<T>()`
-   These are the core retrieval and discovery primitives for bound state.
+then the new idea is:
 
-3. `Placer`
-   This is the structural engine that turns flat path-like descriptions into a working XML tree.
+```csharp
+xel.SetBoundAttributeValue(tag, name, text);
+```
 
-The rest of the package grows naturally from those three ideas.
+That is the move that gives an `XElement` a runtime-only binding slot for live objects.
+
+A few practical notes follow from that:
+
+- multiple bound attributes can live on the same `XElement`
+- the XML stays readable
+- the bound objects remain in memory only
+
+And in the common case, retrieval is just:
+
+```csharp
+MyObjectType myObject = xel.To<MyObjectType>();
+```
+
+`Has<T>()` is the companion question when the caller wants to check for presence first.
+
+From there, `Placer` is the structural engine that turns flat path-like descriptions into a working XML tree.
+
+___
+
+## What Comes Next
+
+- You might want to place nodes quickly from delimited paths.
+  That is what `Placer` is for.
+
+- Once you understand the raw placement model, you may want to streamline it.
+  That is where the higher-level placer extensions come in.
+
+- You might want to link multiple live objects on the same node.
+  IDs, enums, and lookup-oriented helpers support that style of modeling.
+
+- You might want a model surface for hardware configuration, automation trees, domain-language parsers, or abstract syntax trees.
+  Bound XML works well for those.
+
+- You might want a modeled collection with perceived depth, collapsible nodes, filtering, or temporal semantics.
+  That is a separate but related layer, and XML is a strong internal surface for it.
 
 ___
 
@@ -84,9 +105,9 @@ var offset = root.OffsettorAt(plusOrMinus: 3);
 
 ___
 
-## Navigation In One Paragraph
+## Enumeration In One Paragraph
 
-`Ascendors` and `Descendors` provide a linear navigation grammar over a hierarchical in-memory tree. That matters when a model began as a flat collection, or when a hierarchy needs to behave like a calibrated sequence. `Ascendors` walk toward prior modeled context, `Descendors` walk toward next modeled context, and `OffsettorAt` resolves relative position from a chosen zero policy.
+`Ascendors` and `Descendors` provide a LINQ-like enumeration grammar over a hierarchical in-memory tree. That matters when a hierarchy needs to behave like a calibrated sequence instead of only as nested XML. `Ascendors` walk toward prior modeled context, `Descendors` walk toward next modeled context, and `OffsettorAt` resolves relative position from a chosen zero policy.
 
 ___
 
