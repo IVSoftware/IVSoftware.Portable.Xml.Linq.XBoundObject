@@ -1,4 +1,4 @@
-﻿# XBoundObject
+# XBoundObject
 
 `XBoundObject` extends `System.Xml.Linq` with runtime object binding, structural placement, and tree-style navigation over in-memory XML.
 
@@ -10,18 +10,12 @@ The result is still XML, but it is XML that can carry live instances, structural
 
 ___
 
-## The Binding Story
+## Table Of Contents
 
-At the center of the package is `XBoundAttribute`, a runtime-aware attribute that can bind an object to XML.
-
-That sounds small, but it changes what in-memory XML can do.
-
-- An `XElement` can represent a live object, not just text.
-- A tree can carry runtime behavior, not just structure.
-- Configuration, workflow, and model nodes can stay readable as XML while still participating in polymorphic application logic.
-- Portable code can own node-bound runtime state instead of leaving that concern inside platform views.
-
-This is largely an in-memory distinction. Bound objects are not meant to round-trip through serialization automatically. That is deliberate. The serialized XML remains clean while the running model remains rich.
+- [Binding](README/Binding.md)
+- [Placer](README/Placer.md)
+- [Navigation](README/Navigation.md)
+- [Examples](#examples)
 
 ___
 
@@ -36,54 +30,24 @@ An XML model helps when you need:
 - a place to accumulate view-state and routing metadata
 - a way to let live objects participate in a tree without inventing a custom tree format first
 
-This is useful even when the authoritative data shape started life as a list. A flattened list can still be modeled as a hierarchical internal tree when the runtime problem is better expressed that way.
+This is useful even in a console app. A flattened list can still be modeled as a hierarchical internal tree when the runtime problem is better expressed that way.
 
 ___
 
-## Placement
+## Start Here
 
-`Placer` is the part of the package that turns flat path-like descriptions into XML structure.
+If you only learn three ideas first, make them these:
 
-That makes it practical to:
+1. `Tag`
+   `XBoundAttribute` gives XML a runtime-only binding slot for live objects.
 
-- build trees from file-system-like paths
-- maintain model nodes for routed views
-- create or locate structural positions quickly
-- attach content and bound objects at the point of placement
+2. `To<T>()` and `Has<T>()`
+   These are the core retrieval and discovery primitives for bound state.
 
-This is one of the reasons the package works well for smart trees and interactive model surfaces. The XML is not just stored. It is actively shaped.
+3. `Placer`
+   This is the structural engine that turns flat path-like descriptions into a working XML tree.
 
-___
-
-## Navigation
-
-`Ascendors` and `Descendors` provide a linear navigation grammar over the modeled tree.
-
-The important idea is not that XML suddenly stops being hierarchical. It is that a hierarchical in-memory tree can still expose a meaningful linear traversal surface.
-
-That is useful when a model began as a flat collection, or when a view needs to move through a hierarchy as though it were a calibrated sequence.
-
-In practical terms:
-
-- `Ascendors` walk toward the prior modeled context.
-- `Descendors` walk toward the next modeled context.
-- `OffsettorAt` resolves relative position from a chosen zero policy.
-
-These APIs are intentionally small, but they unlock a lot of higher-level behavior once structure and runtime binding live together.
-
-___
-
-## Typical Uses
-
-Common uses for `XBoundObject` include:
-
-- smart tree models where nodes know what can be attached beneath them
-- runtime configuration surfaces backed by readable XML
-- UI models that need live objects attached to structural nodes
-- workflow and rule trees with polymorphic bound instances
-- cross-platform model surfaces where the XML remains the common denominator
-
-A typical example is a drag-drop model tree where attaching one node beneath another changes what the system considers valid, available, or calculable. In that kind of system, the XML model remains inspectable while the bound runtime objects remain active.
+The rest of the package grows naturally from those three ideas.
 
 ___
 
@@ -117,6 +81,21 @@ var next = root.NextDescendor();
 var prior = next?.PreviousAscendor();
 var offset = root.OffsettorAt(plusOrMinus: 3);
 ```
+
+___
+
+## Navigation In One Paragraph
+
+`Ascendors` and `Descendors` provide a linear navigation grammar over a hierarchical in-memory tree. That matters when a model began as a flat collection, or when a hierarchy needs to behave like a calibrated sequence. `Ascendors` walk toward prior modeled context, `Descendors` walk toward next modeled context, and `OffsettorAt` resolves relative position from a chosen zero policy.
+
+___
+
+## Examples
+
+- [Build Nested Enum](README/BuildNestedEnum.md)
+- [XBound Clickable Objects](README/XBoundClickableObjects.md)
+- [Dual Key Lookup](README/DualKeyLookup.md)
+- [Notify On Descendants](README/NotifyOnDescendants.md)
 
 ___
 
