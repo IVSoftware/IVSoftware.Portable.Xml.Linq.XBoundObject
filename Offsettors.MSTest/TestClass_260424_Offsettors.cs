@@ -75,15 +75,23 @@ namespace Offsettors.MSTest
                         item.Description = $"Item{Count:D2}";
                     }
                 }
-                int index = 0;
-                foreach (var xel in Model.Descendors(StdModelElement.item))
-                {
-                    xel.SetStdAttributeValue(StdModelAttribute.index, index++);
-                }
+                RebuildIndexOrder();
             }
             public XElement Model { get; } =
                 StdModelElement.model.MakeXElement();
             public Random Rando { get; }
+
+            public void RebuildIndexOrder(
+                LeadingAffinity affinity = LeadingAffinity.None)
+            {
+                int index = 0;
+                foreach (var xel in Model.Descendors(
+                    stdName: StdModelElement.item,
+                    affinity: affinity))
+                {
+                    xel.SetStdAttributeValue(StdModelAttribute.index, index++);
+                }
+            }
         }
 
 
@@ -1045,15 +1053,16 @@ ThrowHard: Detected LeadingAffinity in filter position; This qualifier must be e
             {
                 xel.SetStdAttributeValue(StdOffsettorAttribute.above, bool.TrueString);
             }
+            ocm.RebuildIndexOrder(affinity: LeadingAffinity.Linear);
             actual = ocm.Model.ToString();
             actual.ToClipboardExpected();
             { }
             expected = @" 
 <model>
-  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""0"">
-    <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""1"" above=""True"" />
-    <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""2"" above=""True"" />
-    <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""3"" above=""True"" />
+  <item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""3"">
+    <item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""0"" above=""True"" />
+    <item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""1"" above=""True"" />
+    <item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""2"" above=""True"" />
     <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[PlaceableModel]"" index=""4"" />
     <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[PlaceableModel]"" index=""5"" />
     <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[PlaceableModel]"" index=""6"" />
@@ -1084,10 +1093,10 @@ ThrowHard: Detected LeadingAffinity in filter position; This qualifier must be e
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""1"" above=""True"" />
-<item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""2"" above=""True"" />
-<item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""3"" above=""True"" />
-<item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""0"" />
+<item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""0"" above=""True"" />
+<item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""1"" above=""True"" />
+<item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""2"" above=""True"" />
+<item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""3"" />
 <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[PlaceableModel]"" index=""4"" />
 <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[PlaceableModel]"" index=""5"" />
 <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[PlaceableModel]"" index=""6"" />";
@@ -1112,10 +1121,10 @@ ThrowHard: Detected LeadingAffinity in filter position; This qualifier must be e
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""3"" above=""True"" />
-<item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""2"" above=""True"" />
-<item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""1"" above=""True"" />
-<item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""0"" />
+<item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""2"" above=""True"" />
+<item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""1"" above=""True"" />
+<item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""0"" above=""True"" />
+<item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""3"" />
 <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[PlaceableModel]"" index=""4"" />
 <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[PlaceableModel]"" index=""5"" />
 <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[PlaceableModel]"" index=""6"" />"
@@ -1141,12 +1150,12 @@ ThrowHard: Detected LeadingAffinity in filter position; This qualifier must be e
                 actual.ToClipboardExpected();
                 { }
                 expected = @" 
-<item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""3"" above=""True"" />
-<item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""2"" above=""True"" />
-<item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""1"" above=""True"" />
-<item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""2"" above=""True"" />
-<item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""3"" above=""True"" />
-<item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""0"" />
+<item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""2"" above=""True"" />
+<item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""1"" above=""True"" />
+<item text=""312d1c21-0000-0000-0000-000000000001"" model=""[PlaceableModel]"" index=""0"" above=""True"" />
+<item text=""312d1c21-0000-0000-0000-000000000002"" model=""[PlaceableModel]"" index=""1"" above=""True"" />
+<item text=""312d1c21-0000-0000-0000-000000000003"" model=""[PlaceableModel]"" index=""2"" above=""True"" />
+<item text=""312d1c21-0000-0000-0000-000000000000"" model=""[PlaceableModel]"" index=""3"" />
 <item text=""312d1c21-0000-0000-0000-000000000004"" model=""[PlaceableModel]"" index=""4"" />
 <item text=""312d1c21-0000-0000-0000-000000000005"" model=""[PlaceableModel]"" index=""5"" />
 <item text=""312d1c21-0000-0000-0000-000000000006"" model=""[PlaceableModel]"" index=""6"" />"
