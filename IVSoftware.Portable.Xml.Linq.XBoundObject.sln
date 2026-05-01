@@ -13,8 +13,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.MSTest.Extension
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVSoftware.Portable.SQLiteMarkdown", "..\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown.csproj", "{289543DE-65E1-4251-941F-D7C74D11A923}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IVS.Witness.2.0.3.MSTest", "IVS.Witness.2.0.3.MSTest\IVS.Witness.2.0.3.MSTest.csproj", "{785AD85F-2DBB-4827-800F-4567A2B1F381}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,10 +39,6 @@ Global
 		{289543DE-65E1-4251-941F-D7C74D11A923}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{289543DE-65E1-4251-941F-D7C74D11A923}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{289543DE-65E1-4251-941F-D7C74D11A923}.Release|Any CPU.Build.0 = Release|Any CPU
-		{785AD85F-2DBB-4827-800F-4567A2B1F381}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{785AD85F-2DBB-4827-800F-4567A2B1F381}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{785AD85F-2DBB-4827-800F-4567A2B1F381}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{785AD85F-2DBB-4827-800F-4567A2B1F381}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
