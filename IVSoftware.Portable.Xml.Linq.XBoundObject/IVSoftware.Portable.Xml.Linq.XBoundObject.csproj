@@ -22,29 +22,30 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<BaseVersion>2.1.0</BaseVersion>
+		<VersionPrefix>$(BaseVersion)</VersionPrefix>
+		<VersionSuffix>rc</VersionSuffix>
 
 		<PackageReleaseNotes>
-			2.1.0-beta
-			
-			- OnPropertyChanged([CallerMemberName] overload now laterals to a proper (sender, e) signature.
+			2.1.x
+			- To standardize case and improve refactorability, many signatures accept user-defined enum types in place of strings. We refer to this pattern as StdEnum, and this release expands the signatures that support it.
+			- OnPropertyChanged([CallerMemberName]) now laterals to a proper (sender, e) signature.
 			- DualKeyLookup is now observable.
-			- DualKeyLookup now respects @throw on the setter for "overwrite existing mapping with a different value".
+			- DualKeyLookup now respects @throw on the setter when overwriting an existing mapping with a different value.
 			- Added DualKeyLookup.BeforeModifyMapping for intercepting or canceling overwrites.
-			
+
 			2.0.x
 			- Added Placer extensions for path-based XML element placement.
 			- Enhanced enum support with safety asserts for non-nullable named enum types in edge cases.
-			- New [Placement] attribute for Enum allows individual enum types to declare their own storage as either XElement or XBoundAttribute.
-			- All try methods are idiomatically correct now. Any 'bool @throw = false' arguments have been removed from the signature. We're banking on the notion that if you're calling a Try method that you don't really want it to ever throw. These 'did' serve a purpose because internally they supported the @throw attribute of methods like To T. These reasons are no longer valid and the artifacts have been removed. Please report on the repo if this causes any issues.
-			- Trailing path delimiters on fqpath (Placer and Place) are removed now.
-			- Unit testing in this release is improved with broader coverage. See repos not only for the testing details, but for the working insights these tests provide on using the modules.
+			- Added a [Placement] attribute for Enum so individual enum types can declare storage as either XElement or XBoundAttribute.
+			- Try methods are now idiomatic. Any bool @throw = false arguments have been removed from their signatures.
+			- Trailing path delimiters on fqpath (Placer and Place) are now removed.
+			- Unit testing in this release is broader and more informative; the repos document both test coverage and working usage insights.
 			- Minor 2.0.x improvements include enum key exposure and enhanced XML placement APIs.
 		</PackageReleaseNotes>
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 		<DebugType>embedded</DebugType>
-		<BaseVersion>2.1.0</BaseVersion>
-		<VersionPrefix>$(BaseVersion)-beta1</VersionPrefix>
 	</PropertyGroup>
 	<ItemGroup>
 	  <Compile Remove="Screenshots\**" />

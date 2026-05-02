@@ -76,9 +76,6 @@ ___
 - You might want a model surface for hardware configuration, automation trees, domain-language parsers, or abstract syntax trees.
   Bound XML works well for those.
 
-- You might want a modeled collection with perceived depth, collapsible nodes, filtering, or temporal semantics.
-  That is a separate but related layer, and XML is a strong internal surface for it.
-
 ___
 
 ## Getting Started
@@ -105,12 +102,11 @@ var root = new XElement("root");
 root.Place(Path.Combine("USB", "Controller", "Family"), out XElement xelNew);
 ```
 
-Navigate the modeled structure:
+Navigate the placed structure:
 
 ```csharp
-var next = root.NextDescendor();
-var prior = next?.PreviousAscendor();
-var offset = root.OffsettorAt(plusOrMinus: 3);
+var controller = root.Descendants("Controller").Single();
+var family = controller.Descendants("Family").Single();
 ```
 
 ___
