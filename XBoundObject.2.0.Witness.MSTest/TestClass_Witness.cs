@@ -1,4 +1,5 @@
-﻿using IVSoftware.WinOS.MSTest.Extensions;
+﻿using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
+using IVSoftware.WinOS.MSTest.Extensions;
 
 namespace XBoundObject._2._0.Witness.MSTest
 {

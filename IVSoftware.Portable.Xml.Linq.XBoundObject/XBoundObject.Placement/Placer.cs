@@ -678,20 +678,11 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                     case PlacerMode _:
                         mode = (PlacerMode)arg;
                         break;
+                    case PlacerKeysDictionary dict:
+                        localApplyPlacerKeys(dict);
+                        break;
                     case Dictionary<StdPlacerKeys, string> dict:
-                        foreach (var key in dict.Keys)
-                        {
-                            switch (key)
-                            {
-                                case StdPlacerKeys.NewXElementName:
-                                    newXElementName = dict[key];
-                                    break;
-                                case StdPlacerKeys.PathAttributeName:
-                                    pathAttributeName = dict[key];
-                                    break;
-                                default: throw new NotImplementedException();
-                            }
-                        }
+                        localApplyPlacerKeys(dict);
                         break;
                     case XBoundAttribute _:
                     case XAttribute _:
@@ -752,6 +743,24 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
                 pathAttributeName: pathAttributeName);
             xel = pp.XResult;
             return pp.PlacerResult;
+
+            void localApplyPlacerKeys(IReadOnlyDictionary<StdPlacerKeys, string> dict)
+            {
+                foreach (var key in dict.Keys)
+                {
+                    switch (key)
+                    {
+                        case StdPlacerKeys.NewXElementName:
+                            newXElementName = dict[key];
+                            break;
+                        case StdPlacerKeys.PathAttributeName:
+                            pathAttributeName = dict[key];
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
+                }
+            }
         }
         
         /// <summary>
