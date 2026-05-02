@@ -1,0 +1,6193 @@
+﻿using IVSoftware.Portable.Xml.Linq.XBoundObject.Placement;
+using IVSoftware.WinOS.MSTest.Extensions;
+
+namespace XBoundObject._2._0.Witness.MSTest
+{
+    [TestClass]
+    public sealed class TestClass_Witness
+    {
+        [TestMethod]
+        public void Test_XBoundObject_Witness()
+        {
+            string actual, expected;
+
+            string
+                contractOrig =
+                    typeof(IVSoftware.Portable.Xml.Linq.XBoundAttribute)
+                    .Assembly
+                    .ToPublicContract()
+                    .ToString();
+
+#if false || SAVE_CONTRACT_FILES
+            // EmbeddedResource
+            File.WriteAllText(@"XBoundObject Version=2.0.3.xml", contractOrig);
+#else
+            actual = contractOrig;
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<assembly name=""IVSoftware.Portable.Xml.Linq.XBoundObject"" version=""2.0.3.0"">
+  <type name=""IVSoftware.Portable.Xml.Linq.BeforeModifyMappingCancelEventArgs"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""key"" type=""[external]"" />
+          <param name=""oldXEL"" type=""[external]"" />
+          <param name=""newXEL"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""key"" type=""[external]"" />
+          <param name=""oldID"" type=""[external]"" />
+          <param name=""newID"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Action"" type=""IVSoftware.Portable.Xml.Linq.ModifyMappingAction"" canRead=""true"" canWrite=""false"" />
+      <property name=""Cancel"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""NewID"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""NewXEL"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""OldID"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""OldXEL"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.CommandPCL"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""execute"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""execute"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""execute"" type=""[external]"" />
+          <param name=""canExecute"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""execute"" type=""[external]"" />
+          <param name=""canExecute"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties />
+    <events>
+      <event name=""CanExecuteChanged"" type=""[external]"" />
+    </events>
+    <fields />
+    <methods>
+      <method name=""CanExecute"" returns=""[external]"">
+        <parameters>
+          <param name=""parameter"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ChangeCanExecute"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Execute"" returns=""[external]"">
+        <parameters>
+          <param name=""parameter"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.CommandPCL&lt;T&gt;"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""execute"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""execute"" type=""System.Action&lt;T&gt;"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""execute"" type=""[external]"" />
+          <param name=""canExecute"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""execute"" type=""System.Action&lt;T&gt;"" />
+          <param name=""canExecute"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties />
+    <events>
+      <event name=""CanExecuteChanged"" type=""[external]"" />
+    </events>
+    <fields />
+    <methods>
+      <method name=""CanExecute"" returns=""[external]"">
+        <parameters>
+          <param name=""parameter"" type=""T"" />
+        </parameters>
+      </method>
+      <method name=""ChangeCanExecute"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Execute"" returns=""[external]"">
+        <parameters>
+          <param name=""parameter"" type=""T"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.DualKeyLookup"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Count"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""EnumKeys"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Item"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""Item"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+    </properties>
+    <events>
+      <event name=""BeforeModifyMapping"" type=""System.EventHandler&lt;IVSoftware.Portable.Xml.Linq.BeforeModifyMappingCancelEventArgs&gt;"" />
+      <event name=""CollectionChanged"" type=""[external]"" />
+    </events>
+    <fields />
+    <methods>
+      <method name=""Clear"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.EnumParsingOption"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""FindUsingLowerCaseNameThenParseValue"" type=""IVSoftware.Portable.Xml.Linq.EnumParsingOption"" />
+      <field name=""FindUsingLowerCaseNameThenParseValueIgnoreCase"" type=""IVSoftware.Portable.Xml.Linq.EnumParsingOption"" />
+      <field name=""UseStrictRules"" type=""IVSoftware.Portable.Xml.Linq.EnumParsingOption"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.GetOption"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""All"" type=""IVSoftware.Portable.Xml.Linq.GetOption"" />
+      <field name=""IgnoreAllCase"" type=""IVSoftware.Portable.Xml.Linq.GetOption"" />
+      <field name=""IgnoreNameCase"" type=""IVSoftware.Portable.Xml.Linq.GetOption"" />
+      <field name=""IgnoreValueCase"" type=""IVSoftware.Portable.Xml.Linq.GetOption"" />
+      <field name=""None"" type=""IVSoftware.Portable.Xml.Linq.GetOption"" />
+      <field name=""NormalizeForCompare"" type=""IVSoftware.Portable.Xml.Linq.GetOption"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.ModifyMappingAction"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""IDtoXEL"" type=""IVSoftware.Portable.Xml.Linq.ModifyMappingAction"" />
+      <field name=""value__"" type=""[external]"" />
+      <field name=""XELtoID"" type=""IVSoftware.Portable.Xml.Linq.ModifyMappingAction"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.ObjectBoundEventArgs"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""o"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""BoundObject"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.ObjectBoundEventHandler"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""object"" type=""[external]"" />
+          <param name=""method"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Method"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Target"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""BeginInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""IVSoftware.Portable.Xml.Linq.ObjectBoundEventArgs"" />
+          <param name=""callback"" type=""[external]"" />
+          <param name=""object"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Clone"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""DynamicInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""args"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""EndInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""result"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetInvocationList"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetObjectData"" returns=""[external]"">
+        <parameters>
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Invoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""IVSoftware.Portable.Xml.Linq.ObjectBoundEventArgs"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.SetOption"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""AllowUppercaseBool"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+      <field name=""AllToLower"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+      <field name=""NameToLower"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+      <field name=""None"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+      <field name=""value__"" type=""[external]"" />
+      <field name=""ValueToLower"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.TrySingleStatus"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""FoundMany"" type=""IVSoftware.Portable.Xml.Linq.TrySingleStatus"" />
+      <field name=""FoundNone"" type=""IVSoftware.Portable.Xml.Linq.TrySingleStatus"" />
+      <field name=""FoundOne"" type=""IVSoftware.Portable.Xml.Linq.TrySingleStatus"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.WeakEventManager"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+    </constructors>
+    <properties />
+    <events />
+    <fields />
+    <methods>
+      <method name=""AddEventHandler"" returns=""[external]"">
+        <parameters>
+          <param name=""handler"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HandleEvent"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""[external]"" />
+          <param name=""eventName"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""RemoveEventHandler"" returns=""[external]"">
+        <parameters>
+          <param name=""handler"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundAttribute"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""other"" type=""IVSoftware.Portable.Xml.Linq.XBoundAttribute"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""name"" type=""[external]"" />
+          <param name=""tag"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""name"" type=""[external]"" />
+          <param name=""tag"" type=""[external]"" />
+          <param name=""text"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""name"" type=""[external]"" />
+          <param name=""tag"" type=""[external]"" />
+          <param name=""text"" type=""[external]"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""BaseUri"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Document"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""IsNamespaceDeclaration"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Name"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""NextAttribute"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""NodeType"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Parent"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""PreviousAttribute"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Tag"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""Value"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+    </properties>
+    <events>
+      <event name=""Changed"" type=""[external]"" />
+      <event name=""Changing"" type=""[external]"" />
+      <event name=""ObjectBound"" type=""IVSoftware.Portable.Xml.Linq.ObjectBoundEventHandler"" />
+    </events>
+    <fields />
+    <methods>
+      <method name=""AddAnnotation"" returns=""[external]"">
+        <parameters>
+          <param name=""annotation"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Annotation"" returns=""T"">
+        <parameters />
+      </method>
+      <method name=""Annotation"" returns=""[external]"">
+        <parameters>
+          <param name=""type"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Annotations"" returns=""System.Collections.Generic.IEnumerable&lt;T&gt;"">
+        <parameters />
+      </method>
+      <method name=""Annotations"" returns=""[external]"">
+        <parameters>
+          <param name=""type"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Remove"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""RemoveAnnotations"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""RemoveAnnotations"" returns=""[external]"">
+        <parameters>
+          <param name=""type"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""SetValue"" returns=""[external]"">
+        <parameters>
+          <param name=""value"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.DiscoveryScope"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""AllAppDomainAssemblies"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.DiscoveryScope"" />
+      <field name=""ConstrainToAssembly"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.DiscoveryScope"" />
+      <field name=""ConstrainToNamespace"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.DiscoveryScope"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Extensions"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields />
+    <methods>
+      <method name=""AncestorOfType"" returns=""T"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""includeSelf"" type=""[external]"" />
+          <param name=""throw"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""DequeueSingle"" returns=""T"">
+        <parameters>
+          <param name=""queue"" type=""System.Collections.Generic.Queue&lt;T&gt;"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetPath"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""pathAttribute"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Has"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Has"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""enumParsingOption"" type=""IVSoftware.Portable.Xml.Linq.EnumParsingOption"" />
+        </parameters>
+      </method>
+      <method name=""SetAttributeValue"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""value"" type=""[external]"" />
+          <param name=""useLowerCaseName"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""SetAttributeValueNull"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""useLowerCaseName"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""SetBoundAttributeValue"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""tag"" type=""[external]"" />
+          <param name=""stdName"" type=""[external]"" />
+          <param name=""text"" type=""[external]"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+        </parameters>
+      </method>
+      <method name=""SetBoundAttributeValue"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""tag"" type=""[external]"" />
+          <param name=""name"" type=""[external]"" />
+          <param name=""text"" type=""[external]"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+        </parameters>
+      </method>
+      <method name=""Sort"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""comparer"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""SortAttributes"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""To"" returns=""T"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""throw"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""To"" returns=""T"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""enumParsingOption"" type=""IVSoftware.Portable.Xml.Linq.EnumParsingOption"" />
+          <param name=""throw"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToShallow"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""TryGetAttributeValue"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""enumValue"" type=""T&amp;"" />
+        </parameters>
+      </method>
+      <method name=""TryGetAttributeValue"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""enumValue"" type=""T&amp;"" />
+          <param name=""enumParsingOption"" type=""IVSoftware.Portable.Xml.Linq.EnumParsingOption"" />
+        </parameters>
+      </method>
+      <method name=""TryGetSingleBoundAttributeByType"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""o"" type=""T&amp;"" />
+        </parameters>
+      </method>
+      <method name=""TryGetSingleBoundAttributeByType"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""xba"" type=""IVSoftware.Portable.Xml.Linq.XBoundAttribute&amp;"" />
+          <param name=""o"" type=""T&amp;"" />
+        </parameters>
+      </method>
+      <method name=""TryGetSingleBoundAttributeByType"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""o"" type=""T&amp;"" />
+          <param name=""result"" type=""IVSoftware.Portable.Xml.Linq.TrySingleStatus&amp;"" />
+        </parameters>
+      </method>
+      <method name=""TryGetSingleBoundAttributeByType"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""xba"" type=""IVSoftware.Portable.Xml.Linq.XBoundAttribute&amp;"" />
+          <param name=""o"" type=""T&amp;"" />
+          <param name=""result"" type=""IVSoftware.Portable.Xml.Linq.TrySingleStatus&amp;"" />
+        </parameters>
+      </method>
+      <method name=""TryGetSingleBoundObjectByType"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""o"" type=""T&amp;"" />
+        </parameters>
+      </method>
+      <method name=""TryGetSingleBoundObjectByType"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""o"" type=""T&amp;"" />
+          <param name=""result"" type=""IVSoftware.Portable.Xml.Linq.TrySingleStatus&amp;"" />
+        </parameters>
+      </method>
+      <method name=""WithBoundAttributeValue"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""tag"" type=""[external]"" />
+          <param name=""stdName"" type=""[external]"" />
+          <param name=""text"" type=""[external]"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+        </parameters>
+      </method>
+      <method name=""WithBoundAttributeValue"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""tag"" type=""[external]"" />
+          <param name=""name"" type=""[external]"" />
+          <param name=""text"" type=""[external]"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+        </parameters>
+      </method>
+      <method name=""WithOnlyAttributes"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""names"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""WithoutAttributes"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""names"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ElementAvailableEventArgs"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Element"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.IgnoreNODAttribute"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Match"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingContext"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""model"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""LocalModel"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""NotifyCollectionChangedDelegate"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.NotifyCollectionChangedDelegate"" canRead=""true"" canWrite=""true"" />
+      <property name=""Options"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingOption"" canRead=""true"" canWrite=""true"" />
+      <property name=""OriginModel"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""PICache"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""PropertyChangedDelegate"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.PropertyChangedDelegate"" canRead=""true"" canWrite=""true"" />
+      <property name=""TargetModel"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""XObjectChangeDelegate"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.XObjectChangeDelegate"" canRead=""true"" canWrite=""true"" />
+    </properties>
+    <events>
+      <event name=""ModelAdded"" type=""System.EventHandler&lt;IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ElementAvailableEventArgs&gt;"" />
+      <event name=""XObjectChange"" type=""System.EventHandler&lt;IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.XObjectChangedOrChangingEventArgs&gt;"" />
+    </events>
+    <fields />
+    <methods>
+      <method name=""Clone"" returns=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingContext"">
+        <parameters>
+          <param name=""localModel"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingExtensions"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields />
+    <methods>
+      <method name=""CreateModel"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""context"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingContext"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetInstance"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""throw"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetInstance"" returns=""T"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""throw"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetMember"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""propertyName"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""InSquareBrackets"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""InSquareBrackets"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ModelDescendantsAndSelf"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""context"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingContext"" />
+        </parameters>
+      </method>
+      <method name=""RefreshModel"" returns=""[external]"">
+        <parameters>
+          <param name=""model"" type=""[external]"" />
+          <param name=""newValue"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToShortTypeNameText"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToTypeNameForOptionText"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingOption"" />
+        </parameters>
+      </method>
+      <method name=""ToTypeNameText"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""WithNotifyOnDescendants"" returns=""T"">
+        <parameters>
+          <param name=""this"" type=""T"" />
+          <param name=""onPC"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.PropertyChangedDelegate"" />
+          <param name=""onCC"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.NotifyCollectionChangedDelegate"" />
+          <param name=""onXO"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.XObjectChangeDelegate"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingOption"" />
+        </parameters>
+      </method>
+      <method name=""WithNotifyOnDescendants"" returns=""T"">
+        <parameters>
+          <param name=""this"" type=""T"" />
+          <param name=""model"" type=""[external]"" />
+          <param name=""onPC"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.PropertyChangedDelegate"" />
+          <param name=""onCC"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.NotifyCollectionChangedDelegate"" />
+          <param name=""onXO"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.XObjectChangeDelegate"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingOption"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingOption"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""CachePropertyInfo"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingOption"" />
+      <field name=""IncludeValueTypeInstances"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingOption"" />
+      <field name=""ShowFullNameForTypes"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingOption"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.NotifyCollectionChangedDelegate"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""object"" type=""[external]"" />
+          <param name=""method"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Method"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Target"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""BeginInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""[external]"" />
+          <param name=""callback"" type=""[external]"" />
+          <param name=""object"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Clone"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""DynamicInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""args"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""EndInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""result"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetInvocationList"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetObjectData"" returns=""[external]"">
+        <parameters>
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Invoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.PropertyChangedDelegate"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""object"" type=""[external]"" />
+          <param name=""method"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Method"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Target"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""BeginInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""[external]"" />
+          <param name=""callback"" type=""[external]"" />
+          <param name=""object"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Clone"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""DynamicInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""args"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""EndInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""result"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetInvocationList"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetObjectData"" returns=""[external]"">
+        <parameters>
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Invoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SenderEventPair"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""e"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""NotifyCollectionChangedEventArgs"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""OriginModel"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""PropertyChangedEventArgs"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""PropertyName"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""sender"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""SenderModel"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""XObjectChangeEventArgs"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SortOrderNOD"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""instance"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SortOrderNOD"" />
+      <field name=""name"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SortOrderNOD"" />
+      <field name=""notifyinfo"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SortOrderNOD"" />
+      <field name=""oncc"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SortOrderNOD"" />
+      <field name=""onpc"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SortOrderNOD"" />
+      <field name=""pi"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SortOrderNOD"" />
+      <field name=""runtimetype"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SortOrderNOD"" />
+      <field name=""statusnod"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SortOrderNOD"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.StdFrameworkName"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""context"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.StdFrameworkName"" />
+      <field name=""member"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.StdFrameworkName"" />
+      <field name=""model"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.StdFrameworkName"" />
+      <field name=""OnCC"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.StdFrameworkName"" />
+      <field name=""OnPC"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.StdFrameworkName"" />
+      <field name=""value__"" type=""[external]"" />
+      <field name=""xel"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.StdFrameworkName"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.WaitForValueCreatedAttribute"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""propertyName"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""IsValueCreatedPropertyName"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Match"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.XObjectChangeDelegate"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""object"" type=""[external]"" />
+          <param name=""method"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Method"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Target"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""BeginInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""[external]"" />
+          <param name=""callback"" type=""[external]"" />
+          <param name=""object"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Clone"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""DynamicInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""args"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""EndInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""result"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetInvocationList"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetObjectData"" returns=""[external]"">
+        <parameters>
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Invoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.XObjectChangedOrChangingEventArgs"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""e"" type=""[external]"" />
+          <param name=""isChanging"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""IsChanging"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""ObjectChange"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""timestamp"" type=""[external]"" />
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.NestedEnumExtensions"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields />
+    <methods>
+      <method name=""BuildNestedEnum"" returns=""[external]"">
+        <parameters>
+          <param name=""type"" type=""[external]"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.DiscoveryScope"" />
+          <param name=""root"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Descendants"" returns=""[external]"">
+        <parameters>
+          <param name=""type"" type=""[external]"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.DiscoveryScope"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToFullIdPath"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""delim"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToFullIdPath"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""dkl"" type=""IVSoftware.Portable.Xml.Linq.DualKeyLookup"" />
+          <param name=""delim"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToFullKey"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventArgs"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""parent"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""isPathMatch"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""parent"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""newXElementName"" type=""[external]"" />
+          <param name=""isPathMatch"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Handled"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""InsertIndex"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""IsPathMatch"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Parent"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Path"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Xel"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventHandler"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""object"" type=""[external]"" />
+          <param name=""method"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Method"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Target"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""BeginInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventArgs"" />
+          <param name=""callback"" type=""[external]"" />
+          <param name=""object"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Clone"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""DynamicInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""args"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""EndInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""result"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetInvocationList"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetObjectData"" returns=""[external]"">
+        <parameters>
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Invoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventArgs"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.DataModelAttribute"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""xname"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""XName"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Match"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.EnumPlacement"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""UseXAttribute"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.EnumPlacement"" />
+      <field name=""UseXBoundAttribute"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.EnumPlacement"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.ExpandDirection"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""FromItems"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.ExpandDirection"" />
+      <field name=""ToItems"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.ExpandDirection"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.Extensions"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields />
+    <methods>
+      <method name=""Collapse"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""pathAttribute"" type=""[external]"" />
+          <param name=""mode"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerMode"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Expand"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""pathAttribute"" type=""[external]"" />
+          <param name=""mode"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerMode"" />
+        </parameters>
+      </method>
+      <method name=""FindOrCreate"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""pathAttribute"" type=""[external]"" />
+          <param name=""onBeforeAdd"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventHandler"" />
+          <param name=""onAfterAdd"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventHandler"" />
+          <param name=""onIterate"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IterateEventHandler"" />
+        </parameters>
+      </method>
+      <method name=""FindOrCreate"" returns=""T"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""pathAttribute"" type=""[external]"" />
+          <param name=""onBeforeAdd"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventHandler"" />
+          <param name=""onAfterAdd"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventHandler"" />
+          <param name=""onIterate"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IterateEventHandler"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Place"" returns=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"">
+        <parameters>
+          <param name=""source"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""args"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Place"" returns=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"">
+        <parameters>
+          <param name=""source"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""xel"" type=""[external]"" />
+          <param name=""args"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Show"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""pathAttribute"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Show"" returns=""T"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""pathAttribute"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""VisibleElements"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""alwaysShowRootElements"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""WithXBoundView"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""items"" type=""[external]"" />
+          <param name=""indent"" type=""[external]"" />
+          <param name=""autoSyncEnabled"" type=""[external]"" />
+          <param name=""autoSyncSettleDelay"" type=""[external]"" />
+          <param name=""sortingEnabled"" type=""[external]"" />
+          <param name=""customSorter"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IterateEventArgs"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""current"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""isPathMatch"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Handled"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""InsertIndex"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""IsPathMatch"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Path"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""XelCurrent"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IterateEventHandler"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""object"" type=""[external]"" />
+          <param name=""method"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Method"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Target"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""BeginInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IterateEventArgs"" />
+          <param name=""callback"" type=""[external]"" />
+          <param name=""object"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Clone"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""DynamicInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""args"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""EndInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""result"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetInvocationList"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetObjectData"" returns=""[external]"">
+        <parameters>
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Invoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IterateEventArgs"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IXBoundObject"">
+    <interfaces />
+    <constructors />
+    <properties>
+      <property name=""Parent"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""XEL"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""InitXEL"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IXBoundViewObject"">
+    <interfaces>
+      <interface name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IXBoundObject"" />
+    </interfaces>
+    <constructors />
+    <properties>
+      <property name=""IsVisible"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""PlusMinus"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"" canRead=""true"" canWrite=""false"" />
+      <property name=""PlusMinusToggleCommand"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Space"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Text"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Collapse"" returns=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"">
+        <parameters />
+      </method>
+      <method name=""Expand"" returns=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"">
+        <parameters>
+          <param name=""direction"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.ExpandDirection"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IXObjectChangeEventSink"">
+    <interfaces />
+    <constructors />
+    <properties>
+      <property name=""DisableXObjectChangeEvents"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods />
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacementAttribute"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""placement"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.EnumPlacement"" />
+          <param name=""name"" type=""[external]"" />
+          <param name=""alwaysUseFullKey"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""AlwaysUseFullKey"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Name"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Placement"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.EnumPlacement"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Match"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.Placer"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""xSource"" type=""[external]"" />
+          <param name=""fqpath"" type=""[external]"" />
+          <param name=""onBeforeAdd"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventHandler"" />
+          <param name=""onAfterAdd"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventHandler"" />
+          <param name=""onIterate"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IterateEventHandler"" />
+          <param name=""mode"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerMode"" />
+          <param name=""pathAttributeName"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""xSource"" type=""[external]"" />
+          <param name=""parse"" type=""[external]"" />
+          <param name=""onBeforeAdd"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventHandler"" />
+          <param name=""onAfterAdd"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventHandler"" />
+          <param name=""onIterate"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IterateEventHandler"" />
+          <param name=""mode"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerMode"" />
+          <param name=""pathAttributeName"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""DefaultNewXElementName"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""DefaultPathAttributeName"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""Placed"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""PlacerResult"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"" canRead=""true"" canWrite=""true"" />
+      <property name=""XResult"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerArgs"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""valuesToAdd"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Payload"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerKeysDictionary"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Capacity"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Comparer"" type=""System.Collections.Generic.IEqualityComparer&lt;IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys&gt;"" canRead=""true"" canWrite=""false"" />
+      <property name=""Count"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Item"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""Keys"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Values"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Add"" returns=""[external]"">
+        <parameters>
+          <param name=""key"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys"" />
+          <param name=""value"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Clear"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ContainsKey"" returns=""[external]"">
+        <parameters>
+          <param name=""key"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys"" />
+        </parameters>
+      </method>
+      <method name=""ContainsValue"" returns=""[external]"">
+        <parameters>
+          <param name=""value"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""EnsureCapacity"" returns=""[external]"">
+        <parameters>
+          <param name=""capacity"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetAlternateLookup"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetEnumerator"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetObjectData"" returns=""[external]"">
+        <parameters>
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""OnDeserialization"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Remove"" returns=""[external]"">
+        <parameters>
+          <param name=""key"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys"" />
+        </parameters>
+      </method>
+      <method name=""Remove"" returns=""[external]"">
+        <parameters>
+          <param name=""key"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys"" />
+          <param name=""value"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""TrimExcess"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""TrimExcess"" returns=""[external]"">
+        <parameters>
+          <param name=""capacity"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""TryAdd"" returns=""[external]"">
+        <parameters>
+          <param name=""key"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys"" />
+          <param name=""value"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""TryGetAlternateLookup"" returns=""[external]"">
+        <parameters>
+          <param name=""lookup"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""TryGetValue"" returns=""[external]"">
+        <parameters>
+          <param name=""key"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys"" />
+          <param name=""value"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerMode"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""FindOrAssert"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerMode"" />
+      <field name=""FindOrCreate"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerMode"" />
+      <field name=""FindOrPartial"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerMode"" />
+      <field name=""FindOrThrow"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerMode"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""Assert"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"" />
+      <field name=""Created"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"" />
+      <field name=""Exists"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"" />
+      <field name=""NotFound"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"" />
+      <field name=""Partial"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"" />
+      <field name=""Throw"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""Auto"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"" />
+      <field name=""Collapsed"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"" />
+      <field name=""Expanded"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"" />
+      <field name=""Leaf"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"" />
+      <field name=""Partial"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdAttributeNameXBoundViewObject"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""datamodel"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdAttributeNameXBoundViewObject"" />
+      <field name=""isvisible"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdAttributeNameXBoundViewObject"" />
+      <field name=""plusminus"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdAttributeNameXBoundViewObject"" />
+      <field name=""text"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdAttributeNameXBoundViewObject"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""NewXElementName"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys"" />
+      <field name=""PathAttributeName"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.ViewContext"">
+    <interfaces>
+      <interface name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IXBoundObject"" />
+      <interface name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IXObjectChangeEventSink"" />
+    </interfaces>
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""items"" type=""[external]"" />
+          <param name=""indent"" type=""[external]"" />
+          <param name=""autoSyncEnabled"" type=""[external]"" />
+          <param name=""autoSyncSettleDelay"" type=""[external]"" />
+          <param name=""sortingEnabled"" type=""[external]"" />
+          <param name=""customSorter"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""items"" type=""[external]"" />
+          <param name=""indent"" type=""[external]"" />
+          <param name=""autoSyncEnabled"" type=""[external]"" />
+          <param name=""autoSyncSettleDelay"" type=""[external]"" />
+          <param name=""sortingEnabled"" type=""[external]"" />
+          <param name=""customSorter"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""AutoSyncEnabled"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""AutoSyncSettleDelay"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""CustomSorter"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""DisableXObjectChangeEvents"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Indent"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Items"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Parent"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""SortingEnabled"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""WDTAutoSync"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""XEL"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events>
+      <event name=""PropertyChanged"" type=""[external]"" />
+    </events>
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetIndentedText"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""spacerFunc"" type=""[external]"" />
+          <param name=""pathAttribute"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""InitXEL"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""SyncList"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.XBoundObjectImplementer"">
+    <interfaces>
+      <interface name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IXBoundObject"" />
+    </interfaces>
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Parent"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""XEL"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events>
+      <event name=""PropertyChanged"" type=""[external]"" />
+    </events>
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""InitXEL"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.XBoundViewObjectImplementer"">
+    <interfaces>
+      <interface name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IXBoundObject"" />
+      <interface name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IXBoundViewObject"" />
+    </interfaces>
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""_depth"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""IsVisible"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""Parent"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""PlusMinus"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"" canRead=""true"" canWrite=""true"" />
+      <property name=""PlusMinusGlyph"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""PlusMinusToggleCommand"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Space"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Text"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""XEL"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events>
+      <event name=""PropertyChanged"" type=""[external]"" />
+    </events>
+    <fields />
+    <methods>
+      <method name=""Collapse"" returns=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"">
+        <parameters />
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Expand"" returns=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"">
+        <parameters>
+          <param name=""direction"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.ExpandDirection"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""InitXEL"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+</assembly>";
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting immutable contract for referenced version."
+            );
+#endif
+        }
+        [TestMethod]
+        public void Test_XBoundObject_Dependencies_Witness()
+        {
+            string actual, expected;
+
+            string
+                contractOrig =
+                    typeof(IVSoftware.Portable.Xml.Linq.XBoundAttribute)
+                    .Assembly
+                    .ToPublicContract(ManifestTypePolicy.IVSoftwareAssembliesOnly)
+                    .ToString();
+
+#if false || SAVE_CONTRACT_FILES
+            // EmbeddedResource
+            File.WriteAllText(@"XBoundObject Version=2.0.3.Dependencies.xml", contractOrig);
+#else
+            actual = contractOrig;
+            actual.ToClipboardExpected();
+            { }
+            expected = @" 
+<assembly name=""IVSoftware.Portable.Xml.Linq.XBoundObject"" version=""2.0.3.0"">
+  <type name=""IVSoftware.Portable.Xml.Linq.BeforeModifyMappingCancelEventArgs"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""key"" type=""[external]"" />
+          <param name=""oldXEL"" type=""[external]"" />
+          <param name=""newXEL"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""key"" type=""[external]"" />
+          <param name=""oldID"" type=""[external]"" />
+          <param name=""newID"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Action"" type=""IVSoftware.Portable.Xml.Linq.ModifyMappingAction"" canRead=""true"" canWrite=""false"" />
+      <property name=""Cancel"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""NewID"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""NewXEL"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""OldID"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""OldXEL"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.CommandPCL"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""execute"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""execute"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""execute"" type=""[external]"" />
+          <param name=""canExecute"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""execute"" type=""[external]"" />
+          <param name=""canExecute"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties />
+    <events>
+      <event name=""CanExecuteChanged"" type=""[external]"" />
+    </events>
+    <fields />
+    <methods>
+      <method name=""CanExecute"" returns=""[external]"">
+        <parameters>
+          <param name=""parameter"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ChangeCanExecute"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Execute"" returns=""[external]"">
+        <parameters>
+          <param name=""parameter"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.CommandPCL&lt;T&gt;"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""execute"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""execute"" type=""System.Action&lt;T&gt;"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""execute"" type=""[external]"" />
+          <param name=""canExecute"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""execute"" type=""System.Action&lt;T&gt;"" />
+          <param name=""canExecute"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties />
+    <events>
+      <event name=""CanExecuteChanged"" type=""[external]"" />
+    </events>
+    <fields />
+    <methods>
+      <method name=""CanExecute"" returns=""[external]"">
+        <parameters>
+          <param name=""parameter"" type=""T"" />
+        </parameters>
+      </method>
+      <method name=""ChangeCanExecute"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Execute"" returns=""[external]"">
+        <parameters>
+          <param name=""parameter"" type=""T"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.DualKeyLookup"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Count"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""EnumKeys"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Item"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""Item"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+    </properties>
+    <events>
+      <event name=""BeforeModifyMapping"" type=""System.EventHandler&lt;IVSoftware.Portable.Xml.Linq.BeforeModifyMappingCancelEventArgs&gt;"" />
+      <event name=""CollectionChanged"" type=""[external]"" />
+    </events>
+    <fields />
+    <methods>
+      <method name=""Clear"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.EnumParsingOption"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""FindUsingLowerCaseNameThenParseValue"" type=""IVSoftware.Portable.Xml.Linq.EnumParsingOption"" />
+      <field name=""FindUsingLowerCaseNameThenParseValueIgnoreCase"" type=""IVSoftware.Portable.Xml.Linq.EnumParsingOption"" />
+      <field name=""UseStrictRules"" type=""IVSoftware.Portable.Xml.Linq.EnumParsingOption"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.GetOption"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""All"" type=""IVSoftware.Portable.Xml.Linq.GetOption"" />
+      <field name=""IgnoreAllCase"" type=""IVSoftware.Portable.Xml.Linq.GetOption"" />
+      <field name=""IgnoreNameCase"" type=""IVSoftware.Portable.Xml.Linq.GetOption"" />
+      <field name=""IgnoreValueCase"" type=""IVSoftware.Portable.Xml.Linq.GetOption"" />
+      <field name=""None"" type=""IVSoftware.Portable.Xml.Linq.GetOption"" />
+      <field name=""NormalizeForCompare"" type=""IVSoftware.Portable.Xml.Linq.GetOption"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.ModifyMappingAction"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""IDtoXEL"" type=""IVSoftware.Portable.Xml.Linq.ModifyMappingAction"" />
+      <field name=""value__"" type=""[external]"" />
+      <field name=""XELtoID"" type=""IVSoftware.Portable.Xml.Linq.ModifyMappingAction"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.ObjectBoundEventArgs"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""o"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""BoundObject"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.ObjectBoundEventHandler"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""object"" type=""[external]"" />
+          <param name=""method"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Method"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Target"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""BeginInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""IVSoftware.Portable.Xml.Linq.ObjectBoundEventArgs"" />
+          <param name=""callback"" type=""[external]"" />
+          <param name=""object"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Clone"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""DynamicInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""args"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""EndInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""result"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetInvocationList"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetObjectData"" returns=""[external]"">
+        <parameters>
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Invoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""IVSoftware.Portable.Xml.Linq.ObjectBoundEventArgs"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.SetOption"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""AllowUppercaseBool"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+      <field name=""AllToLower"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+      <field name=""NameToLower"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+      <field name=""None"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+      <field name=""value__"" type=""[external]"" />
+      <field name=""ValueToLower"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.TrySingleStatus"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""FoundMany"" type=""IVSoftware.Portable.Xml.Linq.TrySingleStatus"" />
+      <field name=""FoundNone"" type=""IVSoftware.Portable.Xml.Linq.TrySingleStatus"" />
+      <field name=""FoundOne"" type=""IVSoftware.Portable.Xml.Linq.TrySingleStatus"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.WeakEventManager"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+    </constructors>
+    <properties />
+    <events />
+    <fields />
+    <methods>
+      <method name=""AddEventHandler"" returns=""[external]"">
+        <parameters>
+          <param name=""handler"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HandleEvent"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""[external]"" />
+          <param name=""eventName"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""RemoveEventHandler"" returns=""[external]"">
+        <parameters>
+          <param name=""handler"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundAttribute"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""other"" type=""IVSoftware.Portable.Xml.Linq.XBoundAttribute"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""name"" type=""[external]"" />
+          <param name=""tag"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""name"" type=""[external]"" />
+          <param name=""tag"" type=""[external]"" />
+          <param name=""text"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""name"" type=""[external]"" />
+          <param name=""tag"" type=""[external]"" />
+          <param name=""text"" type=""[external]"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""BaseUri"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Document"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""IsNamespaceDeclaration"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Name"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""NextAttribute"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""NodeType"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Parent"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""PreviousAttribute"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Tag"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""Value"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+    </properties>
+    <events>
+      <event name=""Changed"" type=""[external]"" />
+      <event name=""Changing"" type=""[external]"" />
+      <event name=""ObjectBound"" type=""IVSoftware.Portable.Xml.Linq.ObjectBoundEventHandler"" />
+    </events>
+    <fields />
+    <methods>
+      <method name=""AddAnnotation"" returns=""[external]"">
+        <parameters>
+          <param name=""annotation"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Annotation"" returns=""T"">
+        <parameters />
+      </method>
+      <method name=""Annotation"" returns=""[external]"">
+        <parameters>
+          <param name=""type"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Annotations"" returns=""System.Collections.Generic.IEnumerable&lt;T&gt;"">
+        <parameters />
+      </method>
+      <method name=""Annotations"" returns=""[external]"">
+        <parameters>
+          <param name=""type"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Remove"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""RemoveAnnotations"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""RemoveAnnotations"" returns=""[external]"">
+        <parameters>
+          <param name=""type"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""SetValue"" returns=""[external]"">
+        <parameters>
+          <param name=""value"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.DiscoveryScope"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""AllAppDomainAssemblies"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.DiscoveryScope"" />
+      <field name=""ConstrainToAssembly"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.DiscoveryScope"" />
+      <field name=""ConstrainToNamespace"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.DiscoveryScope"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Extensions"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields />
+    <methods>
+      <method name=""AncestorOfType"" returns=""T"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""includeSelf"" type=""[external]"" />
+          <param name=""throw"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""DequeueSingle"" returns=""T"">
+        <parameters>
+          <param name=""queue"" type=""System.Collections.Generic.Queue&lt;T&gt;"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetPath"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""pathAttribute"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Has"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Has"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""enumParsingOption"" type=""IVSoftware.Portable.Xml.Linq.EnumParsingOption"" />
+        </parameters>
+      </method>
+      <method name=""SetAttributeValue"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""value"" type=""[external]"" />
+          <param name=""useLowerCaseName"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""SetAttributeValueNull"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""useLowerCaseName"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""SetBoundAttributeValue"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""tag"" type=""[external]"" />
+          <param name=""stdName"" type=""[external]"" />
+          <param name=""text"" type=""[external]"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+        </parameters>
+      </method>
+      <method name=""SetBoundAttributeValue"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""tag"" type=""[external]"" />
+          <param name=""name"" type=""[external]"" />
+          <param name=""text"" type=""[external]"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+        </parameters>
+      </method>
+      <method name=""Sort"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""comparer"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""SortAttributes"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""To"" returns=""T"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""throw"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""To"" returns=""T"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""enumParsingOption"" type=""IVSoftware.Portable.Xml.Linq.EnumParsingOption"" />
+          <param name=""throw"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToShallow"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""TryGetAttributeValue"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""enumValue"" type=""T&amp;"" />
+        </parameters>
+      </method>
+      <method name=""TryGetAttributeValue"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""enumValue"" type=""T&amp;"" />
+          <param name=""enumParsingOption"" type=""IVSoftware.Portable.Xml.Linq.EnumParsingOption"" />
+        </parameters>
+      </method>
+      <method name=""TryGetSingleBoundAttributeByType"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""o"" type=""T&amp;"" />
+        </parameters>
+      </method>
+      <method name=""TryGetSingleBoundAttributeByType"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""xba"" type=""IVSoftware.Portable.Xml.Linq.XBoundAttribute&amp;"" />
+          <param name=""o"" type=""T&amp;"" />
+        </parameters>
+      </method>
+      <method name=""TryGetSingleBoundAttributeByType"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""o"" type=""T&amp;"" />
+          <param name=""result"" type=""IVSoftware.Portable.Xml.Linq.TrySingleStatus&amp;"" />
+        </parameters>
+      </method>
+      <method name=""TryGetSingleBoundAttributeByType"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""xba"" type=""IVSoftware.Portable.Xml.Linq.XBoundAttribute&amp;"" />
+          <param name=""o"" type=""T&amp;"" />
+          <param name=""result"" type=""IVSoftware.Portable.Xml.Linq.TrySingleStatus&amp;"" />
+        </parameters>
+      </method>
+      <method name=""TryGetSingleBoundObjectByType"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""o"" type=""T&amp;"" />
+        </parameters>
+      </method>
+      <method name=""TryGetSingleBoundObjectByType"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""o"" type=""T&amp;"" />
+          <param name=""result"" type=""IVSoftware.Portable.Xml.Linq.TrySingleStatus&amp;"" />
+        </parameters>
+      </method>
+      <method name=""WithBoundAttributeValue"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""tag"" type=""[external]"" />
+          <param name=""stdName"" type=""[external]"" />
+          <param name=""text"" type=""[external]"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+        </parameters>
+      </method>
+      <method name=""WithBoundAttributeValue"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""tag"" type=""[external]"" />
+          <param name=""name"" type=""[external]"" />
+          <param name=""text"" type=""[external]"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.SetOption"" />
+        </parameters>
+      </method>
+      <method name=""WithOnlyAttributes"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""names"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""WithoutAttributes"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""names"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ElementAvailableEventArgs"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Element"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.IgnoreNODAttribute"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Match"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingContext"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""model"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""LocalModel"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""NotifyCollectionChangedDelegate"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.NotifyCollectionChangedDelegate"" canRead=""true"" canWrite=""true"" />
+      <property name=""Options"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingOption"" canRead=""true"" canWrite=""true"" />
+      <property name=""OriginModel"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""PICache"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""PropertyChangedDelegate"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.PropertyChangedDelegate"" canRead=""true"" canWrite=""true"" />
+      <property name=""TargetModel"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""XObjectChangeDelegate"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.XObjectChangeDelegate"" canRead=""true"" canWrite=""true"" />
+    </properties>
+    <events>
+      <event name=""ModelAdded"" type=""System.EventHandler&lt;IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ElementAvailableEventArgs&gt;"" />
+      <event name=""XObjectChange"" type=""System.EventHandler&lt;IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.XObjectChangedOrChangingEventArgs&gt;"" />
+    </events>
+    <fields />
+    <methods>
+      <method name=""Clone"" returns=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingContext"">
+        <parameters>
+          <param name=""localModel"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingExtensions"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields />
+    <methods>
+      <method name=""CreateModel"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""context"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingContext"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetInstance"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""throw"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetInstance"" returns=""T"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""throw"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetMember"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""propertyName"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""InSquareBrackets"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""InSquareBrackets"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ModelDescendantsAndSelf"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""context"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingContext"" />
+        </parameters>
+      </method>
+      <method name=""RefreshModel"" returns=""[external]"">
+        <parameters>
+          <param name=""model"" type=""[external]"" />
+          <param name=""newValue"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToShortTypeNameText"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToTypeNameForOptionText"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingOption"" />
+        </parameters>
+      </method>
+      <method name=""ToTypeNameText"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""WithNotifyOnDescendants"" returns=""T"">
+        <parameters>
+          <param name=""this"" type=""T"" />
+          <param name=""onPC"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.PropertyChangedDelegate"" />
+          <param name=""onCC"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.NotifyCollectionChangedDelegate"" />
+          <param name=""onXO"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.XObjectChangeDelegate"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingOption"" />
+        </parameters>
+      </method>
+      <method name=""WithNotifyOnDescendants"" returns=""T"">
+        <parameters>
+          <param name=""this"" type=""T"" />
+          <param name=""model"" type=""[external]"" />
+          <param name=""onPC"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.PropertyChangedDelegate"" />
+          <param name=""onCC"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.NotifyCollectionChangedDelegate"" />
+          <param name=""onXO"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.XObjectChangeDelegate"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingOption"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingOption"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""CachePropertyInfo"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingOption"" />
+      <field name=""IncludeValueTypeInstances"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingOption"" />
+      <field name=""ShowFullNameForTypes"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.ModelingOption"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.NotifyCollectionChangedDelegate"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""object"" type=""[external]"" />
+          <param name=""method"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Method"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Target"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""BeginInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""[external]"" />
+          <param name=""callback"" type=""[external]"" />
+          <param name=""object"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Clone"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""DynamicInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""args"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""EndInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""result"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetInvocationList"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetObjectData"" returns=""[external]"">
+        <parameters>
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Invoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.PropertyChangedDelegate"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""object"" type=""[external]"" />
+          <param name=""method"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Method"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Target"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""BeginInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""[external]"" />
+          <param name=""callback"" type=""[external]"" />
+          <param name=""object"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Clone"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""DynamicInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""args"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""EndInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""result"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetInvocationList"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetObjectData"" returns=""[external]"">
+        <parameters>
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Invoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SenderEventPair"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""e"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""NotifyCollectionChangedEventArgs"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""OriginModel"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""PropertyChangedEventArgs"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""PropertyName"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""sender"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""SenderModel"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""XObjectChangeEventArgs"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SortOrderNOD"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""instance"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SortOrderNOD"" />
+      <field name=""name"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SortOrderNOD"" />
+      <field name=""notifyinfo"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SortOrderNOD"" />
+      <field name=""oncc"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SortOrderNOD"" />
+      <field name=""onpc"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SortOrderNOD"" />
+      <field name=""pi"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SortOrderNOD"" />
+      <field name=""runtimetype"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SortOrderNOD"" />
+      <field name=""statusnod"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.SortOrderNOD"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.StdFrameworkName"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""context"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.StdFrameworkName"" />
+      <field name=""member"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.StdFrameworkName"" />
+      <field name=""model"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.StdFrameworkName"" />
+      <field name=""OnCC"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.StdFrameworkName"" />
+      <field name=""OnPC"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.StdFrameworkName"" />
+      <field name=""value__"" type=""[external]"" />
+      <field name=""xel"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.StdFrameworkName"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.WaitForValueCreatedAttribute"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""propertyName"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""IsValueCreatedPropertyName"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Match"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.XObjectChangeDelegate"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""object"" type=""[external]"" />
+          <param name=""method"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Method"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Target"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""BeginInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""[external]"" />
+          <param name=""callback"" type=""[external]"" />
+          <param name=""object"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Clone"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""DynamicInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""args"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""EndInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""result"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetInvocationList"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetObjectData"" returns=""[external]"">
+        <parameters>
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Invoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Modeling.XObjectChangedOrChangingEventArgs"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""e"" type=""[external]"" />
+          <param name=""isChanging"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""IsChanging"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""ObjectChange"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""timestamp"" type=""[external]"" />
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.NestedEnumExtensions"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields />
+    <methods>
+      <method name=""BuildNestedEnum"" returns=""[external]"">
+        <parameters>
+          <param name=""type"" type=""[external]"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.DiscoveryScope"" />
+          <param name=""root"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Descendants"" returns=""[external]"">
+        <parameters>
+          <param name=""type"" type=""[external]"" />
+          <param name=""options"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.DiscoveryScope"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToFullIdPath"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""delim"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToFullIdPath"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""dkl"" type=""IVSoftware.Portable.Xml.Linq.DualKeyLookup"" />
+          <param name=""delim"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToFullKey"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventArgs"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""parent"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""isPathMatch"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""parent"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""newXElementName"" type=""[external]"" />
+          <param name=""isPathMatch"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Handled"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""InsertIndex"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""IsPathMatch"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Parent"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Path"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Xel"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventHandler"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""object"" type=""[external]"" />
+          <param name=""method"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Method"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Target"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""BeginInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventArgs"" />
+          <param name=""callback"" type=""[external]"" />
+          <param name=""object"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Clone"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""DynamicInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""args"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""EndInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""result"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetInvocationList"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetObjectData"" returns=""[external]"">
+        <parameters>
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Invoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventArgs"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.DataModelAttribute"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""xname"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""XName"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Match"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.EnumPlacement"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""UseXAttribute"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.EnumPlacement"" />
+      <field name=""UseXBoundAttribute"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.EnumPlacement"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.ExpandDirection"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""FromItems"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.ExpandDirection"" />
+      <field name=""ToItems"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.ExpandDirection"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.Extensions"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields />
+    <methods>
+      <method name=""Collapse"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""pathAttribute"" type=""[external]"" />
+          <param name=""mode"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerMode"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Expand"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""pathAttribute"" type=""[external]"" />
+          <param name=""mode"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerMode"" />
+        </parameters>
+      </method>
+      <method name=""FindOrCreate"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""pathAttribute"" type=""[external]"" />
+          <param name=""onBeforeAdd"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventHandler"" />
+          <param name=""onAfterAdd"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventHandler"" />
+          <param name=""onIterate"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IterateEventHandler"" />
+        </parameters>
+      </method>
+      <method name=""FindOrCreate"" returns=""T"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""pathAttribute"" type=""[external]"" />
+          <param name=""onBeforeAdd"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventHandler"" />
+          <param name=""onAfterAdd"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventHandler"" />
+          <param name=""onIterate"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IterateEventHandler"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Place"" returns=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"">
+        <parameters>
+          <param name=""source"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""args"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Place"" returns=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"">
+        <parameters>
+          <param name=""source"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""xel"" type=""[external]"" />
+          <param name=""args"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Show"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""pathAttribute"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Show"" returns=""T"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""pathAttribute"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""VisibleElements"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""alwaysShowRootElements"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""WithXBoundView"" returns=""[external]"">
+        <parameters>
+          <param name=""this"" type=""[external]"" />
+          <param name=""items"" type=""[external]"" />
+          <param name=""indent"" type=""[external]"" />
+          <param name=""autoSyncEnabled"" type=""[external]"" />
+          <param name=""autoSyncSettleDelay"" type=""[external]"" />
+          <param name=""sortingEnabled"" type=""[external]"" />
+          <param name=""customSorter"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IterateEventArgs"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""current"" type=""[external]"" />
+          <param name=""path"" type=""[external]"" />
+          <param name=""isPathMatch"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Handled"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""InsertIndex"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""IsPathMatch"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Path"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""XelCurrent"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IterateEventHandler"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""object"" type=""[external]"" />
+          <param name=""method"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Method"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Target"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""BeginInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IterateEventArgs"" />
+          <param name=""callback"" type=""[external]"" />
+          <param name=""object"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Clone"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""DynamicInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""args"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""EndInvoke"" returns=""[external]"">
+        <parameters>
+          <param name=""result"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetInvocationList"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetObjectData"" returns=""[external]"">
+        <parameters>
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Invoke"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+          <param name=""e"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IterateEventArgs"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IXBoundObject"">
+    <interfaces />
+    <constructors />
+    <properties>
+      <property name=""Parent"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""XEL"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""InitXEL"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IXBoundViewObject"">
+    <interfaces>
+      <interface name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IXBoundObject"" />
+    </interfaces>
+    <constructors />
+    <properties>
+      <property name=""IsVisible"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""PlusMinus"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"" canRead=""true"" canWrite=""false"" />
+      <property name=""PlusMinusToggleCommand"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Space"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Text"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Collapse"" returns=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"">
+        <parameters />
+      </method>
+      <method name=""Expand"" returns=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"">
+        <parameters>
+          <param name=""direction"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.ExpandDirection"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IXObjectChangeEventSink"">
+    <interfaces />
+    <constructors />
+    <properties>
+      <property name=""DisableXObjectChangeEvents"" type=""IVSoftware.Portable.Disposable.DisposableHost"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods />
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacementAttribute"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""placement"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.EnumPlacement"" />
+          <param name=""name"" type=""[external]"" />
+          <param name=""alwaysUseFullKey"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""AlwaysUseFullKey"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Name"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Placement"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.EnumPlacement"" canRead=""true"" canWrite=""false"" />
+      <property name=""TypeId"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""IsDefaultAttribute"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""Match"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.Placer"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""xSource"" type=""[external]"" />
+          <param name=""fqpath"" type=""[external]"" />
+          <param name=""onBeforeAdd"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventHandler"" />
+          <param name=""onAfterAdd"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventHandler"" />
+          <param name=""onIterate"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IterateEventHandler"" />
+          <param name=""mode"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerMode"" />
+          <param name=""pathAttributeName"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""xSource"" type=""[external]"" />
+          <param name=""parse"" type=""[external]"" />
+          <param name=""onBeforeAdd"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventHandler"" />
+          <param name=""onAfterAdd"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.AddEventHandler"" />
+          <param name=""onIterate"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IterateEventHandler"" />
+          <param name=""mode"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerMode"" />
+          <param name=""pathAttributeName"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""DefaultNewXElementName"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""DefaultPathAttributeName"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""Placed"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""PlacerResult"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"" canRead=""true"" canWrite=""true"" />
+      <property name=""XResult"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerArgs"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""valuesToAdd"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Payload"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerKeysDictionary"">
+    <interfaces />
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Capacity"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Comparer"" type=""System.Collections.Generic.IEqualityComparer&lt;IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys&gt;"" canRead=""true"" canWrite=""false"" />
+      <property name=""Count"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Item"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""Keys"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Values"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events />
+    <fields />
+    <methods>
+      <method name=""Add"" returns=""[external]"">
+        <parameters>
+          <param name=""key"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys"" />
+          <param name=""value"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Clear"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ContainsKey"" returns=""[external]"">
+        <parameters>
+          <param name=""key"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys"" />
+        </parameters>
+      </method>
+      <method name=""ContainsValue"" returns=""[external]"">
+        <parameters>
+          <param name=""value"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""EnsureCapacity"" returns=""[external]"">
+        <parameters>
+          <param name=""capacity"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetAlternateLookup"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetEnumerator"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetObjectData"" returns=""[external]"">
+        <parameters>
+          <param name=""info"" type=""[external]"" />
+          <param name=""context"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""OnDeserialization"" returns=""[external]"">
+        <parameters>
+          <param name=""sender"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Remove"" returns=""[external]"">
+        <parameters>
+          <param name=""key"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys"" />
+        </parameters>
+      </method>
+      <method name=""Remove"" returns=""[external]"">
+        <parameters>
+          <param name=""key"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys"" />
+          <param name=""value"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""TrimExcess"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""TrimExcess"" returns=""[external]"">
+        <parameters>
+          <param name=""capacity"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""TryAdd"" returns=""[external]"">
+        <parameters>
+          <param name=""key"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys"" />
+          <param name=""value"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""TryGetAlternateLookup"" returns=""[external]"">
+        <parameters>
+          <param name=""lookup"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""TryGetValue"" returns=""[external]"">
+        <parameters>
+          <param name=""key"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys"" />
+          <param name=""value"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerMode"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""FindOrAssert"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerMode"" />
+      <field name=""FindOrCreate"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerMode"" />
+      <field name=""FindOrPartial"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerMode"" />
+      <field name=""FindOrThrow"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerMode"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""Assert"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"" />
+      <field name=""Created"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"" />
+      <field name=""Exists"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"" />
+      <field name=""NotFound"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"" />
+      <field name=""Partial"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"" />
+      <field name=""Throw"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlacerResult"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""Auto"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"" />
+      <field name=""Collapsed"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"" />
+      <field name=""Expanded"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"" />
+      <field name=""Leaf"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"" />
+      <field name=""Partial"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdAttributeNameXBoundViewObject"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""datamodel"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdAttributeNameXBoundViewObject"" />
+      <field name=""isvisible"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdAttributeNameXBoundViewObject"" />
+      <field name=""plusminus"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdAttributeNameXBoundViewObject"" />
+      <field name=""text"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdAttributeNameXBoundViewObject"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys"">
+    <interfaces />
+    <constructors />
+    <properties />
+    <events />
+    <fields>
+      <field name=""NewXElementName"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys"" />
+      <field name=""PathAttributeName"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.StdPlacerKeys"" />
+      <field name=""value__"" type=""[external]"" />
+    </fields>
+    <methods>
+      <method name=""CompareTo"" returns=""[external]"">
+        <parameters>
+          <param name=""target"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetTypeCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""HasFlag"" returns=""[external]"">
+        <parameters>
+          <param name=""flag"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters>
+          <param name=""format"" type=""[external]"" />
+          <param name=""provider"" type=""[external]"" />
+        </parameters>
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.ViewContext"">
+    <interfaces>
+      <interface name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IXBoundObject"" />
+      <interface name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IXObjectChangeEventSink"" />
+    </interfaces>
+    <constructors>
+      <ctor>
+        <parameters>
+          <param name=""items"" type=""[external]"" />
+          <param name=""indent"" type=""[external]"" />
+          <param name=""autoSyncEnabled"" type=""[external]"" />
+          <param name=""autoSyncSettleDelay"" type=""[external]"" />
+          <param name=""sortingEnabled"" type=""[external]"" />
+          <param name=""customSorter"" type=""[external]"" />
+        </parameters>
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""items"" type=""[external]"" />
+          <param name=""indent"" type=""[external]"" />
+          <param name=""autoSyncEnabled"" type=""[external]"" />
+          <param name=""autoSyncSettleDelay"" type=""[external]"" />
+          <param name=""sortingEnabled"" type=""[external]"" />
+          <param name=""customSorter"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""AutoSyncEnabled"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""AutoSyncSettleDelay"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""CustomSorter"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""DisableXObjectChangeEvents"" type=""IVSoftware.Portable.Disposable.DisposableHost"" canRead=""true"" canWrite=""false"" />
+      <property name=""Indent"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Items"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Parent"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""SortingEnabled"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""WDTAutoSync"" type=""IVSoftware.Portable.WatchdogTimer"" canRead=""true"" canWrite=""false"" />
+      <property name=""XEL"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events>
+      <event name=""PropertyChanged"" type=""[external]"" />
+    </events>
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetIndentedText"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+          <param name=""spacerFunc"" type=""[external]"" />
+          <param name=""pathAttribute"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""InitXEL"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""SyncList"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.XBoundObjectImplementer"">
+    <interfaces>
+      <interface name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IXBoundObject"" />
+    </interfaces>
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""Parent"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""XEL"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events>
+      <event name=""PropertyChanged"" type=""[external]"" />
+    </events>
+    <fields />
+    <methods>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""InitXEL"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+  <type name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.XBoundViewObjectImplementer"">
+    <interfaces>
+      <interface name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IXBoundObject"" />
+      <interface name=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.IXBoundViewObject"" />
+    </interfaces>
+    <constructors>
+      <ctor>
+        <parameters />
+      </ctor>
+      <ctor>
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+        </parameters>
+      </ctor>
+    </constructors>
+    <properties>
+      <property name=""_depth"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""IsVisible"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""Parent"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""PlusMinus"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"" canRead=""true"" canWrite=""true"" />
+      <property name=""PlusMinusGlyph"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""PlusMinusToggleCommand"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Space"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+      <property name=""Text"" type=""[external]"" canRead=""true"" canWrite=""true"" />
+      <property name=""XEL"" type=""[external]"" canRead=""true"" canWrite=""false"" />
+    </properties>
+    <events>
+      <event name=""PropertyChanged"" type=""[external]"" />
+    </events>
+    <fields />
+    <methods>
+      <method name=""Collapse"" returns=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"">
+        <parameters />
+      </method>
+      <method name=""Equals"" returns=""[external]"">
+        <parameters>
+          <param name=""obj"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""Expand"" returns=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.PlusMinus"">
+        <parameters>
+          <param name=""direction"" type=""IVSoftware.Portable.Xml.Linq.XBoundObject.Placement.ExpandDirection"" />
+        </parameters>
+      </method>
+      <method name=""GetHashCode"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""GetType"" returns=""[external]"">
+        <parameters />
+      </method>
+      <method name=""InitXEL"" returns=""[external]"">
+        <parameters>
+          <param name=""xel"" type=""[external]"" />
+        </parameters>
+      </method>
+      <method name=""ToString"" returns=""[external]"">
+        <parameters />
+      </method>
+    </methods>
+    <nestedTypes />
+  </type>
+</assembly>"
+            ;
+
+            Assert.AreEqual(
+                expected.NormalizeResult(),
+                actual.NormalizeResult(),
+                "Expecting immutable contract for referenced version."
+            );
+#endif
+        }
+    }
+}
