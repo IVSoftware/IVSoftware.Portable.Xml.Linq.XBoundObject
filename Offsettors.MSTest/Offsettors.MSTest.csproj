@@ -5,6 +5,8 @@
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+	  <SignAssembly>True</SignAssembly>
+	  <AssemblyOriginatorKeyFile>D:\PFX\ivsoft-240410.pfx</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -12,12 +14,12 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
 		<PackageReference Include="IVSoftware.WinOS.MSTest.Extensions" Version="1.0.8" />
+		<PackageReference Include="IVSoftware.Portable.Xml.Linq.XBoundObject" Version="2.1.0-beta1" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\..\..\Github\IVSoftware\Portable\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.Extensions\IVSoftware.MSTest.Extensions.csproj" />
 	  <ProjectReference Include="..\..\IVSoftware.Portable.Xml.Linq.Collections\IVSoftware.Portable.Xml.Linq.Collections.Extensions\IVSoftware.MSTest.Extensions.csproj" />
-	  <ProjectReference Include="..\IVSoftware.Portable.Xml.Linq.XBoundObject\IVSoftware.Portable.Xml.Linq.XBoundObject.csproj" />
 	  <ProjectReference Include="..\..\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown\IVSoftware.Portable.SQLiteMarkdown.csproj" />
 	</ItemGroup>
 

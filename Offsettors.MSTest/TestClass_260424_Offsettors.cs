@@ -1,5 +1,4 @@
 using IVSoftware.Portable.Collections;
-using IVSoftware.Portable.Common.Attributes;
 using IVSoftware.Portable.Common.Exceptions;
 using IVSoftware.Portable.Disposable;
 using IVSoftware.Portable.MSTest.Preview;
@@ -93,9 +92,6 @@ namespace Offsettors.MSTest
                 }
             }
         }
-
-
-
 
         [TestMethod, DoNotParallelize]
         public void Test_OCMLocal_CTor()

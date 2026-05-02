@@ -1,4 +1,4 @@
-# [<](../README.md)
+# [<](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README.md)
 
 ## Binding
 

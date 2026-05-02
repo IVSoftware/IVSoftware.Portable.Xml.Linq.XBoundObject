@@ -1,6 +1,6 @@
 # IVSoftware.Portable.Xml.Linq.XBoundObject [[GitHub]](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject.git)
 
-`XBoundObject` extends `System.Xml.Linq` with runtime object binding, structural placement, and LINQ-like enumeration over in-memory instance hierarchies.
+`XBoundObject` extends `System.Xml.Linq` with runtime object binding, structural placement, and Linq-like enumeration over in-memory instance hierarchies.
 
 The simplest way to think about it is this: sometimes an `XElement` or `XAttribute` wants a runtime companion object the way a UI tree node wants a `Tag` property. `XBoundObject` provides that missing binding surface without changing the serialized XML contract.
 
@@ -12,9 +12,8 @@ ___
 
 ## Table Of Contents
 
-- [Binding](README/Binding.md)
-- [Placer](README/Placer.md)
-- [Specialized Collection Modeling](README/SpecializedCollectionModeling.md)
+- [Binding](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/Binding.md)
+- [Placer](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/Placer.md)
 - [Examples](#examples)
 
 ___
@@ -116,22 +115,12 @@ var offset = root.OffsettorAt(plusOrMinus: 3);
 
 ___
 
-## Specialized Collection Modeling In One Paragraph
-
-Sometimes a flat collection wants an internal tree model so that depth, filtering, collapsible structure, or temporal semantics can become part of the runtime surface. That is where specialized collection modeling begins, and that is where concepts like `Ascendors`, `Descendors`, and `OffsettorAt(...)` come into play.
-
-_Ascendors_ because the next ascending node is the deepest leaf of the previous node.
-_Descendors_ because it's possible for a given node to have children below, in the traditional send, but also leading children above that can, for example, "look back in time".
-
-
-___
-
 ## Examples
 
-- [Build Nested Enum](README/BuildNestedEnum.md)
-- [XBound Clickable Objects](README/XBoundClickableObjects.md)
-- [Dual Key Lookup](README/DualKeyLookup.md)
-- [Notify On Descendants](README/NotifyOnDescendants.md)
+- [Build Nested Enum](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/BuildNestedEnum.md)
+- [XBound Clickable Objects](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/XBoundClickableObjects.md)
+- [Dual Key Lookup](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/DualKeyLookup.md)
+- [Notify On Descendants](https://github.com/IVSoftware/IVSoftware.Portable.Xml.Linq.XBoundObject/blob/master/README/NotifyOnDescendants.md)
 
 ___
 

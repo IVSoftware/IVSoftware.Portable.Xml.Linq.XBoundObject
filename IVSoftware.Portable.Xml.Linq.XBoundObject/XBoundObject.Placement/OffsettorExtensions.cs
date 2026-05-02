@@ -70,8 +70,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// Resolves leading-affinity information for the immediate child
         /// field of the current element.
         /// </summary>
-        [Probationary]
-        public static bool HasLeadingAffinity(
+        internal static bool HasLeadingAffinity(
             this XElement @this,
             out LeadingAffinityInfo lai)
         {
@@ -88,8 +87,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// - Therefore, when a filter is supplied, self is only returned if self matches the filter.
         /// </remarks>
         [Canonical]
-        [Probationary]
-        public static IEnumerable<XElement> Ascendors(
+        internal static IEnumerable<XElement> Ascendors(
             this XElement @this,
             string? localName = null,
             bool includeSelf = false)
@@ -115,8 +113,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// <summary>
         /// Ascends modeled linear order using a standard enum local-name filter.
         /// </summary>
-        [Probationary]
-        public static IEnumerable<XElement> Ascendors(
+        internal static IEnumerable<XElement> Ascendors(
             this XElement @this,
             Enum stdName,
             bool includeSelf = false)
@@ -147,8 +144,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// - Therefore, when a filter is supplied, self is only returned if self matches the filter.
         /// </remarks>
         [Canonical]
-        [Probationary]
-        public static IEnumerable<XElement> Descendors(
+        internal static IEnumerable<XElement> Descendors(
             this XElement @this,
             string? localName = null,
             bool includeSelf = false,
@@ -255,8 +251,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// <summary>
         /// Descends modeled linear order using a standard enum local-name filter.
         /// </summary>
-        [Probationary]
-        public static IEnumerable<XElement> Descendors(
+        internal static IEnumerable<XElement> Descendors(
             this XElement @this,
             Enum stdName,
             bool includeSelf = false,
@@ -281,8 +276,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// <summary>
         /// Resolves an element by relative offset within modeled linear order.
         /// </summary>
-        [Probationary]
-        public static XElement? OffsettorAt(
+        internal static XElement? OffsettorAt(
             this XElement @this,
             Enum stdName,
             int plusOrMinus,
@@ -303,8 +297,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// <summary>
         /// Resolves an element by relative offset within modeled linear order.
         /// </summary>
-        [Probationary]
-        public static XElement? OffsettorAt(
+        internal static XElement? OffsettorAt(
             this XElement @this,
             int plusOrMinus,
             OffsetZeroPolicy offsetZeroPolicy = OffsetZeroPolicy.Absolute,
@@ -319,8 +312,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// Resolves an element by relative offset within modeled linear order.
         /// </summary>
         [Canonical]
-        [Probationary]
-        public static XElement? OffsettorAt(
+        internal static XElement? OffsettorAt(
             this XElement @this,
             string? name,
             int plusOrMinus,
@@ -517,8 +509,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// <summary>
         /// Resolves the previous element in modeled linear order.
         /// </summary>
-        [Probationary]
-        public static XElement? PreviousAscendor(
+        internal static XElement? PreviousAscendor(
             this XElement @this,
             Enum stdEnum)
         {
@@ -540,8 +531,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// Resolves the previous element in modeled linear order.
         /// </summary>
         [Canonical]
-        [Probationary]
-        public static XElement? PreviousAscendor(
+        internal static XElement? PreviousAscendor(
             this XElement @this,
             string? name = null)
         {
@@ -574,8 +564,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// <summary>
         /// Resolves the next element in modeled linear order.
         /// </summary>
-        [Probationary]
-        public static XElement? NextDescendor(
+        internal static XElement? NextDescendor(
             this XElement @this, 
             Enum stdEnum,
             LeadingAffinity affinity = LeadingAffinity.None)
@@ -599,8 +588,7 @@ namespace IVSoftware.Portable.Xml.Linq.XBoundObject.Placement
         /// Resolves the next element in modeled linear order.
         /// </summary>
         [Canonical]
-        [Probationary]
-        public static XElement? NextDescendor(
+        internal static XElement? NextDescendor(
             this XElement @this, 
             string? name = null,
             LeadingAffinity affinity = LeadingAffinity.None)
